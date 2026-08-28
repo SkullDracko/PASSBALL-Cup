@@ -1,0 +1,1820 @@
+/* =========================================================
+   PASSBALL CUP
+   DASHBOARD
+   Diseño basado en el mockup
+   ========================================================= */
+
+
+/* =========================================================
+   VARIABLES
+   ========================================================= */
+
+:root {
+
+    --purple-dark: #28124f;
+    --purple: #4b2780;
+    --purple-light: #7442a1;
+
+    --orange: #ff7200;
+    --orange-dark: #e45d00;
+    --orange-light: #ff8a24;
+
+    --background: #f6f4f9;
+
+    --white: #ffffff;
+
+    --text: #24164a;
+    --text-light: #6e6680;
+
+    --border: #e8e3ef;
+
+    --shadow:
+        0 8px 25px rgba(47, 25, 83, 0.08);
+
+    --shadow-hover:
+        0 14px 35px rgba(47, 25, 83, 0.14);
+
+    --radius: 16px;
+
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+* {
+
+    box-sizing: border-box;
+
+    margin: 0;
+
+    padding: 0;
+
+}
+
+
+html {
+
+    scroll-behavior: smooth;
+
+}
+
+
+body {
+
+    font-family: "Inter", sans-serif;
+
+    background: var(--background);
+
+    color: var(--text);
+
+    height: 100vh;
+
+    overflow: hidden;
+
+}
+
+
+a {
+
+    text-decoration: none;
+
+    color: inherit;
+
+}
+
+
+button,
+a {
+
+    -webkit-tap-highlight-color: transparent;
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+
+.dashboard {
+
+    height: 100vh;
+
+    display: flex;
+
+    flex-direction: column;
+
+    overflow: hidden;
+
+    background: var(--background);
+
+}
+
+
+/* =========================================================
+   TOPBAR
+   ========================================================= */
+
+.topbar {
+
+    height: 96px;
+
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 35px;
+
+    padding: 0 32px;
+
+    background:
+        linear-gradient(
+            110deg,
+            #241044 0%,
+            #32135f 50%,
+            #2a124f 100%
+        );
+
+    color: white;
+
+    box-shadow:
+        0 3px 15px rgba(38, 18, 76, 0.18);
+
+    position: relative;
+
+    z-index: 100;
+
+}
+
+
+/* =========================================================
+   LOGO
+   ========================================================= */
+
+.topbar-logo {
+
+    width: 280px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+}
+
+
+.topbar-logo img {
+
+    width: 250px;
+
+    max-width: 100%;
+
+    height: auto;
+
+    display: block;
+
+    /*
+       El logo original es morado.
+       Lo convertimos visualmente a blanco
+       para que se vea como en el mockup.
+    */
+
+    filter:
+        brightness(0)
+        invert(1);
+
+}
+
+
+/* =========================================================
+   NAV
+   ========================================================= */
+
+.topbar-nav {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    flex: 1;
+
+}
+
+
+.nav-item {
+
+    min-height: 50px;
+
+    padding: 0 18px;
+
+    border-radius: 9px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 9px;
+
+    color: rgba(255,255,255,0.9);
+
+    font-size: 15px;
+
+    font-weight: 500;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+
+}
+
+
+.nav-item svg {
+
+    width: 22px;
+
+    height: 22px;
+
+    fill: currentColor;
+
+    flex-shrink: 0;
+
+}
+
+
+.nav-item:hover {
+
+    background:
+        rgba(255,255,255,0.09);
+
+}
+
+
+.nav-item.active {
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--orange),
+            var(--orange-light)
+        );
+
+    color: white;
+
+    box-shadow:
+        0 5px 15px rgba(255, 114, 0, 0.24);
+
+}
+
+
+/* =========================================================
+   USUARIO
+   ========================================================= */
+
+.topbar-user {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    flex-shrink: 0;
+
+}
+
+
+.topbar-user-name {
+
+    font-size: 15px;
+
+    font-weight: 500;
+
+}
+
+
+.topbar-avatar {
+
+    width: 50px;
+
+    height: 50px;
+
+    border-radius: 50%;
+
+    background: white;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+.topbar-avatar svg {
+
+    width: 30px;
+
+    height: 30px;
+
+    fill: var(--purple);
+
+}
+
+
+.topbar-chevron {
+
+    font-size: 25px;
+
+    line-height: 1;
+
+    opacity: 0.9;
+
+}
+
+
+/* =========================================================
+   CONTENIDO GENERAL
+   ========================================================= */
+
+.dashboard-content {
+
+    display: grid;
+
+    grid-template-columns: 275px minmax(0, 1fr);
+
+    gap: 40px;
+
+    width: 100%;
+
+    padding: 35px 28px 25px 24px;
+
+    flex: 1;
+
+    min-height: 0;
+
+    overflow: hidden;
+
+}
+
+
+/* =========================================================
+   PANEL IZQUIERDO
+   ========================================================= */
+
+.profile-panel {
+
+    position: relative;
+
+    height: 100%;
+
+    border-radius: 17px;
+
+    overflow: hidden;
+
+    isolation: isolate;
+
+    background-image:
+        url("../../img/dashboard-bg.png");
+
+    background-size: cover;
+
+    background-position: center;
+
+    box-shadow:
+        0 10px 30px rgba(43, 20, 79, 0.13);
+
+    color: white;
+
+}
+
+
+/* OSCURECER IMAGEN */
+
+.profile-overlay {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: -1;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(35, 13, 72, 0.28) 0%,
+            rgba(45, 17, 84, 0.40) 45%,
+            rgba(32, 11, 68, 0.75) 100%
+        );
+
+}
+
+
+/* =========================================================
+   PERFIL
+   ========================================================= */
+
+.profile-top {
+
+    padding-top: 50px;
+
+    text-align: center;
+
+}
+
+
+.profile-avatar {
+
+    width: 92px;
+
+    height: 92px;
+
+    margin: 0 auto 14px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        rgba(112, 66, 166, 0.72);
+
+    border:
+        1px solid rgba(255,255,255,0.65);
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,0.18);
+
+}
+
+
+.profile-avatar svg {
+
+    width: 50px;
+
+    height: 50px;
+
+    fill: white;
+
+}
+
+
+.profile-top h2 {
+
+    font-size: 21px;
+
+    font-weight: 800;
+
+    margin-bottom: 4px;
+
+}
+
+
+.profile-role {
+
+    color: var(--orange-light);
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+}
+
+
+/* =========================================================
+   FRASE
+   ========================================================= */
+
+.profile-quote {
+
+    position: absolute;
+
+    left: 25px;
+
+    right: 25px;
+
+    top: 420px;
+
+    text-align: center;
+
+}
+
+
+.quote-mark {
+
+    font-size: 55px;
+
+    font-weight: 900;
+
+    line-height: 0.5;
+
+    margin-bottom: 22px;
+
+}
+
+
+.profile-quote p {
+
+    font-size: 17px;
+
+    line-height: 1.45;
+
+    font-weight: 500;
+
+}
+
+
+.profile-quote span {
+
+    display: block;
+
+    margin-top: 18px;
+
+    color: var(--orange-light);
+
+    font-size: 14px;
+
+    font-weight: 800;
+
+}
+
+
+/* =========================================================
+   ÁREA PRINCIPAL
+   ========================================================= */
+
+.main-area {
+
+    min-width: 0;
+
+    min-height: 0;
+
+    overflow-y: auto;
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+
+/* =========================================================
+   BIENVENIDA
+   ========================================================= */
+
+.welcome-section {
+
+    margin-bottom: 28px;
+
+}
+
+
+.welcome-section h1 {
+
+    font-size: clamp(28px, 2.2vw, 36px);
+
+    line-height: 1.15;
+
+    font-weight: 800;
+
+    color: var(--text);
+
+    margin-bottom: 8px;
+
+}
+
+
+.welcome-section p {
+
+    font-size: 16px;
+
+    color: var(--text);
+
+}
+
+
+/* =========================================================
+   ESTADÍSTICAS
+   ========================================================= */
+
+.stats-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 20px;
+
+    margin-bottom: 22px;
+
+}
+
+
+.stat-card {
+
+    min-height: 137px;
+
+    background: white;
+
+    border-radius: var(--radius);
+
+    padding: 22px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 20px;
+
+    box-shadow: var(--shadow);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+.stat-card:hover {
+
+    transform: translateY(-3px);
+
+    box-shadow: var(--shadow-hover);
+
+}
+
+
+/* =========================================================
+   ICONOS DE ESTADÍSTICAS
+   ========================================================= */
+
+.stat-icon {
+
+    width: 65px;
+
+    height: 65px;
+
+    border-radius: 50%;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    box-shadow:
+        inset 0 1px 1px rgba(255,255,255,0.25);
+
+}
+
+
+.stat-icon svg {
+
+    width: 34px;
+
+    height: 34px;
+
+    fill: white;
+
+}
+
+
+.stat-icon.purple {
+
+    background:
+        linear-gradient(
+            145deg,
+            #7442a1,
+            #321263
+        );
+
+}
+
+
+.stat-icon.orange {
+
+    background:
+        linear-gradient(
+            145deg,
+            #ff941f,
+            #ed6200
+        );
+
+}
+
+
+.stat-content {
+
+    min-width: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+
+.stat-content strong {
+
+    font-size: 25px;
+
+    line-height: 1;
+
+    font-weight: 800;
+
+    margin-bottom: 7px;
+
+}
+
+
+.stat-title {
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.02em;
+
+    margin-bottom: 5px;
+
+}
+
+
+.stat-content small {
+
+    font-size: 12px;
+
+    line-height: 1.4;
+
+    color: var(--text-light);
+
+}
+
+
+.leader-text {
+
+    font-size: 20px !important;
+
+}
+
+
+.leader-message {
+
+    font-size: 13px;
+
+    margin-bottom: 4px;
+
+}
+
+
+/* =========================================================
+   PRÓXIMO PARTIDO
+   ========================================================= */
+
+.next-match-card {
+
+    position: relative;
+
+    background: white;
+
+    border-radius: var(--radius);
+
+    box-shadow: var(--shadow);
+
+    overflow: hidden;
+
+    margin-bottom: 22px;
+
+}
+
+
+/* HEADER DEL PARTIDO */
+
+.next-match-header {
+
+    min-height: 72px;
+
+    padding: 0 30px;
+
+    display: flex;
+
+    align-items: center;
+
+    border-bottom:
+        1px solid var(--border);
+
+}
+
+
+.next-match-title {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 16px;
+
+}
+
+
+.next-match-title svg {
+
+    width: 27px;
+
+    height: 27px;
+
+    fill: var(--purple);
+
+}
+
+
+.next-match-title h2 {
+
+    font-size: 19px;
+
+    font-weight: 800;
+
+}
+
+
+/* =========================================================
+   LAYOUT PARTIDO
+   ========================================================= */
+
+.match-layout {
+
+    min-height: 255px;
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1.15fr 1fr;
+
+    align-items: center;
+
+    padding: 25px 55px 15px;
+
+}
+
+
+/* =========================================================
+   EQUIPOS
+   ========================================================= */
+
+.team-side {
+
+    text-align: center;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+}
+
+
+.team-shield {
+
+    width: 92px;
+
+    height: 105px;
+
+    margin-bottom: 12px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: white;
+
+    font-size: 40px;
+
+    clip-path: polygon(
+        50% 0%,
+        88% 15%,
+        100% 48%,
+        83% 80%,
+        50% 100%,
+        17% 80%,
+        0% 48%,
+        12% 15%
+    );
+
+    box-shadow:
+        0 8px 20px rgba(40, 18, 75, 0.16);
+
+}
+
+
+.purple-shield {
+
+    background:
+        linear-gradient(
+            145deg,
+            #7547a7,
+            #351564
+        );
+
+}
+
+
+.orange-shield {
+
+    background:
+        linear-gradient(
+            145deg,
+            #ff972c,
+            #e35b00
+        );
+
+}
+
+
+.team-label {
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    margin-bottom: 7px;
+
+    color: var(--text);
+
+}
+
+
+.team-name {
+
+    font-size: 23px;
+
+    font-weight: 800;
+
+    color: var(--purple-dark);
+
+}
+
+
+/* =========================================================
+   CENTRO
+   ========================================================= */
+
+.match-center {
+
+    min-height: 180px;
+
+    padding:
+        5px 35px;
+
+    border-left:
+        1px solid var(--border);
+
+    border-right:
+        1px solid var(--border);
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+.match-round {
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    margin-bottom: 8px;
+
+}
+
+
+.match-vs-large {
+
+    color: var(--purple);
+
+    font-size: 29px;
+
+    margin-bottom: 17px;
+
+}
+
+
+.match-info {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 11px;
+
+}
+
+
+.match-info div {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    font-size: 14px;
+
+    color: var(--text);
+
+}
+
+
+.match-info svg {
+
+    width: 18px;
+
+    height: 18px;
+
+    fill: var(--purple);
+
+    flex-shrink: 0;
+
+}
+
+
+/* =========================================================
+   BOTÓN PARTIDO
+   ========================================================= */
+
+.match-button-container {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    padding:
+        0 25px 28px;
+
+}
+
+
+.match-button {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding:
+        12px 22px;
+
+    border-radius: 9px;
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--orange),
+            var(--orange-light)
+        );
+
+    box-shadow:
+        0 6px 16px rgba(255,114,0,0.20);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+.match-button:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 22px rgba(255,114,0,0.28);
+
+}
+
+
+.match-button span {
+
+    font-size: 21px;
+
+    line-height: 0.5;
+
+}
+
+
+/* =========================================================
+   SIN PARTIDO
+   ========================================================= */
+
+.empty-match {
+
+    min-height: 255px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+}
+
+
+.empty-match-icon {
+
+    font-size: 45px;
+
+    margin-bottom: 12px;
+
+}
+
+
+.empty-match h3 {
+
+    font-size: 17px;
+
+    margin-bottom: 6px;
+
+}
+
+
+.empty-match p {
+
+    color: var(--text-light);
+
+    font-size: 13px;
+
+}
+
+
+/* =========================================================
+   ACCIONES
+   ========================================================= */
+
+.quick-actions {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 20px;
+
+}
+
+
+.quick-card {
+
+    min-height: 140px;
+
+    padding: 22px 25px;
+
+    border-radius: var(--radius);
+
+    background: white;
+
+    box-shadow: var(--shadow);
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 20px;
+
+    position: relative;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+.quick-card:hover {
+
+    transform: translateY(-3px);
+
+    box-shadow: var(--shadow-hover);
+
+}
+
+
+.quick-icon {
+
+    width: 66px;
+
+    height: 66px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+.quick-icon svg {
+
+    width: 32px;
+
+    height: 32px;
+
+    fill: white;
+
+}
+
+
+.purple-action .quick-icon {
+
+    background:
+        linear-gradient(
+            145deg,
+            #7442a1,
+            #351564
+        );
+
+}
+
+
+.orange-action .quick-icon {
+
+    background:
+        linear-gradient(
+            145deg,
+            #ff972c,
+            #e35b00
+        );
+
+}
+
+
+.quick-card h3 {
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    margin-bottom: 7px;
+
+}
+
+
+.quick-card p {
+
+    color: var(--text-light);
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+}
+
+
+.quick-arrow {
+
+    margin-left: auto;
+
+    width: 38px;
+
+    height: 38px;
+
+    flex-shrink: 0;
+
+    border-radius: 9px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: white;
+
+    font-size: 23px;
+
+}
+
+
+.purple-action .quick-arrow {
+
+    background: var(--purple);
+
+}
+
+
+.orange-action .quick-arrow {
+
+    background: var(--orange);
+
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.dashboard-footer {
+
+    text-align: center;
+
+    padding: 40px 0 5px;
+
+    color: #746b83;
+
+    font-size: 13px;
+
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1250px) {
+
+
+    .topbar {
+
+        gap: 15px;
+
+        padding: 0 20px;
+
+    }
+
+
+    .topbar-logo {
+
+        width: 210px;
+
+    }
+
+
+    .topbar-logo img {
+
+        width: 200px;
+
+    }
+
+
+    .nav-item {
+
+        padding: 0 11px;
+
+        font-size: 13px;
+
+    }
+
+
+    .dashboard-content {
+
+        grid-template-columns: 230px minmax(0, 1fr);
+
+        gap: 25px;
+
+    }
+
+
+    .stats-grid {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+    }
+
+
+    .profile-panel {
+
+        height: 100%;
+
+    }
+
+
+    .profile-quote {
+
+        top: 400px;
+
+    }
+
+}
+
+
+/* =========================================================
+   TABLET PEQUEÑA
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+
+    .topbar {
+
+        height: auto;
+
+        min-height: 82px;
+
+        flex-wrap: wrap;
+
+        padding: 15px 20px;
+
+    }
+
+
+    .topbar-logo {
+
+        width: 210px;
+
+    }
+
+
+    .topbar-nav {
+
+        order: 3;
+
+        width: 100%;
+
+        overflow-x: auto;
+
+        padding-bottom: 3px;
+
+    }
+
+
+    .nav-item {
+
+        white-space: nowrap;
+
+    }
+
+
+    .dashboard-content {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .profile-panel {
+
+        height: auto;
+
+        min-height: 0;
+
+        max-height: 300px;
+
+        background-position: center 65%;
+
+    }
+
+
+    .profile-top {
+
+        padding-top: 25px;
+
+    }
+
+
+    .profile-avatar {
+
+        width: 70px;
+
+        height: 70px;
+
+    }
+
+
+    .profile-avatar svg {
+
+        width: 38px;
+
+        height: 38px;
+
+    }
+
+
+    .profile-quote {
+
+        position: static;
+
+        margin-top: 20px;
+
+    }
+
+
+    .quote-mark {
+
+        display: none;
+
+    }
+
+
+    .profile-quote p {
+
+        font-size: 14px;
+
+    }
+
+}
+
+
+/* =========================================================
+   CELULAR
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+
+    .topbar {
+
+        padding: 15px;
+
+        gap: 12px;
+
+    }
+
+
+    .topbar-logo {
+
+        width: 180px;
+
+    }
+
+
+    .topbar-logo img {
+
+        width: 175px;
+
+    }
+
+
+    .topbar-user-name {
+
+        display: none;
+
+    }
+
+
+    .topbar-avatar {
+
+        width: 42px;
+
+        height: 42px;
+
+    }
+
+
+    .topbar-chevron {
+
+        display: none;
+
+    }
+
+
+    .dashboard-content {
+
+        padding: 18px 15px;
+
+    }
+
+
+    .welcome-section {
+
+        margin-bottom: 20px;
+
+    }
+
+
+    .welcome-section h1 {
+
+        font-size: 26px;
+
+    }
+
+
+    .welcome-section p {
+
+        font-size: 14px;
+
+    }
+
+
+    .stats-grid {
+
+        grid-template-columns: 1fr;
+
+        gap: 14px;
+
+    }
+
+
+    .stat-card {
+
+        min-height: 105px;
+
+    }
+
+
+    .next-match-header {
+
+        padding: 0 20px;
+
+    }
+
+
+    .match-layout {
+
+        grid-template-columns: 1fr;
+
+        gap: 25px;
+
+        padding: 30px 20px;
+
+    }
+
+
+    .match-center {
+
+        border:
+            1px solid var(--border);
+
+        border-left: none;
+
+        border-right: none;
+
+        padding:
+            25px 0;
+
+    }
+
+
+    .match-button-container {
+
+        justify-content: center;
+
+        padding-bottom: 25px;
+
+    }
+
+
+    .quick-actions {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .quick-card {
+
+        min-height: 115px;
+
+    }
+
+
+}
+
+
+/* =========================================================
+   CELULARES MUY PEQUEÑOS
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+
+    .topbar-logo {
+
+        width: 155px;
+
+    }
+
+
+    .topbar-logo img {
+
+        width: 150px;
+
+    }
+
+
+    .topbar-nav {
+
+        gap: 3px;
+
+    }
+
+
+    .nav-item {
+
+        padding: 0 9px;
+
+        min-height: 42px;
+
+        font-size: 12px;
+
+    }
+
+
+    .nav-item svg {
+
+        width: 17px;
+
+        height: 17px;
+
+    }
+
+
+    .profile-panel {
+
+        height: auto;
+
+        min-height: 0;
+
+    }
+
+
+    .stat-card {
+
+        padding: 17px;
+
+        gap: 15px;
+
+    }
+
+
+    .stat-icon {
+
+        width: 55px;
+
+        height: 55px;
+
+    }
+
+
+    .stat-icon svg {
+
+        width: 28px;
+
+        height: 28px;
+
+    }
+
+
+    .quick-card {
+
+        padding: 18px;
+
+    }
+
+
+    .quick-icon {
+
+        width: 55px;
+
+        height: 55px;
+
+    }
+
+
+    .quick-card h3 {
+
+        font-size: 16px;
+
+    }
+
+
+}

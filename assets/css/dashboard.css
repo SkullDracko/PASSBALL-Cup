@@ -1,0 +1,1173 @@
+/* =========================================================
+   PASSBALL CUP
+   DASHBOARD
+   ========================================================= */
+
+
+/* =========================================================
+   VARIABLES
+   ========================================================= */
+
+:root {
+
+    --passball-purple: #4b2780;
+
+    --passball-purple-dark: #351563;
+
+    --passball-purple-light: #7442a1;
+
+
+    --dashboard-bg: #f6f3f9;
+
+    --dashboard-text: #292531;
+
+    --dashboard-muted: #625b70;
+
+
+    --sidebar-width: 250px;
+
+    --topbar-height: 64px;
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+* {
+
+    box-sizing: border-box;
+
+}
+
+
+html,
+body {
+
+    margin: 0;
+
+    padding: 0;
+
+    min-height: 100%;
+
+}
+
+
+body {
+
+    font-family: "Inter", sans-serif;
+
+    background: var(--dashboard-bg);
+
+    color: var(--dashboard-text);
+
+}
+
+
+/* =========================================================
+   ESTRUCTURA GENERAL
+   ========================================================= */
+
+.dashboard-layout {
+
+    min-height: 100vh;
+
+    display: flex;
+
+    background: var(--dashboard-bg);
+
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.dashboard-sidebar {
+
+    position: fixed;
+
+    top: 0;
+
+    left: 0;
+
+    bottom: 0;
+
+    width: var(--sidebar-width);
+
+    overflow: hidden;
+
+    z-index: 20;
+
+
+    /*
+     * AQUÍ ESTÁ LA NUEVA IMAGEN
+     */
+
+    background-image:
+
+        linear-gradient(
+            180deg,
+            rgba(53, 21, 99, 0.25),
+            rgba(53, 21, 99, 0.55)
+        ),
+
+        url("../img/dashboard-bg.png");
+
+
+    background-size: cover;
+
+    background-position: center;
+
+    background-repeat: no-repeat;
+
+
+    color: white;
+
+}
+
+
+/* =========================================================
+   CAPA DE OSCURECIMIENTO
+   ========================================================= */
+
+.dashboard-sidebar::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: -1;
+
+
+    background:
+
+        linear-gradient(
+            180deg,
+            rgba(53, 21, 99, 0.05) 0%,
+            rgba(53, 21, 99, 0.10) 50%,
+            rgba(28, 8, 58, 0.30) 100%
+        );
+
+
+    pointer-events: none;
+
+}
+
+
+/* =========================================================
+   CONTENIDO DEL SIDEBAR
+   ========================================================= */
+
+.sidebar-content {
+
+    position: relative;
+
+    z-index: 2;
+
+    height: 100%;
+
+    padding: 30px 20px;
+
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+}
+
+
+/* =========================================================
+   PERFIL
+   ========================================================= */
+
+.sidebar-profile {
+
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    text-align: center;
+
+}
+
+
+.profile-avatar {
+
+    width: 55px;
+
+    height: 55px;
+
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+
+    margin-bottom: 10px;
+
+
+    border-radius: 50%;
+
+
+    background:
+        rgba(255, 255, 255, 0.18);
+
+
+    border:
+        1px solid rgba(255, 255, 255, 0.45);
+
+
+    backdrop-filter: blur(4px);
+
+
+    font-size: 22px;
+
+}
+
+
+.sidebar-profile h3 {
+
+    margin: 0;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    color: white;
+
+}
+
+
+.sidebar-profile > span {
+
+    margin-top: 3px;
+
+    font-size: 12px;
+
+    color: #d9b8ff;
+
+    font-weight: 500;
+
+}
+
+
+/* =========================================================
+   FRASE
+   ========================================================= */
+
+.sidebar-quote {
+
+    width: 100%;
+
+    margin-top: 105px;
+
+    text-align: center;
+
+}
+
+
+.quote-mark {
+
+    font-family: Georgia, serif;
+
+    font-size: 45px;
+
+    line-height: 30px;
+
+    font-weight: bold;
+
+    color: rgba(255, 255, 255, 0.85);
+
+    margin-bottom: 8px;
+
+}
+
+
+.sidebar-quote p {
+
+    margin: 0;
+
+    font-size: 13px;
+
+    line-height: 1.45;
+
+    font-weight: 600;
+
+    color: white;
+
+
+    text-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.35);
+
+}
+
+
+.sidebar-quote strong {
+
+    display: block;
+
+    margin-top: 12px;
+
+    font-size: 11px;
+
+    color: #d8aaff;
+
+}
+
+
+/* =========================================================
+   ÁREA PRINCIPAL
+   ========================================================= */
+
+.dashboard-main {
+
+    width: calc(100% - var(--sidebar-width));
+
+    min-height: 100vh;
+
+    margin-left: var(--sidebar-width);
+
+}
+
+
+/* =========================================================
+   BARRA SUPERIOR
+   ========================================================= */
+
+.topbar {
+
+    height: var(--topbar-height);
+
+    width: 100%;
+
+    padding: 0 25px;
+
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+
+    background:
+
+        linear-gradient(
+            135deg,
+            var(--passball-purple-dark),
+            var(--passball-purple)
+        );
+
+
+    color: white;
+
+
+    box-shadow:
+        0 3px 12px rgba(53, 21, 99, 0.15);
+
+}
+
+
+/* =========================================================
+   NAV IZQUIERDA
+   ========================================================= */
+
+.nav-left {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+}
+
+
+/*
+ * El logo se mantiene en HTML,
+ * pero está oculto para evitar redundancia.
+ */
+
+.nav-logo {
+
+    width: 105px;
+
+    height: auto;
+
+    margin-right: 15px;
+
+    display: none;
+
+}
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+.nav-link {
+
+    padding: 9px 14px;
+
+    border-radius: 6px;
+
+
+    color: #d9c8e8;
+
+    text-decoration: none;
+
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+
+    transition:
+
+        background 0.2s ease,
+
+        color 0.2s ease;
+
+}
+
+
+.nav-link:hover {
+
+    color: white;
+
+    background:
+        rgba(255, 255, 255, 0.10);
+
+}
+
+
+.nav-link.active {
+
+    color: white;
+
+    background:
+        rgba(255, 255, 255, 0.14);
+
+    font-weight: 700;
+
+}
+
+
+/* =========================================================
+   NAV DERECHA
+   ========================================================= */
+
+.nav-right {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+}
+
+
+.nav-user {
+
+    font-size: 13px;
+
+    color: #e2d5ed;
+
+}
+
+
+.logout-button {
+
+    padding: 7px 13px;
+
+
+    border:
+        1px solid rgba(255, 255, 255, 0.30);
+
+
+    border-radius: 6px;
+
+
+    color: white;
+
+    text-decoration: none;
+
+
+    font-size: 12px;
+
+
+    transition:
+        background 0.2s ease;
+
+}
+
+
+.logout-button:hover {
+
+    background:
+        rgba(255, 255, 255, 0.10);
+
+}
+
+
+/* =========================================================
+   CONTENIDO
+   ========================================================= */
+
+.dashboard-content {
+
+    width: min(
+        1050px,
+        calc(100% - 70px)
+    );
+
+
+    margin: 0 auto;
+
+    padding:
+        35px 0 50px;
+
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.dashboard-header {
+
+    margin-bottom: 25px;
+
+}
+
+
+.dashboard-header h1 {
+
+    margin: 0;
+
+    font-size: 22px;
+
+    color: var(--dashboard-text);
+
+}
+
+
+.dashboard-header h1 strong {
+
+    color: #17121e;
+
+}
+
+
+.dashboard-header p {
+
+    margin: 5px 0 0;
+
+    font-size: 13px;
+
+    color: var(--dashboard-muted);
+
+}
+
+
+/* =========================================================
+   ESTADÍSTICAS
+   ========================================================= */
+
+.stats-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+
+    gap: 18px;
+
+    margin-bottom: 25px;
+
+}
+
+
+.stat-card {
+
+    min-height: 90px;
+
+    padding: 20px;
+
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+
+    background: white;
+
+
+    border-radius: 11px;
+
+
+    border-top:
+        2px solid var(--passball-purple-light);
+
+
+    box-shadow:
+        0 6px 18px
+        rgba(53, 21, 99, 0.08);
+
+}
+
+
+.stat-number {
+
+    font-size: 25px;
+
+    font-weight: 800;
+
+    color: var(--passball-purple-dark);
+
+}
+
+
+.stat-label {
+
+    margin-top: 4px;
+
+    font-size: 10px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+
+    color: var(--dashboard-muted);
+
+}
+
+
+/* =========================================================
+   PRÓXIMO PARTIDO
+   ========================================================= */
+
+.next-match {
+
+    background: white;
+
+    border-radius: 11px;
+
+    padding: 22px;
+
+    min-height: 220px;
+
+
+    box-shadow:
+        0 6px 18px
+        rgba(53, 21, 99, 0.08);
+
+
+    margin-bottom: 18px;
+
+}
+
+
+.section-title {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+
+    margin: 0;
+
+    padding-bottom: 15px;
+
+
+    border-bottom:
+        1px solid #e4dfea;
+
+
+    font-size: 14px;
+
+    color: var(--passball-purple-dark);
+
+}
+
+
+.empty-match {
+
+    height: 145px;
+
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+
+    color: var(--dashboard-muted);
+
+    font-size: 13px;
+
+}
+
+
+.empty-match-icon {
+
+    font-size: 24px;
+
+    margin-bottom: 8px;
+
+}
+
+
+/* =========================================================
+   PARTIDO ACTIVO
+   ========================================================= */
+
+.match-display {
+
+    display: grid;
+
+    grid-template-columns: 1fr auto 1fr;
+
+    align-items: center;
+
+    gap: 24px;
+
+    padding: 24px 0 16px;
+
+}
+
+
+.match-team {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    text-align: center;
+
+}
+
+
+.team-badge {
+
+    width: 56px;
+
+    height: 56px;
+
+
+    margin-bottom: 8px;
+
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+
+    border: 4px solid white;
+
+    border-radius: 14px;
+
+
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.15);
+
+
+    color: white;
+
+    font-size: 1.5rem;
+
+}
+
+
+.team-tag {
+
+    margin-bottom: 2px;
+
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+
+
+    color: var(--dashboard-muted);
+
+}
+
+
+.match-team strong {
+
+    font-size: 0.95rem;
+
+    color: var(--dashboard-text);
+
+}
+
+
+.match-center {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 4px;
+
+
+    padding: 0 16px;
+
+
+    border-left: 1px solid #e4dfea;
+
+    border-right: 1px solid #e4dfea;
+
+}
+
+
+.match-vs {
+
+    font-size: 1.4rem;
+
+    font-weight: 900;
+
+    color: var(--passball-purple-dark);
+
+}
+
+
+.match-date,
+.match-time,
+.match-place {
+
+    font-size: 12px;
+
+    color: var(--dashboard-muted);
+
+}
+
+
+/* =========================================================
+   ACCESOS RÁPIDOS
+   ========================================================= */
+
+.quick-actions {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+
+    gap: 18px;
+
+}
+
+
+.quick-card {
+
+    min-height: 115px;
+
+    padding: 18px;
+
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+
+    text-align: center;
+
+
+    background: white;
+
+
+    border-radius: 11px;
+
+
+    text-decoration: none;
+
+    color: var(--dashboard-text);
+
+
+    box-shadow:
+        0 6px 18px
+        rgba(53, 21, 99, 0.08);
+
+
+    transition:
+
+        transform 0.2s ease,
+
+        box-shadow 0.2s ease;
+
+}
+
+
+.quick-card:hover {
+
+    transform:
+        translateY(-2px);
+
+
+    box-shadow:
+        0 10px 25px
+        rgba(53, 21, 99, 0.13);
+
+}
+
+
+.quick-icon {
+
+    font-size: 22px;
+
+    margin-bottom: 8px;
+
+}
+
+
+.quick-card h3 {
+
+    margin: 0;
+
+    font-size: 13px;
+
+    color: var(--passball-purple-dark);
+
+}
+
+
+.quick-card p {
+
+    margin: 5px 0 0;
+
+    font-size: 11px;
+
+    color: var(--dashboard-muted);
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    :root {
+
+        --sidebar-width: 220px;
+
+    }
+
+
+    .nav-link {
+
+        padding:
+            8px 9px;
+
+        font-size: 12px;
+
+    }
+
+
+    .dashboard-content {
+
+        width:
+            calc(100% - 40px);
+
+    }
+
+}
+
+
+@media (max-width: 800px) {
+
+    .dashboard-sidebar {
+
+        display: none;
+
+    }
+
+
+    .dashboard-main {
+
+        width: 100%;
+
+        margin-left: 0;
+
+    }
+
+
+    .dashboard-content {
+
+        width:
+            calc(100% - 30px);
+
+    }
+
+
+    .nav-link {
+
+        padding:
+            8px 8px;
+
+    }
+
+
+    .nav-user {
+
+        display: none;
+
+    }
+
+}
+
+
+@media (max-width: 650px) {
+
+    .topbar {
+
+        padding:
+            0 12px;
+
+    }
+
+
+    .nav-left {
+
+        gap: 2px;
+
+    }
+
+
+    .nav-link {
+
+        padding:
+            8px 7px;
+
+        font-size: 11px;
+
+    }
+
+
+    /*
+     * En móvil dejamos únicamente
+     * las opciones principales.
+     */
+
+    .nav-link:nth-of-type(4),
+    .nav-link:nth-of-type(5) {
+
+        display: none;
+
+    }
+
+
+    .stats-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .quick-actions {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .match-display {
+
+        grid-template-columns: 1fr;
+
+        gap: 14px;
+
+    }
+
+
+    .match-center {
+
+        border-left: none;
+
+        border-right: none;
+
+        border-top: 1px solid #e4dfea;
+
+        border-bottom: 1px solid #e4dfea;
+
+        padding: 10px 0;
+
+    }
+
+
+    .dashboard-header h1 {
+
+        font-size: 20px;
+
+    }
+
+}
+
+
+@media (max-width: 430px) {
+
+    .topbar {
+
+        height: auto;
+
+        min-height: 60px;
+
+    }
+
+
+    .nav-link {
+
+        font-size: 10px;
+
+        padding:
+            7px 5px;
+
+    }
+
+
+    .logout-button {
+
+        padding:
+            6px 9px;
+
+    }
+
+}

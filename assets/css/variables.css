@@ -1,0 +1,53 @@
+/* ============================================
+   PASSBALL Cup - Variables y Reset
+   ============================================ */
+
+:root {
+    --primary-dark:   #2f1e50;
+    --primary-mid:    #543b67;
+    --primary:        #7c4293;
+    --primary-light:  #b99ac8;
+    --accent:         #e79eed;
+    --black:          #000000;
+    --dark-gray:      #2e2e2e;
+    --gray:           #cccccb;
+    --light-gray:     #e6e6e6;
+    --white:          #ffffff;
+    --bg-body:        #f4f0f7;
+    --shadow:         0 2px 12px rgba(47, 30, 80, 0.10);
+    --shadow-lg:      0 8px 30px rgba(47, 30, 80, 0.15);
+    --radius:         12px;
+    --radius-sm:      8px;
+    --transition:     all 0.3s ease;
+}
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-body);
+    color: var(--dark-gray);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+a:hover {
+    color: var(--accent);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}

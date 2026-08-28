@@ -1,0 +1,19 @@
+# PASSBALL Cup - Ignorar archivos innecesarios
+
+# Archivos del sistema
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Archivos de configuración local
+config/database_local.php
+
+# Archivos temporales
+*.tmp
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
