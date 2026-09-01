@@ -1,80 +1,167 @@
 <?php
 /**
+ * =========================================================
  * PASSBALL Cup - Equipos
+ * =========================================================
  */
+
+/*
+|--------------------------------------------------------------------------
+| ARCHIVOS PRINCIPALES
+|--------------------------------------------------------------------------
+| Como este archivo está dentro de /equipos/, necesitamos subir
+| un nivel para acceder a controllers, config y assets.
+|--------------------------------------------------------------------------
+*/
 
 require_once __DIR__ . '/controllers/auth.php';
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/config/app.php';
 
+
 /*
- * Datos del usuario
- */
+|--------------------------------------------------------------------------
+| DATOS DEL USUARIO
+|--------------------------------------------------------------------------
+*/
+
 $nombreUsuario = htmlspecialchars(
-    trim(($usuario['nombre'] ?? '') . ' ' . ($usuario['apellidop'] ?? ''))
-    ?: 'Usuario'
+    trim(
+        ($usuario['nombre'] ?? '') . ' ' .
+        ($usuario['apellidop'] ?? '')
+    ) ?: 'Usuario',
+    ENT_QUOTES,
+    'UTF-8'
 );
 
-$rolUsuario = ucfirst($usuario['rol'] ?? 'miembro');
+$rolUsuario = strtolower(
+    $usuario['rol'] ?? 'participante'
+);
 
 
 /*
- * Mi equipo
- */
+|--------------------------------------------------------------------------
+| TEXTO DEL ROL
+|--------------------------------------------------------------------------
+*/
+
+if ($rolUsuario === 'admin') {
+    $textoRol = 'Administrador';
+} elseif ($rolUsuario === 'lider') {
+    $textoRol = 'Líder';
+} else {
+    $textoRol = 'Participante';
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MI EQUIPO
+|--------------------------------------------------------------------------
+*/
+
 $miEquipo = null;
 
 try {
+
     $stmt = $pdo->prepare("
-        SELECT e.*,
-               (SELECT COUNT(*) FROM equipo_miembros em
-                WHERE em.equipo_id = e.id AND em.estado = 'activo') AS total_miembros
+        SELECT
+            e.*,
+
+            (
+                SELECT COUNT(*)
+                FROM equipo_miembros em2
+                WHERE em2.equipo_id = e.id
+                AND em2.estado = 'activo'
+            ) AS total_miembros
+
         FROM equipo_miembros em
-        JOIN equipos e ON e.id = em.equipo_id
-        WHERE em.usuario_id = ? AND em.estado = 'activo' AND e.activo = 1
+
+        INNER JOIN equipos e
+            ON e.id = em.equipo_id
+
+        WHERE em.usuario_id = ?
+        AND em.estado = 'activo'
+        AND e.activo = 1
+
         LIMIT 1
     ");
-    $stmt->execute([$usuario['id']]);
-    $miEquipo = $stmt->fetch();
 
-    if ($miEquipo) {
-        $miEquipo['nombre']     = htmlspecialchars($miEquipo['nombre']);
-        $miEquipo['descripcion'] = htmlspecialchars($miEquipo['descripcion'] ?? '');
-    }
+    $stmt->execute([
+        $usuario['id']
+    ]);
+
+    $miEquipo = $stmt->fetch(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
-    error_log("Equipos - mi equipo: " . $e->getMessage());
+
+    error_log(
+        "PASSBALL - Error obteniendo mi equipo: " .
+        $e->getMessage()
+    );
+
+    $miEquipo = null;
 }
 
 
 /*
- * Todos los equipos activos
- */
+|--------------------------------------------------------------------------
+| TODOS LOS EQUIPOS
+|--------------------------------------------------------------------------
+*/
+
 $equipos = [];
 
 try {
+
     $stmt = $pdo->query("
-        SELECT e.*,
-               (SELECT COUNT(*) FROM equipo_miembros em
-                WHERE em.equipo_id = e.id AND em.estado = 'activo') AS total_miembros
+        SELECT
+            e.*,
+
+            (
+                SELECT COUNT(*)
+                FROM equipo_miembros em
+                WHERE em.equipo_id = e.id
+                AND em.estado = 'activo'
+            ) AS total_miembros
+
         FROM equipos e
+
         WHERE e.activo = 1
+
         ORDER BY e.fecha_creacion DESC
     ");
-    $equipos = $stmt->fetchAll();
+
+    $equipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
-    error_log("Equipos - listar: " . $e->getMessage());
+
+    error_log(
+        "PASSBALL - Error listando equipos: " .
+        $e->getMessage()
+    );
+
+    $equipos = [];
 }
 
 
 /*
- * Flash messages
- */
+|--------------------------------------------------------------------------
+| MENSAJES FLASH
+|--------------------------------------------------------------------------
+*/
+
 $flashSuccess = $_SESSION['flash_success'] ?? null;
 $flashError   = $_SESSION['flash_error'] ?? null;
-unset($_SESSION['flash_success'], $_SESSION['flash_error']);
+
+unset(
+    $_SESSION['flash_success'],
+    $_SESSION['flash_error']
+);
+
 ?>
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
@@ -86,23 +173,54 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Equipos | <?= htmlspecialchars(TORNEO_NOMBRE) ?></title>
+    <title>
+        Equipos |
+        <?= htmlspecialchars(
+            defined('TORNEO_NOMBRE')
+                ? TORNEO_NOMBRE
+                : 'PASSBALL Cup',
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>
+    </title>
 
-    <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <!-- =====================================================
+         FUENTE
+    ====================================================== -->
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
 
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet"
     >
 
-    <!-- Font Awesome -->
+
+    <!-- =====================================================
+         FONT AWESOME
+    ====================================================== -->
+
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
-    <!-- CSS -->
+
+    <!-- =====================================================
+         CSS
+         IMPORTANTE: ../ porque estamos dentro de /equipos/
+    ====================================================== -->
+
     <link
         rel="stylesheet"
         href="assets/css/equipos.css"
@@ -110,90 +228,168 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
 </head>
 
+
 <body>
+
 
 <!-- =========================================================
      NAVBAR
 ========================================================= -->
 
-<header class="navbar">
+<header class="topbar">
 
-    <div class="navbar-logo">
+
+    <!-- LOGO -->
+
+    <a
+        href="dashboard.php"
+        class="topbar-logo"
+    >
 
         <img
             src="assets/img/passball-cup.png"
             alt="PASSBALL Cup"
         >
 
-    </div>
+    </a>
 
 
-    <nav class="navbar-menu">
+    <!-- NAVEGACIÓN -->
 
-        <a href="dashboard.php">
+    <nav class="topbar-nav">
+
+
+        <!-- INICIO -->
+
+        <a
+            href="dashboard.php"
+            class="nav-item"
+        >
+
             <i class="fa-solid fa-house"></i>
+
             <span>Inicio</span>
+
         </a>
 
-        <a href="equipos.php" class="active">
+
+                <!-- EQUIPOS -->
+
+                <a
+                    href="equipos.php"
+                    class="nav-item active"
+                >
+
             <i class="fa-solid fa-users"></i>
+
             <span>Equipos</span>
+
         </a>
 
-        <a href="partidos.php">
+
+        <!-- PARTIDOS -->
+
+        <a
+            href="partidos/index.php"
+            class="nav-item"
+        >
+
             <i class="fa-solid fa-calendar-days"></i>
+
             <span>Partidos</span>
+
         </a>
 
-        <a href="votos.php">
+
+        <!-- VOTOS -->
+
+        <a
+            href="votos/index.php"
+            class="nav-item"
+        >
+
             <i class="fa-regular fa-circle-check"></i>
+
             <span>Votos</span>
+
         </a>
 
-        <a href="resultados.php">
+
+        <!-- RESULTADOS -->
+
+        <a
+            href="resultados/index.php"
+            class="nav-item"
+        >
+
             <i class="fa-solid fa-trophy"></i>
+
             <span>Resultados</span>
+
         </a>
 
-        <a href="comunidad.php">
+
+        <!-- COMUNIDAD -->
+
+        <a
+            href="comunidad/index.php"
+            class="nav-item"
+        >
+
             <i class="fa-solid fa-comment"></i>
+
             <span>Comunidad</span>
+
         </a>
 
     </nav>
 
 
-    <div class="navbar-user">
+    <!-- USUARIO -->
 
-        <span>
+    <div class="topbar-user">
+
+        <span class="topbar-user-name">
             <?= $nombreUsuario ?>
         </span>
 
-        <div class="user-icon">
+
+        <div class="topbar-avatar">
+
             <i class="fa-solid fa-user"></i>
+
         </div>
 
-        <i class="fa-solid fa-chevron-down user-arrow"></i>
+
+        <i class="fa-solid fa-chevron-down topbar-chevron"></i>
 
     </div>
 
 </header>
 
 
+
 <!-- =========================================================
-     CONTENEDOR PRINCIPAL
+     CONTENIDO
 ========================================================= -->
 
-<div class="page-layout">
+<div class="dashboard-content">
 
 
     <!-- =====================================================
-         SIDEBAR
+         PANEL IZQUIERDO
     ====================================================== -->
 
-    <aside class="profile-sidebar">
+    <aside class="profile-panel">
 
-        <div class="profile-content">
+
+        <div class="profile-overlay"></div>
+
+
+        <!-- PERFIL -->
+
+        <div class="profile-top">
+
 
             <div class="profile-avatar">
 
@@ -206,61 +402,97 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                 <?= $nombreUsuario ?>
             </h2>
 
+
             <span class="profile-role">
-                <?= $rolUsuario ?>
+                <?= htmlspecialchars(
+                    $textoRol,
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
             </span>
 
+        </div>
 
-            <div class="profile-quote">
 
-                <span class="quote-icon">
-                    &ldquo;
-                </span>
+        <!-- FRASE -->
 
-                <p>
-                    Cada partido<br>
-                    es una oportunidad<br>
-                    para ser campe&oacute;n.
-                </p>
+        <div class="profile-quote">
 
-                <strong>
-                    #PassballCup
-                </strong>
 
+            <div class="quote-mark">
+                “
             </div>
+
+
+            <p>
+                Cada partido<br>
+                es una oportunidad<br>
+                para ser campeón.
+            </p>
+
+
+            <span>
+                #PassballCup
+            </span>
 
         </div>
 
     </aside>
 
 
+
     <!-- =====================================================
-         CONTENIDO
+         ÁREA PRINCIPAL
     ====================================================== -->
 
-    <main class="main-content">
+    <main class="main-area">
 
 
-        <!-- FLASH MESSAGES -->
+        <!-- FLASH SUCCESS -->
 
         <?php if ($flashSuccess): ?>
+
             <div class="flash flash-success">
-                <?= htmlspecialchars($flashSuccess) ?>
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                <?= htmlspecialchars(
+                    $flashSuccess,
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+
             </div>
+
         <?php endif; ?>
 
+
+        <!-- FLASH ERROR -->
+
         <?php if ($flashError): ?>
+
             <div class="flash flash-error">
-                <?= htmlspecialchars($flashError) ?>
+
+                <i class="fa-solid fa-circle-exclamation"></i>
+
+                <?= htmlspecialchars(
+                    $flashError,
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>
+
             </div>
+
         <?php endif; ?>
+
 
 
         <!-- =================================================
-             TITULO
+             ENCABEZADO
         ================================================== -->
 
         <section class="page-header">
+
 
             <div>
 
@@ -269,12 +501,14 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                 </h1>
 
                 <p>
-                    Aqu&iacute; puedes ver tu equipo actual y su informaci&oacute;n.
+                    Busca un equipo existente o registra uno nuevo.
                 </p>
 
             </div>
 
+
         </section>
+
 
 
         <!-- =================================================
@@ -285,22 +519,58 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
             <section class="my-team-card">
 
+
+                <!-- LOGO -->
+
                 <div class="my-team-logo">
 
                     <?php if (!empty($miEquipo['logo'])): ?>
 
                         <img
-                            src="<?= htmlspecialchars($miEquipo['logo']) ?>"
-                            alt="<?= $miEquipo['nombre'] ?>"
+                            src="<?= htmlspecialchars(
+                                ltrim(
+                                    $miEquipo['logo'],
+                                    '/'
+                                ),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
+                            alt="<?= htmlspecialchars(
+                                $miEquipo['nombre'],
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
                         >
 
                     <?php else: ?>
 
                         <div
                             class="no-logo"
-                            style="background: <?= htmlspecialchars($miEquipo['color_equipo']) ?>"
+                            style="
+                                background:
+                                <?= htmlspecialchars(
+                                    $miEquipo['color_equipo'] ?? '#4b2780',
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                )
+                                ?>
+                            "
                         >
-                            <?= mb_substr($miEquipo['nombre'], 0, 1, 'UTF-8') ?>
+
+                            <?= htmlspecialchars(
+                                mb_strtoupper(
+                                    mb_substr(
+                                        $miEquipo['nombre'],
+                                        0,
+                                        1,
+                                        'UTF-8'
+                                    ),
+                                    'UTF-8'
+                                ),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>
+
                         </div>
 
                     <?php endif; ?>
@@ -308,20 +578,37 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                 </div>
 
 
+
+                <!-- INFORMACIÓN -->
+
                 <div class="my-team-info">
 
+
                     <h2>
-                        <?= $miEquipo['nombre'] ?>
+                        <?= htmlspecialchars(
+                            $miEquipo['nombre'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>
                     </h2>
 
+
                     <div class="team-meta">
+
 
                         <span class="participants">
 
                             <i class="fa-solid fa-users"></i>
 
-                            <?= $miEquipo['total_miembros'] ?>
-                            participante<?= $miEquipo['total_miembros'] !== 1 ? 's' : '' ?>
+                            <?= (int) $miEquipo['total_miembros'] ?>
+
+                            participante<?=
+
+                                (int) $miEquipo['total_miembros'] !== 1
+                                    ? 's'
+                                    : ''
+
+                            ?>
 
                         </span>
 
@@ -341,10 +628,14 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
                         <i class="fa-solid fa-star"></i>
 
-                        <?php if ($usuario['rol'] === 'lider'): ?>
-                            L&iacute;der del equipo
+                        <?php if ($rolUsuario === 'lider'): ?>
+
+                            Líder del equipo
+
                         <?php else: ?>
+
                             Miembro del equipo
+
                         <?php endif; ?>
 
                     </p>
@@ -352,10 +643,13 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                 </div>
 
 
+
+                <!-- BOTÓN -->
+
                 <div class="my-team-action">
 
                     <a
-                        href="equipos/detalle.php?id=<?= $miEquipo['id'] ?>"
+                        href="equipos/detalle.php?id=<?= (int) $miEquipo['id'] ?>"
                         class="btn-purple"
                     >
 
@@ -372,11 +666,13 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
         <?php endif; ?>
 
 
+
         <!-- =================================================
              ACCIONES
         ================================================== -->
 
         <section class="team-actions">
+
 
             <div class="section-title">
 
@@ -391,14 +687,16 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
             </div>
 
 
+
             <div class="action-buttons">
+
 
                 <!-- BUSCAR -->
 
                 <button
                     type="button"
                     class="action-card search-action"
-                    onclick="document.getElementById('teamSearch').focus(); document.querySelector('.available-section').scrollIntoView({behavior:'smooth'})"
+                    id="focusSearch"
                 >
 
                     <div class="action-icon purple">
@@ -407,6 +705,7 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
                     </div>
 
+
                     <div class="action-text">
 
                         <h3>
@@ -414,14 +713,16 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                         </h3>
 
                         <p>
-                            Encuentra un equipo y consulta su informaci&oacute;n.
+                            Encuentra un equipo y consulta su información.
                         </p>
 
                     </div>
 
+
                     <i class="fa-solid fa-arrow-right action-arrow"></i>
 
                 </button>
+
 
 
                 <!-- REGISTRAR -->
@@ -431,7 +732,7 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                     <button
                         type="button"
                         class="action-card register-action"
-                        onclick="document.getElementById('registerModal').classList.add('show')"
+                        id="openRegister"
                     >
 
                         <div class="action-icon orange">
@@ -440,6 +741,7 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
                         </div>
 
+
                         <div class="action-text">
 
                             <h3>
@@ -447,10 +749,11 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                             </h3>
 
                             <p>
-                                Crea un nuevo equipo para participar.
+                                Crea un nuevo equipo y conviértete en líder.
                             </p>
 
                         </div>
+
 
                         <i class="fa-solid fa-arrow-right action-arrow orange-arrow"></i>
 
@@ -463,14 +766,19 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
         </section>
 
 
+
         <!-- =================================================
              EQUIPOS DISPONIBLES
         ================================================== -->
 
-        <section class="available-section">
+        <section
+            class="available-section"
+            id="availableSection"
+        >
 
 
             <div class="available-header">
+
 
                 <div>
 
@@ -479,11 +787,13 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                     </h2>
 
                     <p>
-                        Explora otros equipos del torneo.
+                        Explora los equipos registrados en el torneo.
                     </p>
 
                 </div>
 
+
+                <!-- BUSCADOR -->
 
                 <div class="search-box">
 
@@ -501,70 +811,159 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
             </div>
 
 
+
+            <!-- GRID -->
+
             <div
                 class="teams-grid"
                 id="teamsGrid"
             >
 
-                <?php foreach ($equipos as $eq): ?>
 
-                    <article
-                        class="team-card"
-                        data-team-name="<?= strtolower(htmlspecialchars($eq['nombre'])) ?>"
-                    >
-
-                        <div class="team-card-logo">
-
-                            <?php if (!empty($eq['logo'])): ?>
-
-                                <img
-                                    src="<?= htmlspecialchars($eq['logo']) ?>"
-                                    alt="<?= htmlspecialchars($eq['nombre']) ?>"
-                                >
-
-                            <?php else: ?>
-
-                                <div
-                                    class="no-logo"
-                                    style="background: <?= htmlspecialchars($eq['color_equipo']) ?>"
-                                >
-                                    <?= mb_substr($eq['nombre'], 0, 1, 'UTF-8') ?>
-                                </div>
-
-                            <?php endif; ?>
-
-                        </div>
+                <?php if (!empty($equipos)): ?>
 
 
-                        <h3>
-                            <?= htmlspecialchars($eq['nombre']) ?>
-                        </h3>
+                    <?php foreach ($equipos as $eq): ?>
 
-
-                        <p class="team-members">
-
-                            <i class="fa-solid fa-users"></i>
-
-                            <?= $eq['total_miembros'] ?>
-                            participante<?= $eq['total_miembros'] !== 1 ? 's' : '' ?>
-
-                        </p>
-
-
-                        <a
-                            href="equipos/detalle.php?id=<?= $eq['id'] ?>"
-                            class="btn-outline <?= ($eq['id'] % 2 === 0) ? 'orange' : '' ?>"
+                        <article
+                            class="team-card"
+                            data-team-name="<?= htmlspecialchars(
+                                mb_strtolower(
+                                    $eq['nombre'],
+                                    'UTF-8'
+                                ),
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
                         >
-                            Ver equipo
-                            <i class="fa-solid fa-arrow-right"></i>
-                        </a>
 
-                    </article>
 
-                <?php endforeach; ?>
+                            <!-- LOGO -->
+
+                            <div class="team-card-logo">
+
+
+                                <?php if (!empty($eq['logo'])): ?>
+
+                                    <img
+                                        src="<?= htmlspecialchars(
+                                            ltrim(
+                                                $eq['logo'],
+                                                '/'
+                                            ),
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ) ?>"
+                                        alt="<?= htmlspecialchars(
+                                            $eq['nombre'],
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ) ?>"
+                                    >
+
+                                <?php else: ?>
+
+                                    <div
+                                        class="no-logo"
+                                        style="
+                                            background:
+                                            <?= htmlspecialchars(
+                                                $eq['color_equipo'] ?? '#4b2780',
+                                                ENT_QUOTES,
+                                                'UTF-8'
+                                            )
+                                            ?>
+                                        "
+                                    >
+
+                                        <?= htmlspecialchars(
+                                            mb_strtoupper(
+                                                mb_substr(
+                                                    $eq['nombre'],
+                                                    0,
+                                                    1,
+                                                    'UTF-8'
+                                                ),
+                                                'UTF-8'
+                                            ),
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ) ?>
+
+                                    </div>
+
+                                <?php endif; ?>
+
+
+                            </div>
+
+
+
+                            <!-- NOMBRE -->
+
+                            <h3>
+
+                                <?= htmlspecialchars(
+                                    $eq['nombre'],
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>
+
+                            </h3>
+
+
+
+                            <!-- MIEMBROS -->
+
+                            <p class="team-members">
+
+                                <i class="fa-solid fa-users"></i>
+
+                                <?= (int) $eq['total_miembros'] ?>
+
+                                participante<?=
+
+                                    (int) $eq['total_miembros'] !== 1
+                                        ? 's'
+                                        : ''
+
+                                ?>
+
+                            </p>
+
+
+
+                            <!-- BOTÓN -->
+
+                            <a
+                                href="equipos/detalle.php?id=<?= (int) $eq['id'] ?>"
+                                class="btn-outline
+                                    <?= ((int)$eq['id'] % 2 === 0)
+                                        ? 'orange'
+                                        : ''
+                                    ?>"
+                            >
+
+                                Ver equipo
+
+                                <i class="fa-solid fa-arrow-right"></i>
+
+                            </a>
+
+
+                        </article>
+
+                    <?php endforeach; ?>
+
+
+                <?php endif; ?>
+
 
             </div>
 
+
+
+            <!-- SIN RESULTADOS -->
 
             <div
                 class="no-results"
@@ -587,13 +986,15 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
         </section>
 
 
+
         <!-- =================================================
-             AVISO REGISTRO
+             AVISO PARA REGISTRAR
         ================================================== -->
 
         <?php if (!$miEquipo): ?>
 
             <section class="registration-info">
+
 
                 <div class="info-icon">
 
@@ -605,11 +1006,12 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                 <div class="info-text">
 
                     <h3>
-                        &iquest;No encuentras tu equipo?
+                        ¿No encuentras tu equipo?
                     </h3>
 
                     <p>
-                        Si tu equipo a&uacute;n no aparece, puedes registrar uno nuevo.
+                        Puedes registrar uno nuevo y automáticamente
+                        serás designado como líder.
                     </p>
 
                 </div>
@@ -618,7 +1020,7 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                 <button
                     type="button"
                     class="info-button"
-                    onclick="document.getElementById('registerModal').classList.add('show')"
+                    id="openRegisterBottom"
                 >
 
                     Registrar equipo
@@ -632,11 +1034,17 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
         <?php endif; ?>
 
 
-        <!-- FOOTER -->
 
-        <footer>
+        <!-- =================================================
+             FOOTER
+        ================================================== -->
 
-            &copy; <?= date('Y') ?> <?= htmlspecialchars(TORNEO_NOMBRE) ?> &mdash; Todos los derechos reservados.
+        <footer class="dashboard-footer">
+
+            &copy;
+            <?= date('Y') ?>
+            PASSBALL Cup —
+            Todos los derechos reservados.
 
         </footer>
 
@@ -646,6 +1054,7 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 </div>
 
 
+
 <!-- =========================================================
      MODAL REGISTRAR EQUIPO
 ========================================================= -->
@@ -653,24 +1062,37 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 <div
     class="modal"
     id="registerModal"
+    aria-hidden="true"
 >
+
 
     <div class="modal-overlay"></div>
 
 
-    <div class="modal-content">
+    <div
+        class="modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="registerTitle"
+    >
 
+
+        <!-- CERRAR -->
 
         <button
             type="button"
             class="modal-close"
-            onclick="document.getElementById('registerModal').classList.remove('show')"
+            id="closeRegister"
+            aria-label="Cerrar"
         >
 
             <i class="fa-solid fa-xmark"></i>
 
         </button>
 
+
+
+        <!-- ICONO -->
 
         <div class="modal-icon">
 
@@ -679,39 +1101,54 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
         </div>
 
 
-        <h2>
+
+        <h2 id="registerTitle">
             Registrar equipo
         </h2>
+
 
         <p class="modal-description">
 
             Crea un nuevo equipo para participar en
-            <?= htmlspecialchars(TORNEO_NOMBRE) ?>.
+            <?= htmlspecialchars(
+                defined('TORNEO_NOMBRE')
+                    ? TORNEO_NOMBRE
+                    : 'PASSBALL Cup',
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>.
 
         </p>
 
 
-        <!-- AVISO LIDER -->
+
+        <!-- AVISO DE LÍDER -->
 
         <div class="leader-warning">
 
-            <i class="fa-solid fa-star"></i>
+            <div class="leader-warning-icon">
+
+                <i class="fa-solid fa-star"></i>
+
+            </div>
+
 
             <div>
 
                 <strong>
-                    Ser&aacute;s el l&iacute;der del equipo
+                    Serás el líder del equipo
                 </strong>
 
                 <p>
                     Al registrar este equipo,
-                    autom&aacute;ticamente ser&aacute;s designado
-                    como su l&iacute;der.
+                    automáticamente serás designado
+                    como su líder.
                 </p>
 
             </div>
 
         </div>
+
 
 
         <!-- FORMULARIO -->
@@ -721,9 +1158,13 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
             method="POST"
         >
 
+
             <label for="nombre_equipo">
+
                 Nombre del equipo
+
             </label>
+
 
             <div class="modal-input">
 
@@ -736,15 +1177,23 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
                     placeholder="Ej. PASSBALL FC"
                     maxlength="100"
                     required
+                    autocomplete="off"
                 >
 
             </div>
 
 
+
             <label for="descripcion">
-                Descripci&oacute;n
-                <span>(opcional)</span>
+
+                Descripción
+
+                <span>
+                    (opcional)
+                </span>
+
             </label>
+
 
             <textarea
                 id="descripcion"
@@ -754,12 +1203,14 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
             ></textarea>
 
 
+
             <div class="modal-buttons">
+
 
                 <button
                     type="button"
                     class="cancel-button"
-                    onclick="document.getElementById('registerModal').classList.remove('show')"
+                    id="cancelRegister"
                 >
 
                     Cancelar
@@ -778,17 +1229,25 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
                 </button>
 
+
             </div>
 
         </form>
+
 
     </div>
 
 </div>
 
 
-<!-- JS -->
+
+<!-- =========================================================
+     JAVASCRIPT
+     IMPORTANTE: ../ porque estamos dentro de /equipos/
+========================================================= -->
+
 <script src="assets/js/equipos.js"></script>
+
 
 </body>
 
