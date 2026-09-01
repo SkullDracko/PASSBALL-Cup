@@ -1,0 +1,866 @@
+/* =========================================================
+   PASSBALL CUP - VOTOS
+   Estilos scoped bajo #view-votos para el dashboard.
+   ========================================================= */
+
+
+/* =========================================================
+   ENCABEZADO
+   ========================================================= */
+
+#view-votos .page-header {
+
+    margin: 4px 0 20px;
+}
+
+#view-votos .page-header h1 {
+
+    margin: 0 0 7px;
+    font-size: 29px;
+
+    font-weight: 800;
+
+    color: var(--purple-dark);
+}
+
+#view-votos .page-header h1 i {
+
+    margin-right: 8px;
+
+    color: var(--orange);
+}
+
+#view-votos .page-header p {
+
+    margin: 0;
+
+    color: var(--text-light);
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   ESTADÍSTICAS
+   ========================================================= */
+
+#view-votos .vote-stats {
+
+    display: grid;
+
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    gap: 14px;
+
+    margin-bottom: 24px;
+}
+
+#view-votos .vote-stat-card {
+
+    background: var(--white);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius);
+
+    padding: 18px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    box-shadow: var(--shadow);
+}
+
+#view-votos .vote-stat-card .stat-icon {
+
+    width: 50px;
+
+    height: 50px;
+
+    font-size: 20px;
+}
+
+#view-votos .vote-stat-card .stat-icon i {
+
+    color: white;
+
+    font-size: 20px;
+}
+
+#view-votos .vote-stat-card > div:last-child {
+
+    min-width: 0;
+}
+
+#view-votos .vote-stat-card strong {
+
+    display: block;
+
+    font-size: 24px;
+
+    line-height: 1.1;
+}
+
+#view-votos .vote-stat-card span {
+
+    display: block;
+
+    margin: 4px 0 2px;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.4px;
+
+    color: var(--purple);
+}
+
+#view-votos .vote-stat-card small {
+
+    color: var(--text-light);
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   TÍTULO DE SECCIÓN
+   ========================================================= */
+
+#view-votos .section-title {
+
+    margin-bottom: 12px;
+}
+
+#view-votos .section-title h2 {
+
+    margin: 0;
+
+    font-size: 19px;
+
+    color: var(--purple-dark);
+}
+
+
+/* =========================================================
+   TABS DE CATEGORÍAS
+   ========================================================= */
+
+#view-votos .category-tabs {
+
+    display: flex;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+    margin-bottom: 18px;
+}
+
+#view-votos .category-tab {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 10px 14px;
+
+    border: 1px solid var(--border);
+
+    background: var(--white);
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+    text-align: left;
+
+    transition: 0.2s ease;
+
+    color: var(--text);
+}
+
+#view-votos .category-tab:hover {
+
+    border-color: #cbb8df;
+
+    box-shadow: var(--shadow);
+}
+
+#view-votos .category-tab.active {
+
+    border-color: var(--purple);
+
+    background: #faf7ff;
+
+    box-shadow: 0 0 0 1px var(--purple);
+}
+
+#view-votos .category-tab i {
+
+    font-style: normal;
+
+    font-size: 20px;
+
+    flex-shrink: 0;
+}
+
+#view-votos .category-tab:first-child i {
+
+    color: var(--purple);
+
+    font-size: 16px;
+}
+
+#view-votos .category-tab div {
+
+    min-width: 0;
+}
+
+#view-votos .category-tab strong {
+
+    display: block;
+
+    font-size: 13px;
+
+    white-space: nowrap;
+}
+
+#view-votos .category-tab span {
+
+    display: block;
+
+    font-size: 10px;
+
+    color: var(--text-light);
+}
+
+
+/* =========================================================
+   BUSCADOR
+   ========================================================= */
+
+#view-votos .search-row {
+
+    margin-bottom: 18px;
+}
+
+#view-votos .search-row label {
+
+    display: block;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    color: var(--text);
+
+    margin-bottom: 7px;
+}
+
+#view-votos .vote-search {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    height: 46px;
+
+    padding: 0 14px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 11px;
+
+    background: var(--white);
+
+    transition: 0.2s ease;
+}
+
+#view-votos .vote-search:focus-within {
+
+    border-color: var(--purple);
+
+    box-shadow: 0 0 0 3px rgba(75, 39, 128, 0.08);
+}
+
+#view-votos .vote-search i {
+
+    color: var(--purple);
+
+    font-size: 14px;
+
+    flex-shrink: 0;
+}
+
+#view-votos .vote-search input {
+
+    border: none;
+
+    outline: none;
+
+    width: 100%;
+
+    font-size: 13px;
+
+    color: var(--text);
+
+    background: transparent;
+
+    font-family: inherit;
+}
+
+#view-votos .vote-search input::placeholder {
+
+    color: #aaa3b5;
+}
+
+
+/* =========================================================
+   GRID DE CATEGORÍAS (TARJETAS)
+   ========================================================= */
+
+#view-votos .vote-category-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 18px;
+}
+
+#view-votos .vote-category-card {
+
+    background: var(--white);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius);
+
+    padding: 18px;
+
+    box-shadow: var(--shadow);
+}
+
+#view-votos .vote-category-card.hidden {
+
+    display: none;
+}
+
+#view-votos .category-card-header {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin-bottom: 14px;
+}
+
+#view-votos .category-card-header .category-icon {
+
+    width: 46px;
+
+    height: 46px;
+
+    border-radius: 12px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 23px;
+
+    flex-shrink: 0;
+}
+
+#view-votos .category-card-header .category-icon.purple-light {
+
+    background: #f0eafb;
+}
+
+#view-votos .category-card-header .category-icon.orange-light {
+
+    background: #fff0e3;
+}
+
+#view-votos .category-card-header h3 {
+
+    margin: 0 0 3px;
+
+    font-size: 15px;
+
+    color: var(--purple-dark);
+}
+
+#view-votos .category-card-header span {
+
+    font-size: 11px;
+
+    color: var(--text-light);
+}
+
+
+/* =========================================================
+   BUSCADOR POR CATEGORÍA
+   ========================================================= */
+
+#view-votos .candidate-search {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    height: 40px;
+
+    padding: 0 12px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 9px;
+
+    background: #faf9fc;
+
+    margin-bottom: 12px;
+}
+
+#view-votos .candidate-search:focus-within {
+
+    border-color: var(--purple);
+}
+
+#view-votos .candidate-search i {
+
+    color: var(--purple);
+
+    font-size: 13px;
+
+    flex-shrink: 0;
+}
+
+#view-votos .candidate-search input {
+
+    border: none;
+
+    outline: none;
+
+    width: 100%;
+
+    font-size: 12px;
+
+    color: var(--text);
+
+    background: transparent;
+
+    font-family: inherit;
+}
+
+#view-votos .candidate-search input::placeholder {
+
+    color: #aaa3b5;
+}
+
+
+/* =========================================================
+   LISTA DE CANDIDATOS
+   ========================================================= */
+
+#view-votos .candidate-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    margin-bottom: 12px;
+
+    max-height: 300px;
+
+    overflow-y: auto;
+}
+
+#view-votos .candidate {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 9px 10px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    background: #fff;
+
+    transition: 0.2s ease;
+}
+
+#view-votos .candidate:hover {
+
+    border-color: #cbb8df;
+}
+
+#view-votos .candidate.hidden {
+
+    display: none;
+}
+
+#view-votos .candidate-avatar {
+
+    width: 36px;
+
+    height: 36px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    color: white;
+
+    font-weight: 800;
+
+    font-size: 12px;
+}
+
+#view-votos .candidate-avatar.purple-bg {
+
+    background: linear-gradient(135deg, #7442a1, #321263);
+}
+
+#view-votos .candidate-avatar.orange-bg {
+
+    background: linear-gradient(135deg, #ff941f, #ed6200);
+}
+
+#view-votos .candidate-info {
+
+    min-width: 0;
+
+    flex: 1;
+}
+
+#view-votos .candidate-info strong {
+
+    display: block;
+
+    font-size: 13px;
+
+    color: var(--purple-dark);
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+#view-votos .candidate-info span {
+
+    display: block;
+
+    font-size: 11px;
+
+    color: var(--text-light);
+}
+
+
+/* =========================================================
+   BOTÓN VOTAR
+   ========================================================= */
+
+#view-votos .btn-vote {
+
+    border: 1px solid var(--purple);
+
+    background: white;
+
+    color: var(--purple);
+
+    border-radius: 8px;
+
+    padding: 7px 14px;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+
+    flex-shrink: 0;
+
+    font-family: inherit;
+
+    white-space: nowrap;
+}
+
+#view-votos .btn-vote:hover {
+
+    background: var(--purple);
+
+    color: white;
+}
+
+#view-votos .btn-vote.orange-button {
+
+    border: 1px solid var(--orange);
+
+    color: var(--orange);
+}
+
+#view-votos .btn-vote.orange-button:hover {
+
+    background: var(--orange);
+
+    color: white;
+}
+
+#view-votos .candidate.voted {
+
+    border-color: var(--orange);
+
+    background: #fffaf6;
+}
+
+#view-votos .candidate.voted .btn-vote {
+
+    background: var(--orange);
+
+    border-color: var(--orange);
+
+    color: white;
+
+    cursor: default;
+}
+
+#view-votos .candidate.voted .btn-vote.orange-button {
+
+    background: var(--orange);
+
+    color: white;
+}
+
+
+/* =========================================================
+   VER TODOS
+   ========================================================= */
+
+#view-votos .view-all {
+
+    width: 100%;
+
+    border: none;
+
+    background: transparent;
+
+    color: var(--purple);
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    padding: 6px 0;
+
+    font-family: inherit;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 6px;
+}
+
+#view-votos .view-all:hover {
+
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   AVISO
+   ========================================================= */
+
+#view-votos .vote-notice {
+
+    margin-top: 24px;
+
+    padding: 15px 17px;
+
+    border-radius: var(--radius);
+
+    border: 1px solid #ddd2ee;
+
+    background: #faf7ff;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+}
+
+#view-votos .vote-notice .notice-icon {
+
+    width: 40px;
+
+    height: 40px;
+
+    border-radius: 50%;
+
+    background: var(--purple);
+
+    color: white;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-shrink: 0;
+}
+
+#view-votos .vote-notice .notice-icon i {
+
+    font-size: 16px;
+}
+
+#view-votos .vote-notice > div:nth-child(2) {
+
+    flex: 1;
+
+    min-width: 0;
+}
+
+#view-votos .vote-notice strong {
+
+    display: block;
+
+    margin-bottom: 2px;
+
+    font-size: 13px;
+
+    color: var(--purple-dark);
+}
+
+#view-votos .vote-notice p {
+
+    margin: 0;
+
+    font-size: 12px;
+
+    color: var(--text-light);
+
+    line-height: 1.5;
+}
+
+#view-votos .vote-notice #myVotesButton {
+
+    border: 1px solid var(--purple);
+
+    background: white;
+
+    color: var(--purple);
+
+    border-radius: 8px;
+
+    padding: 9px 15px;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+    white-space: nowrap;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    flex-shrink: 0;
+}
+
+#view-votos .vote-notice #myVotesButton:hover {
+
+    background: var(--purple);
+
+    color: white;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1200px) {
+
+    #view-votos .vote-stats {
+
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+
+    #view-votos .vote-category-grid {
+
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+
+    #view-votos .vote-stats {
+
+        grid-template-columns: 1fr;
+    }
+
+    #view-votos .vote-notice {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    #view-votos .vote-notice #myVotesButton {
+
+        width: 100%;
+
+        justify-content: center;
+    }
+}

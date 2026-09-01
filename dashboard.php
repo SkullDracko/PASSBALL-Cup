@@ -124,6 +124,13 @@ if ($rolUsuario === 'admin') {
         href="assets/css/pages/partidos.css"
     >
 
+    <!-- CSS DE VOTOS -->
+
+    <link
+        rel="stylesheet"
+        href="assets/css/pages/votos.css"
+    >
+
 </head>
 
 
@@ -598,6 +605,8 @@ if ($rolUsuario === 'admin') {
 <script src="assets/js/dashboard.js"></script>
 
 <script src="assets/js/partidos.js"></script>
+
+<script src="assets/js/votos.js"></script>
 
 </body>
 
