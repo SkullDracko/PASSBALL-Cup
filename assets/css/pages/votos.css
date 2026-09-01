@@ -1,7 +1,17 @@
 /* =========================================================
    PASSBALL CUP - VOTOS
-   Estilos scoped bajo #view-votos para el dashboard.
+   Diseño basado en el mockup final
    ========================================================= */
+
+
+/* =========================================================
+   CONTENEDOR GENERAL
+   ========================================================= */
+
+#view-votos {
+    width: 100%;
+    max-width: 100%;
+}
 
 
 /* =========================================================
@@ -9,34 +19,25 @@
    ========================================================= */
 
 #view-votos .page-header {
-
-    margin: 4px 0 20px;
+    margin: 2px 0 18px;
 }
 
 #view-votos .page-header h1 {
-
-    margin: 0 0 7px;
-    font-size: 29px;
-
+    margin: 0 0 5px;
+    font-size: 28px;
     font-weight: 800;
-
     color: var(--purple-dark);
 }
 
 #view-votos .page-header h1 i {
-
     margin-right: 8px;
-
     color: var(--orange);
 }
 
 #view-votos .page-header p {
-
     margin: 0;
-
     color: var(--text-light);
-
-    font-size: 14px;
+    font-size: 13px;
 }
 
 
@@ -45,137 +46,171 @@
    ========================================================= */
 
 #view-votos .vote-stats {
-
     display: grid;
-
     grid-template-columns: repeat(4, minmax(0, 1fr));
-
-    gap: 14px;
-
-    margin-bottom: 24px;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
 #view-votos .vote-stat-card {
+    min-height: 82px;
 
     background: var(--white);
 
     border: 1px solid var(--border);
 
-    border-radius: var(--radius);
+    border-radius: 14px;
 
-    padding: 18px;
+    padding: 14px 15px;
 
     display: flex;
-
     align-items: center;
 
-    gap: 15px;
+    gap: 13px;
 
     box-shadow: var(--shadow);
+
+    transition: 0.2s ease;
+}
+
+#view-votos .vote-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
 }
 
 #view-votos .vote-stat-card .stat-icon {
+    width: 48px;
+    height: 48px;
 
-    width: 50px;
+    min-width: 48px;
 
-    height: 50px;
+    border-radius: 50%;
 
-    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#view-votos .vote-stat-card .stat-icon.purple {
+    background: linear-gradient(
+        135deg,
+        #7442a1,
+        #321263
+    );
+}
+
+#view-votos .vote-stat-card .stat-icon.orange {
+    background: linear-gradient(
+        135deg,
+        #ff941f,
+        #ed6200
+    );
 }
 
 #view-votos .vote-stat-card .stat-icon i {
-
     color: white;
-
-    font-size: 20px;
+    font-size: 18px;
 }
 
 #view-votos .vote-stat-card > div:last-child {
-
     min-width: 0;
 }
 
 #view-votos .vote-stat-card strong {
-
     display: block;
 
-    font-size: 24px;
+    font-size: 22px;
 
-    line-height: 1.1;
+    line-height: 1;
+
+    color: var(--purple-dark);
 }
 
 #view-votos .vote-stat-card span {
-
     display: block;
 
-    margin: 4px 0 2px;
+    margin-top: 4px;
 
-    font-size: 11px;
+    font-size: 10px;
 
     font-weight: 800;
 
-    letter-spacing: 0.4px;
+    letter-spacing: 0.25px;
 
     color: var(--purple);
 }
 
 #view-votos .vote-stat-card small {
+    display: block;
+
+    margin-top: 2px;
+
+    font-size: 10px;
 
     color: var(--text-light);
-
-    font-size: 11px;
 }
 
 
 /* =========================================================
-   TÍTULO DE SECCIÓN
+   TÍTULO
    ========================================================= */
 
 #view-votos .section-title {
-
-    margin-bottom: 12px;
+    margin-bottom: 9px;
 }
 
 #view-votos .section-title h2 {
-
     margin: 0;
 
-    font-size: 19px;
+    font-size: 17px;
+
+    font-weight: 800;
 
     color: var(--purple-dark);
 }
 
 
 /* =========================================================
-   TABS DE CATEGORÍAS
+   CATEGORÍAS
    ========================================================= */
 
 #view-votos .category-tabs {
+    width: 100%;
 
     display: flex;
+    align-items: stretch;
 
-    gap: 10px;
+    gap: 8px;
 
-    flex-wrap: wrap;
+    margin-bottom: 14px;
 
-    margin-bottom: 18px;
+    overflow-x: auto;
+
+    padding-bottom: 2px;
+
+    scrollbar-width: thin;
 }
 
 #view-votos .category-tab {
+    min-width: 0;
+
+    flex: 1 1 0;
+
+    min-height: 54px;
 
     display: flex;
 
     align-items: center;
 
-    gap: 10px;
+    gap: 8px;
 
-    padding: 10px 14px;
+    padding: 8px 10px;
 
     border: 1px solid var(--border);
 
     background: var(--white);
 
-    border-radius: 12px;
+    border-radius: 10px;
 
     cursor: pointer;
 
@@ -189,236 +224,104 @@
 }
 
 #view-votos .category-tab:hover {
-
     border-color: #cbb8df;
+
+    transform: translateY(-1px);
 
     box-shadow: var(--shadow);
 }
 
 #view-votos .category-tab.active {
-
     border-color: var(--purple);
 
     background: #faf7ff;
 
-    box-shadow: 0 0 0 1px var(--purple);
+    box-shadow:
+        0 0 0 1px var(--purple);
 }
 
-#view-votos .category-tab i {
+#view-votos .category-tab > i {
+    width: 30px;
+    height: 30px;
+
+    min-width: 30px;
+
+    border-radius: 8px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #f2edf9;
+
+    font-size: 15px;
 
     font-style: normal;
-
-    font-size: 20px;
-
-    flex-shrink: 0;
 }
 
-#view-votos .category-tab:first-child i {
-
+#view-votos .category-tab:first-child > i {
     color: var(--purple);
-
-    font-size: 16px;
+    font-size: 14px;
 }
 
 #view-votos .category-tab div {
-
     min-width: 0;
 }
 
 #view-votos .category-tab strong {
-
     display: block;
 
-    font-size: 13px;
+    font-size: 11px;
 
     white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
 }
 
 #view-votos .category-tab span {
-
     display: block;
 
-    font-size: 10px;
+    margin-top: 2px;
+
+    font-size: 8px;
 
     color: var(--text-light);
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
 }
 
 
 /* =========================================================
-   BUSCADOR
+   BUSCADOR GENERAL
    ========================================================= */
 
 #view-votos .search-row {
-
-    margin-bottom: 18px;
+    margin-bottom: 15px;
 }
 
 #view-votos .search-row label {
-
     display: block;
 
-    font-size: 12px;
+    margin-bottom: 6px;
+
+    font-size: 11px;
 
     font-weight: 800;
 
     color: var(--text);
-
-    margin-bottom: 7px;
 }
 
 #view-votos .vote-search {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 10px;
-
-    height: 46px;
-
-    padding: 0 14px;
-
-    border: 1px solid var(--border);
-
-    border-radius: 11px;
-
-    background: var(--white);
-
-    transition: 0.2s ease;
-}
-
-#view-votos .vote-search:focus-within {
-
-    border-color: var(--purple);
-
-    box-shadow: 0 0 0 3px rgba(75, 39, 128, 0.08);
-}
-
-#view-votos .vote-search i {
-
-    color: var(--purple);
-
-    font-size: 14px;
-
-    flex-shrink: 0;
-}
-
-#view-votos .vote-search input {
-
-    border: none;
-
-    outline: none;
-
     width: 100%;
 
-    font-size: 13px;
-
-    color: var(--text);
-
-    background: transparent;
-
-    font-family: inherit;
-}
-
-#view-votos .vote-search input::placeholder {
-
-    color: #aaa3b5;
-}
-
-
-/* =========================================================
-   GRID DE CATEGORÍAS (TARJETAS)
-   ========================================================= */
-
-#view-votos .vote-category-grid {
-
-    display: grid;
-
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-
-    gap: 18px;
-}
-
-#view-votos .vote-category-card {
-
-    background: var(--white);
-
-    border: 1px solid var(--border);
-
-    border-radius: var(--radius);
-
-    padding: 18px;
-
-    box-shadow: var(--shadow);
-}
-
-#view-votos .vote-category-card.hidden {
-
-    display: none;
-}
-
-#view-votos .category-card-header {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    margin-bottom: 14px;
-}
-
-#view-votos .category-card-header .category-icon {
-
-    width: 46px;
-
-    height: 46px;
-
-    border-radius: 12px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    font-size: 23px;
-
-    flex-shrink: 0;
-}
-
-#view-votos .category-card-header .category-icon.purple-light {
-
-    background: #f0eafb;
-}
-
-#view-votos .category-card-header .category-icon.orange-light {
-
-    background: #fff0e3;
-}
-
-#view-votos .category-card-header h3 {
-
-    margin: 0 0 3px;
-
-    font-size: 15px;
-
-    color: var(--purple-dark);
-}
-
-#view-votos .category-card-header span {
-
-    font-size: 11px;
-
-    color: var(--text-light);
-}
-
-
-/* =========================================================
-   BUSCADOR POR CATEGORÍA
-   ========================================================= */
-
-#view-votos .candidate-search {
+    height: 42px;
 
     display: flex;
 
@@ -426,26 +329,25 @@
 
     gap: 9px;
 
-    height: 40px;
-
     padding: 0 12px;
 
     border: 1px solid var(--border);
 
     border-radius: 9px;
 
-    background: #faf9fc;
+    background: var(--white);
 
-    margin-bottom: 12px;
+    transition: 0.2s ease;
 }
 
-#view-votos .candidate-search:focus-within {
-
+#view-votos .vote-search:focus-within {
     border-color: var(--purple);
+
+    box-shadow:
+        0 0 0 3px rgba(75, 39, 128, 0.07);
 }
 
-#view-votos .candidate-search i {
-
+#view-votos .vote-search i {
     color: var(--purple);
 
     font-size: 13px;
@@ -453,61 +355,238 @@
     flex-shrink: 0;
 }
 
-#view-votos .candidate-search input {
+#view-votos .vote-search input {
+    width: 100%;
 
     border: none;
 
     outline: none;
 
-    width: 100%;
+    background: transparent;
+
+    font-family: inherit;
 
     font-size: 12px;
 
     color: var(--text);
-
-    background: transparent;
-
-    font-family: inherit;
 }
 
-#view-votos .candidate-search input::placeholder {
-
+#view-votos .vote-search input::placeholder {
     color: #aaa3b5;
 }
 
 
 /* =========================================================
-   LISTA DE CANDIDATOS
+   GRID
    ========================================================= */
 
-#view-votos .candidate-list {
+#view-votos .vote-category-grid {
+    width: 100%;
 
-    display: flex;
+    display: grid;
 
-    flex-direction: column;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
 
-    gap: 8px;
+    gap: 14px;
 
-    margin-bottom: 12px;
-
-    max-height: 300px;
-
-    overflow-y: auto;
+    align-items: start;
 }
 
-#view-votos .candidate {
+
+/* =========================================================
+   TARJETAS
+   ========================================================= */
+
+#view-votos .vote-category-card {
+    min-width: 0;
+
+    background: var(--white);
+
+    border: 1px solid var(--border);
+
+    border-radius: 14px;
+
+    padding: 13px;
+
+    box-shadow: var(--shadow);
+
+    transition: 0.2s ease;
+}
+
+#view-votos .vote-category-card:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+#view-votos .vote-category-card.hidden {
+    display: none;
+}
+
+
+/* =========================================================
+   ENCABEZADO DE TARJETA
+   ========================================================= */
+
+#view-votos .category-card-header {
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    margin-bottom: 10px;
+}
+
+#view-votos .category-card-header .category-icon {
+    width: 38px;
+    height: 38px;
+
+    min-width: 38px;
+
+    border-radius: 10px;
 
     display: flex;
 
     align-items: center;
 
-    gap: 11px;
+    justify-content: center;
 
-    padding: 9px 10px;
+    font-size: 18px;
+}
+
+#view-votos .category-card-header .category-icon.purple-light {
+    background: #f0eafb;
+}
+
+#view-votos .category-card-header .category-icon.orange-light {
+    background: #fff0e3;
+}
+
+#view-votos .category-card-header h3 {
+    margin: 0 0 2px;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    color: var(--purple-dark);
+}
+
+#view-votos .category-card-header span {
+    font-size: 9px;
+
+    color: var(--text-light);
+}
+
+
+/* =========================================================
+   BUSCADOR DE CADA TARJETA
+   ========================================================= */
+
+#view-votos .candidate-search {
+    height: 34px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 0 9px;
+
+    margin-bottom: 8px;
 
     border: 1px solid var(--border);
 
+    border-radius: 8px;
+
+    background: #faf9fc;
+}
+
+#view-votos .candidate-search:focus-within {
+    border-color: var(--purple);
+}
+
+#view-votos .candidate-search i {
+    color: var(--purple);
+
+    font-size: 11px;
+}
+
+#view-votos .candidate-search input {
+    width: 100%;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    font-family: inherit;
+
+    font-size: 10px;
+
+    color: var(--text);
+}
+
+#view-votos .candidate-search input::placeholder {
+    color: #aaa3b5;
+}
+
+
+/* =========================================================
+   LISTA
+   ========================================================= */
+
+#view-votos .candidate-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+
+    margin-bottom: 7px;
+
+    max-height: 214px;
+
+    overflow-y: auto;
+
+    padding-right: 2px;
+
+    scrollbar-width: thin;
+}
+
+#view-votos .candidate-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+#view-votos .candidate-list::-webkit-scrollbar-thumb {
+    background: #c9bdd8;
+
     border-radius: 10px;
+}
+
+
+/* =========================================================
+   CANDIDATO
+   ========================================================= */
+
+#view-votos .candidate {
+    min-width: 0;
+
+    min-height: 43px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 5px 6px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 8px;
 
     background: #fff;
 
@@ -515,20 +594,25 @@
 }
 
 #view-votos .candidate:hover {
-
     border-color: #cbb8df;
+
+    background: #fcfaff;
 }
 
 #view-votos .candidate.hidden {
-
     display: none;
 }
 
+
+/* =========================================================
+   AVATAR
+   ========================================================= */
+
 #view-votos .candidate-avatar {
+    width: 30px;
+    height: 30px;
 
-    width: 36px;
-
-    height: 36px;
+    min-width: 30px;
 
     border-radius: 50%;
 
@@ -538,37 +622,48 @@
 
     justify-content: center;
 
-    flex-shrink: 0;
-
     color: white;
 
     font-weight: 800;
 
-    font-size: 12px;
+    font-size: 9px;
 }
 
 #view-votos .candidate-avatar.purple-bg {
-
-    background: linear-gradient(135deg, #7442a1, #321263);
+    background:
+        linear-gradient(
+            135deg,
+            #7442a1,
+            #321263
+        );
 }
 
 #view-votos .candidate-avatar.orange-bg {
-
-    background: linear-gradient(135deg, #ff941f, #ed6200);
+    background:
+        linear-gradient(
+            135deg,
+            #ff941f,
+            #ed6200
+        );
 }
 
+
+/* =========================================================
+   INFORMACIÓN
+   ========================================================= */
+
 #view-votos .candidate-info {
+    flex: 1;
 
     min-width: 0;
-
-    flex: 1;
 }
 
 #view-votos .candidate-info strong {
-
     display: block;
 
-    font-size: 13px;
+    font-size: 10px;
+
+    font-weight: 800;
 
     color: var(--purple-dark);
 
@@ -580,12 +675,19 @@
 }
 
 #view-votos .candidate-info span {
-
     display: block;
 
-    font-size: 11px;
+    margin-top: 1px;
+
+    font-size: 8px;
 
     color: var(--text-light);
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
 }
 
 
@@ -594,62 +696,61 @@
    ========================================================= */
 
 #view-votos .btn-vote {
+    height: 27px;
+
+    padding: 0 9px;
+
+    flex-shrink: 0;
 
     border: 1px solid var(--purple);
+
+    border-radius: 7px;
 
     background: white;
 
     color: var(--purple);
 
-    border-radius: 8px;
+    font-family: inherit;
 
-    padding: 7px 14px;
-
-    font-size: 12px;
+    font-size: 9px;
 
     font-weight: 800;
 
     cursor: pointer;
 
     transition: 0.2s ease;
-
-    flex-shrink: 0;
-
-    font-family: inherit;
-
-    white-space: nowrap;
 }
 
 #view-votos .btn-vote:hover {
-
     background: var(--purple);
 
     color: white;
 }
 
 #view-votos .btn-vote.orange-button {
-
-    border: 1px solid var(--orange);
+    border-color: var(--orange);
 
     color: var(--orange);
 }
 
 #view-votos .btn-vote.orange-button:hover {
-
     background: var(--orange);
 
     color: white;
 }
 
-#view-votos .candidate.voted {
 
+/* =========================================================
+   VOTO REALIZADO
+   ========================================================= */
+
+#view-votos .candidate.voted {
     border-color: var(--orange);
 
     background: #fffaf6;
 }
 
 #view-votos .candidate.voted .btn-vote {
-
     background: var(--orange);
 
     border-color: var(--orange);
@@ -660,7 +761,6 @@
 }
 
 #view-votos .candidate.voted .btn-vote.orange-button {
-
     background: var(--orange);
 
     color: white;
@@ -672,24 +772,7 @@
    ========================================================= */
 
 #view-votos .view-all {
-
     width: 100%;
-
-    border: none;
-
-    background: transparent;
-
-    color: var(--purple);
-
-    font-size: 12px;
-
-    font-weight: 800;
-
-    cursor: pointer;
-
-    padding: 6px 0;
-
-    font-family: inherit;
 
     display: flex;
 
@@ -697,11 +780,26 @@
 
     justify-content: center;
 
-    gap: 6px;
+    gap: 5px;
+
+    padding: 5px 0;
+
+    border: none;
+
+    background: transparent;
+
+    color: var(--purple);
+
+    font-family: inherit;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    cursor: pointer;
 }
 
 #view-votos .view-all:hover {
-
     text-decoration: underline;
 }
 
@@ -711,35 +809,28 @@
    ========================================================= */
 
 #view-votos .vote-notice {
+    margin-top: 14px;
 
-    margin-top: 24px;
-
-    padding: 15px 17px;
-
-    border-radius: var(--radius);
-
-    border: 1px solid #ddd2ee;
-
-    background: #faf7ff;
+    padding: 11px 13px;
 
     display: flex;
 
     align-items: center;
 
-    gap: 13px;
+    gap: 10px;
+
+    border: 1px solid #ddd2ee;
+
+    border-radius: 11px;
+
+    background: #faf7ff;
 }
 
 #view-votos .vote-notice .notice-icon {
+    width: 32px;
+    height: 32px;
 
-    width: 40px;
-
-    height: 40px;
-
-    border-radius: 50%;
-
-    background: var(--purple);
-
-    color: white;
+    min-width: 32px;
 
     display: flex;
 
@@ -747,76 +838,74 @@
 
     justify-content: center;
 
-    flex-shrink: 0;
+    border-radius: 50%;
+
+    background: var(--purple);
+
+    color: white;
 }
 
 #view-votos .vote-notice .notice-icon i {
-
-    font-size: 16px;
+    font-size: 13px;
 }
 
 #view-votos .vote-notice > div:nth-child(2) {
-
     flex: 1;
 
     min-width: 0;
 }
 
 #view-votos .vote-notice strong {
-
     display: block;
 
     margin-bottom: 2px;
 
-    font-size: 13px;
+    font-size: 10px;
 
     color: var(--purple-dark);
 }
 
 #view-votos .vote-notice p {
-
     margin: 0;
 
-    font-size: 12px;
+    font-size: 9px;
+
+    line-height: 1.4;
 
     color: var(--text-light);
-
-    line-height: 1.5;
 }
 
 #view-votos .vote-notice #myVotesButton {
-
-    border: 1px solid var(--purple);
-
-    background: white;
-
-    color: var(--purple);
-
-    border-radius: 8px;
-
-    padding: 9px 15px;
-
-    font-size: 12px;
-
-    font-weight: 800;
-
-    cursor: pointer;
-
-    font-family: inherit;
-
-    white-space: nowrap;
+    height: 31px;
 
     display: flex;
 
     align-items: center;
 
-    gap: 7px;
+    gap: 6px;
+
+    padding: 0 11px;
 
     flex-shrink: 0;
+
+    border: 1px solid var(--purple);
+
+    border-radius: 7px;
+
+    background: white;
+
+    color: var(--purple);
+
+    font-family: inherit;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    cursor: pointer;
 }
 
 #view-votos .vote-notice #myVotesButton:hover {
-
     background: var(--purple);
 
     color: white;
@@ -827,40 +916,57 @@
    RESPONSIVE
    ========================================================= */
 
-@media (max-width: 1200px) {
-
-    #view-votos .vote-stats {
-
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 900px) {
+@media (max-width: 1250px) {
 
     #view-votos .vote-category-grid {
-
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
     }
+
+    #view-votos .category-tab {
+        flex: 0 0 auto;
+
+        min-width: 145px;
+    }
+
 }
 
-@media (max-width: 600px) {
+
+@media (max-width: 1000px) {
 
     #view-votos .vote-stats {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
 
+    #view-votos .vote-category-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    #view-votos .vote-stats {
+        grid-template-columns: 1fr;
+    }
+
+    #view-votos .vote-category-grid {
         grid-template-columns: 1fr;
     }
 
     #view-votos .vote-notice {
-
         align-items: flex-start;
 
         flex-direction: column;
     }
 
     #view-votos .vote-notice #myVotesButton {
-
         width: 100%;
 
         justify-content: center;
     }
+
 }
