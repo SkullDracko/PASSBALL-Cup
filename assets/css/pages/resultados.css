@@ -1,0 +1,919 @@
+/* ============================================================
+   PASSBALL CUP - RESULTADOS
+   ============================================================ */
+
+
+/* ============================================================
+   ENCABEZADO
+   ============================================================ */
+
+#view-resultados .page-header {
+    margin: 4px 0 18px;
+}
+
+#view-resultados .page-header h1 {
+    font-size: 29px;
+    line-height: 1.2;
+    margin-bottom: 7px;
+    font-weight: 800;
+}
+
+#view-resultados .page-header h1 i {
+    color: var(--purple);
+    margin-right: 8px;
+    font-size: 26px;
+}
+
+#view-resultados .page-header p {
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+#view-resultados .page-header strong {
+    color: var(--purple);
+}
+
+
+/* ============================================================
+   ESTADÍSTICAS
+   ============================================================ */
+
+#view-resultados .resultados-stats {
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+#view-resultados .stat-card {
+    min-height: 100px;
+    padding: 17px;
+    gap: 15px;
+}
+
+#view-resultados .stat-icon {
+    width: 57px;
+    height: 57px;
+    font-size: 21px;
+}
+
+#view-resultados .stat-icon.purple {
+    background: linear-gradient(
+        145deg,
+        #63309a,
+        #35116c
+    );
+}
+
+#view-resultados .stat-icon.orange {
+    background: linear-gradient(
+        145deg,
+        #ff922c,
+        #ed6500
+    );
+}
+
+#view-resultados .stat-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+#view-resultados .stat-info strong {
+    font-size: 22px;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+#view-resultados .stat-info span {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+#view-resultados .stat-info small {
+    color: var(--text-light);
+    font-size: 10px;
+    margin-top: 4px;
+}
+
+
+/* ============================================================
+   FILTROS
+   ============================================================ */
+
+#view-resultados .results-filter-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+#view-resultados .results-tabs {
+    min-height: 55px;
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--border);
+    padding: 0 10px;
+}
+
+#view-resultados .result-tab {
+    position: relative;
+    border: none;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 0 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+}
+
+#view-resultados .result-tab:hover {
+    color: var(--purple);
+}
+
+#view-resultados .result-tab.active {
+    color: var(--purple);
+}
+
+#view-resultados .result-tab.active::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 0;
+    height: 3px;
+    background: var(--purple);
+    border-radius: 3px 3px 0 0;
+}
+
+
+/* ============================================================
+   FILA DE FILTROS
+   ============================================================ */
+
+#view-resultados .results-filters-row {
+    display: grid;
+    grid-template-columns:
+        minmax(220px, 1.4fr)
+        minmax(170px, 1fr)
+        minmax(130px, .8fr)
+        minmax(130px, .8fr)
+        auto;
+
+    gap: 10px;
+    padding: 14px 15px;
+    align-items: center;
+}
+
+#view-resultados .results-search,
+#view-resultados .results-select,
+#view-resultados .results-date {
+    height: 38px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: white;
+    display: flex;
+    align-items: center;
+}
+
+#view-resultados .results-search {
+    padding: 0 11px;
+    color: var(--purple);
+}
+
+#view-resultados .results-search i {
+    margin-right: 8px;
+    font-size: 13px;
+}
+
+#view-resultados .results-search input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 12px;
+}
+
+#view-resultados .results-search:focus-within {
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(75, 35, 133, .07);
+}
+
+
+/* SELECT */
+
+#view-resultados .results-select {
+    position: relative;
+    padding: 0 10px;
+}
+
+#view-resultados .results-select select {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    appearance: none;
+    color: var(--text);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+#view-resultados .results-select i {
+    color: var(--text-light);
+    font-size: 10px;
+    pointer-events: none;
+}
+
+
+/* FECHAS */
+
+#view-resultados .results-date {
+    position: relative;
+    padding: 0 9px;
+    gap: 5px;
+}
+
+#view-resultados .results-date span {
+    color: var(--text-light);
+    font-size: 11px;
+}
+
+#view-resultados .results-date input {
+    width: 100%;
+    border: none;
+    outline: none;
+    color: var(--text);
+    background: transparent;
+    font-size: 10px;
+}
+
+#view-resultados .results-date i {
+    color: var(--text-light);
+    font-size: 12px;
+}
+
+
+/* LIMPIAR */
+
+#view-resultados .clear-results {
+    height: 38px;
+    border: 1px solid #d9ccec;
+    border-radius: 7px;
+    background: white;
+    color: var(--purple);
+    padding: 0 13px;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: .2s ease;
+}
+
+#view-resultados .clear-results:hover {
+    background: #f6f0fc;
+}
+
+
+/* ============================================================
+   LAYOUT PRINCIPAL
+   ============================================================ */
+
+#view-resultados .results-main-layout {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1.65fr)
+        minmax(430px, 1fr);
+
+    gap: 15px;
+    align-items: start;
+}
+
+
+/* ============================================================
+   TARJETAS
+   ============================================================ */
+
+#view-resultados .results-card,
+#view-resultados .results-standings-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+#view-resultados .results-card-header {
+    min-height: 54px;
+    padding: 0 17px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+}
+
+#view-resultados .results-card-header h2 {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+#view-resultados .results-card-header h2 span {
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+
+/* ============================================================
+   LISTA DE RESULTADOS
+   ============================================================ */
+
+#view-resultados .results-list {
+    padding: 0 14px;
+}
+
+#view-resultados .result-row {
+    min-height: 76px;
+    display: grid;
+
+    grid-template-columns:
+        58px
+        minmax(115px, 1fr)
+        70px
+        minmax(115px, 1fr)
+        120px
+        105px;
+
+    align-items: center;
+    gap: 8px;
+
+    border-bottom: 1px solid #eeeaf3;
+}
+
+#view-resultados .result-row:hover {
+    background: #fcfaff;
+}
+
+
+/* FECHA */
+
+#view-resultados .result-date {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
+
+#view-resultados .result-date strong {
+    color: var(--purple);
+    font-size: 20px;
+}
+
+#view-resultados .result-date span {
+    color: var(--orange);
+    font-size: 9px;
+    font-weight: 800;
+    margin-top: 2px;
+}
+
+#view-resultados .result-date small {
+    color: var(--text-light);
+    font-size: 9px;
+    margin-top: 5px;
+}
+
+
+/* EQUIPOS */
+
+#view-resultados .result-team {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+#view-resultados .result-team.visitor {
+    flex-direction: row;
+}
+
+#view-resultados .result-team strong {
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#view-resultados .result-team-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 16px;
+    flex-shrink: 0;
+
+    box-shadow: 0 2px 5px rgba(0,0,0,.08);
+}
+
+#view-resultados .purple-logo {
+    background: linear-gradient(
+        145deg,
+        #6833a1,
+        #32106c
+    );
+}
+
+#view-resultados .orange-logo {
+    background: linear-gradient(
+        145deg,
+        #ff9b3e,
+        #ed6100
+    );
+}
+
+
+/* MARCADOR */
+
+#view-resultados .result-score {
+    text-align: center;
+}
+
+#view-resultados .result-score strong {
+    color: #1c9660;
+    font-size: 21px;
+    font-weight: 900;
+}
+
+#view-resultados .result-score span {
+    color: var(--text-light);
+    padding: 0 3px;
+}
+
+
+/* UBICACIÓN */
+
+#view-resultados .result-location {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+#view-resultados .result-location strong {
+    color: var(--purple);
+    font-size: 9px;
+}
+
+#view-resultados .result-location span {
+    color: var(--text-light);
+    font-size: 8px;
+}
+
+
+/* DETALLES */
+
+#view-resultados .result-details {
+    height: 30px;
+
+    border: 1px solid var(--purple);
+    border-radius: 6px;
+
+    background: white;
+    color: var(--purple);
+
+    font-size: 9px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    transition: .2s ease;
+}
+
+#view-resultados .result-details:hover {
+    background: var(--purple);
+    color: white;
+}
+
+
+/* ============================================================
+   VER MÁS
+   ============================================================ */
+
+#view-resultados .load-more-results,
+#view-resultados .complete-standings {
+    width: 100%;
+    height: 45px;
+
+    border: none;
+    background: white;
+
+    color: var(--purple);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    transition: .2s ease;
+}
+
+#view-resultados .load-more-results:hover,
+#view-resultados .complete-standings:hover {
+    color: var(--orange);
+}
+
+
+/* ============================================================
+   SIN RESULTADOS
+   ============================================================ */
+
+#view-resultados .results-empty {
+    display: none;
+
+    min-height: 230px;
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    color: var(--text-light);
+}
+
+#view-resultados .results-empty.show {
+    display: flex;
+}
+
+#view-resultados .results-empty i {
+    font-size: 25px;
+    margin-bottom: 5px;
+}
+
+#view-resultados .results-empty strong {
+    color: var(--text);
+    font-size: 13px;
+}
+
+#view-resultados .results-empty span {
+    font-size: 10px;
+}
+
+
+/* ============================================================
+   TABLA DE POSICIONES
+   ============================================================ */
+
+#view-resultados .results-standings-table {
+    padding: 0 12px;
+}
+
+#view-resultados .results-standings-head,
+#view-resultados .results-standing-row {
+
+    display: grid;
+
+    grid-template-columns:
+        25px
+        minmax(120px, 1fr)
+        28px
+        28px
+        28px
+        28px
+        35px
+        38px;
+
+    align-items: center;
+}
+
+
+/* HEADER */
+
+#view-resultados .results-standings-head {
+
+    min-height: 39px;
+
+    color: var(--text-light);
+
+    font-size: 8px;
+    font-weight: 800;
+
+    border-bottom: 1px solid var(--border);
+}
+
+
+/* ROW */
+
+#view-resultados .results-standing-row {
+
+    min-height: 47px;
+
+    border-bottom: 1px solid #eeeaf3;
+
+    font-size: 9px;
+}
+
+#view-resultados .standing-position {
+    font-weight: 800;
+}
+
+
+/* EQUIPO */
+
+#view-resultados .results-standing-team {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+}
+
+#view-resultados .results-standing-team strong {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    font-size: 10px;
+}
+
+#view-resultados .results-mini-logo {
+    width: 27px;
+    height: 27px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #f3eff7;
+
+    font-size: 13px;
+
+    flex-shrink: 0;
+}
+
+
+/* PUNTOS */
+
+#view-resultados .standing-points {
+    color: #1e9b60;
+}
+
+
+/* ============================================================
+   AVISO
+   ============================================================ */
+
+#view-resultados .results-notice {
+
+    margin-top: 15px;
+
+    min-height: 64px;
+
+    padding: 10px 14px;
+
+    border: 1px solid #ded0ee;
+    border-radius: 9px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #f7f1fc,
+            #fbf9fe
+        );
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+/* ICONO */
+
+#view-resultados .results-notice-icon {
+
+    width: 34px;
+    height: 34px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--purple);
+
+    font-size: 20px;
+
+    flex-shrink: 0;
+}
+
+
+/* TEXTO */
+
+#view-resultados .results-notice-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    min-width: 0;
+}
+
+#view-resultados .results-notice-text strong {
+    color: var(--purple);
+    font-size: 11px;
+}
+
+#view-resultados .results-notice-text span {
+    color: var(--text-light);
+    font-size: 9px;
+}
+
+
+/* BOTÓN */
+
+#view-resultados .results-stats-button {
+
+    margin-left: auto;
+
+    height: 35px;
+
+    border: 1px solid #bda7dc;
+    border-radius: 6px;
+
+    background: white;
+
+    color: var(--purple);
+
+    padding: 0 13px;
+
+    font-size: 9px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    white-space: nowrap;
+}
+
+#view-resultados .results-stats-button:hover {
+    background: var(--purple);
+    color: white;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1250px) {
+
+    #view-resultados .results-main-layout {
+        grid-template-columns: 1fr;
+    }
+
+    #view-resultados .results-standings-card {
+        margin-top: 0;
+    }
+
+    #view-resultados .result-row {
+        grid-template-columns:
+            55px
+            minmax(120px, 1fr)
+            65px
+            minmax(120px, 1fr)
+            110px
+            95px;
+    }
+
+}
+
+
+@media (max-width: 1050px) {
+
+    #view-resultados .results-filters-row {
+
+        grid-template-columns:
+            1fr 1fr;
+
+    }
+
+    #view-resultados .clear-results {
+        width: 100%;
+    }
+
+}
+
+
+@media (max-width: 800px) {
+
+    #view-resultados .results-tabs {
+        overflow-x: auto;
+    }
+
+    #view-resultados .result-tab {
+        padding: 0 12px;
+    }
+
+    #view-resultados .results-filters-row {
+        grid-template-columns: 1fr;
+    }
+
+    #view-resultados .result-row {
+
+        grid-template-columns:
+            55px
+            1fr
+            60px
+            1fr;
+
+        padding: 9px 4px;
+    }
+
+    #view-resultados .result-location {
+        display: none;
+    }
+
+    #view-resultados .result-details {
+        grid-column: 4;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    #view-resultados .page-header h1 {
+        font-size: 24px;
+    }
+
+    #view-resultados .resultados-stats {
+        grid-template-columns: 1fr;
+    }
+
+    #view-resultados .result-row {
+
+        grid-template-columns:
+            48px
+            1fr
+            55px
+            1fr;
+
+    }
+
+    #view-resultados .result-team-logo {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+
+    #view-resultados .result-team strong {
+        font-size: 9px;
+    }
+
+    #view-resultados .result-score strong {
+        font-size: 17px;
+    }
+
+    #view-resultados .results-standings-table {
+        overflow-x: auto;
+    }
+
+    #view-resultados .results-standings-head,
+    #view-resultados .results-standing-row {
+        min-width: 520px;
+    }
+
+    #view-resultados .results-notice {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    #view-resultados .results-stats-button {
+        width: 100%;
+        margin-left: 0;
+        justify-content: center;
+    }
+
+}
