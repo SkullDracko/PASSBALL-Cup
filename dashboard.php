@@ -138,6 +138,13 @@ if ($rolUsuario === 'admin') {
         href="assets/css/pages/resultados.css"
     >
 
+    <!-- CSS DE COMUNIDAD -->
+
+    <link
+        rel="stylesheet"
+        href="assets/css/pages/comunidad.css"
+    >
+
 </head>
 
 
@@ -616,6 +623,8 @@ if ($rolUsuario === 'admin') {
 <script src="assets/js/votos.js"></script>
 
 <script src="assets/js/resultados.js"></script>
+
+<script src="assets/js/comunidad.js"></script>
 
 </body>
 
