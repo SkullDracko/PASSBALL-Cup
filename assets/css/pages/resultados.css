@@ -286,12 +286,7 @@
 
 #view-resultados .results-main-layout {
     display: grid;
-    grid-template-columns:
-        minmax(0, 1.65fr)
-        minmax(430px, 1fr);
-
-    gap: 15px;
-    align-items: start;
+    grid-template-columns: 1fr;
 }
 
 
@@ -299,8 +294,7 @@
    TARJETAS
    ============================================================ */
 
-#view-resultados .results-card,
-#view-resultados .results-standings-card {
+#view-resultados .results-card {
     background: white;
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -509,8 +503,7 @@
    VER MÁS
    ============================================================ */
 
-#view-resultados .load-more-results,
-#view-resultados .complete-standings {
+#view-resultados .load-more-results {
     width: 100%;
     height: 45px;
 
@@ -532,8 +525,7 @@
     transition: .2s ease;
 }
 
-#view-resultados .load-more-results:hover,
-#view-resultados .complete-standings:hover {
+#view-resultados .load-more-results:hover {
     color: var(--orange);
 }
 
@@ -572,108 +564,6 @@
 
 #view-resultados .results-empty span {
     font-size: 10px;
-}
-
-
-/* ============================================================
-   TABLA DE POSICIONES
-   ============================================================ */
-
-#view-resultados .results-standings-table {
-    padding: 0 12px;
-}
-
-#view-resultados .results-standings-head,
-#view-resultados .results-standing-row {
-
-    display: grid;
-
-    grid-template-columns:
-        25px
-        minmax(120px, 1fr)
-        28px
-        28px
-        28px
-        28px
-        35px
-        38px;
-
-    align-items: center;
-}
-
-
-/* HEADER */
-
-#view-resultados .results-standings-head {
-
-    min-height: 39px;
-
-    color: var(--text-light);
-
-    font-size: 8px;
-    font-weight: 800;
-
-    border-bottom: 1px solid var(--border);
-}
-
-
-/* ROW */
-
-#view-resultados .results-standing-row {
-
-    min-height: 47px;
-
-    border-bottom: 1px solid #eeeaf3;
-
-    font-size: 9px;
-}
-
-#view-resultados .standing-position {
-    font-weight: 800;
-}
-
-
-/* EQUIPO */
-
-#view-resultados .results-standing-team {
-    min-width: 0;
-
-    display: flex;
-    align-items: center;
-
-    gap: 7px;
-}
-
-#view-resultados .results-standing-team strong {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    font-size: 10px;
-}
-
-#view-resultados .results-mini-logo {
-    width: 27px;
-    height: 27px;
-
-    border-radius: 50%;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: #f3eff7;
-
-    font-size: 13px;
-
-    flex-shrink: 0;
-}
-
-
-/* PUNTOS */
-
-#view-resultados .standing-points {
-    color: #1e9b60;
 }
 
 
@@ -789,14 +679,6 @@
 
 @media (max-width: 1250px) {
 
-    #view-resultados .results-main-layout {
-        grid-template-columns: 1fr;
-    }
-
-    #view-resultados .results-standings-card {
-        margin-top: 0;
-    }
-
     #view-resultados .result-row {
         grid-template-columns:
             55px
@@ -894,15 +776,6 @@
 
     #view-resultados .result-score strong {
         font-size: 17px;
-    }
-
-    #view-resultados .results-standings-table {
-        overflow-x: auto;
-    }
-
-    #view-resultados .results-standings-head,
-    #view-resultados .results-standing-row {
-        min-width: 520px;
     }
 
     #view-resultados .results-notice {
