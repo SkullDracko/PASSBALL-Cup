@@ -1388,10 +1388,32 @@ a {
         0
         3px;
 
+    margin-top: auto;
+
+    flex-shrink: 0;
+
     color:
         #746b83;
 
     font-size: 12px;
+}
+
+
+/* =========================================================
+   PANTALLAS GRANDES
+   ========================================================= */
+
+@media (min-width: 1440px) {
+
+    .dashboard-content {
+
+        max-width: 1440px;
+
+        margin-left: auto;
+
+        margin-right: auto;
+    }
+
 }
 
 
@@ -1834,14 +1856,14 @@ a {
 
     flex-direction: column;
 
-    min-height: 100%;
-
     padding-right: 6px;
 }
 
 .dashboard-view.active {
 
     display: flex;
+
+    flex: 1;
 
     animation: viewIn 0.25s ease;
 }

@@ -7,7 +7,7 @@ require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/../config/database.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: ../equipos.php");
+    header("Location: ../dashboard.php#view-equipos");
     exit;
 }
 
@@ -20,19 +20,19 @@ $descripcion = trim($_POST['descripcion'] ?? '');
 
 if ($nombre === '') {
     $_SESSION['flash_error'] = 'El nombre del equipo es obligatorio.';
-    header("Location: ../equipos.php");
+    header("Location: ../dashboard.php#view-equipos");
     exit;
 }
 
 if (mb_strlen($nombre, 'UTF-8') < 3) {
     $_SESSION['flash_error'] = 'El nombre debe tener al menos 3 caracteres.';
-    header("Location: ../equipos.php");
+    header("Location: ../dashboard.php#view-equipos");
     exit;
 }
 
 if (mb_strlen($nombre, 'UTF-8') > 100) {
     $_SESSION['flash_error'] = 'El nombre no puede exceder 100 caracteres.';
-    header("Location: ../equipos.php");
+    header("Location: ../dashboard.php#view-equipos");
     exit;
 }
 
@@ -50,13 +50,13 @@ try {
 
     if ($stmt->fetchColumn() > 0) {
         $_SESSION['flash_error'] = 'Ya perteneces a un equipo. Sal del equipo actual para crear uno nuevo.';
-        header("Location: ../equipos.php");
+        header("Location: ../dashboard.php#view-equipos");
         exit;
     }
 } catch (PDOException $e) {
     error_log("registrarEquipo - verificar equipo: " . $e->getMessage());
     $_SESSION['flash_error'] = 'Error al verificar tu equipo actual.';
-    header("Location: ../equipos.php");
+    header("Location: ../dashboard.php#view-equipos");
     exit;
 }
 
@@ -70,13 +70,13 @@ try {
 
     if ($stmt->fetchColumn() > 0) {
         $_SESSION['flash_error'] = 'Ya existe un equipo con ese nombre. Elige otro.';
-        header("Location: ../equipos.php");
+        header("Location: ../dashboard.php#view-equipos");
         exit;
     }
 } catch (PDOException $e) {
     error_log("registrarEquipo - verificar nombre: " . $e->getMessage());
     $_SESSION['flash_error'] = 'Error al verificar el nombre del equipo.';
-    header("Location: ../equipos.php");
+    header("Location: ../dashboard.php#view-equipos");
     exit;
 }
 
@@ -114,13 +114,13 @@ try {
     $_SESSION['usuario']['rol'] = 'lider';
 
     $_SESSION['flash_success'] = "Equipo \"{$nombre}\" registrado exitosamente. ¡Bienvenido, líder!";
-    header("Location: ../equipos.php");
+    header("Location: ../dashboard.php#view-equipos");
     exit;
 
 } catch (PDOException $e) {
     $pdo->rollBack();
     error_log("registrarEquipo - crear: " . $e->getMessage());
     $_SESSION['flash_error'] = 'Error al registrar el equipo. Intenta de nuevo.';
-    header("Location: ../equipos.php");
+    header("Location: ../dashboard.php#view-equipos");
     exit;
 }

@@ -91,6 +91,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================
+       ABRIR PESTAÑA DESDE HASH
+       ========================================= */
+
+    if (location.hash) {
+
+        var hashTarget = location.hash.substring(1);
+
+        var hashView =
+            document.getElementById(hashTarget);
+
+        if (hashView) {
+
+            showView(hashTarget);
+
+            tabs.forEach(function (t) {
+
+                if (t.getAttribute('data-target') === hashTarget) {
+                    setActiveTab(t);
+                }
+
+            });
+
+        }
+
+    }
+
+
+    /* =========================================
        ACERCAR / BUSCAR EQUIPOS
        ========================================= */
 
