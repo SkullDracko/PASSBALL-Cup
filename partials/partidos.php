@@ -16,15 +16,6 @@
 | Posteriormente estos datos pueden venir directamente de MySQL.
 */
 
-$partidoDestacado = [
-    'fecha'     => '25 MAY',
-    'hora'      => '10:00 AM',
-    'local'     => 'Águilas FC',
-    'visitante' => 'Tigres FC',
-    'cancha'    => 'Cancha Principal',
-    'estadio'   => 'Estadio Municipal',
-];
-
 $partidos = [
     [
         'id'         => 1,
@@ -74,13 +65,6 @@ $partidos = [
         'local_icon' => '🦅',
         'visit_icon' => '🐈‍⬛',
     ],
-];
-
-$posiciones = [
-    ['pos' => 1, 'equipo' => 'Águilas FC',    'pj' => 3, 'dg' => '+5', 'pts' => 9,  'icon' => '🦅'],
-    ['pos' => 2, 'equipo' => 'Tigres FC',     'pj' => 3, 'dg' => '+3', 'pts' => 6,  'icon' => '🐯'],
-    ['pos' => 3, 'equipo' => 'Lobos FC',      'pj' => 3, 'dg' => '+1', 'pts' => 6,  'icon' => '🐺'],
-    ['pos' => 4, 'equipo' => 'Real Passball', 'pj' => 3, 'dg' => '-2', 'pts' => 3,  'icon' => '⚽'],
 ];
 
 $totalProgramados = 8;
@@ -495,167 +479,6 @@ $totalGoles       = 12;
 
         </div>
 
-
-        <!-- COLUMNA DERECHA -->
-
-        <aside class="right-column">
-
-
-            <!-- PARTIDO DESTACADO -->
-
-            <article class="featured-card">
-
-                <div class="card-heading">
-
-                    <i class="fa-solid fa-star"></i>
-
-                    <h3>Próximo partido destacado</h3>
-
-                </div>
-
-
-                <div class="featured-date">
-                    Domingo, 25 de Mayo
-                </div>
-
-
-                <div class="featured-teams">
-
-                    <div>
-
-                        <div class="featured-logo purple-logo">
-                            <?= $partidoDestacado['local_icon'] ?? '🦅' ?>
-                        </div>
-
-                        <strong><?= htmlspecialchars($partidoDestacado['local'], ENT_QUOTES, 'UTF-8') ?></strong>
-
-                    </div>
-
-
-                    <div class="featured-vs">
-
-                        <strong>VS</strong>
-
-                        <span>
-                            <i class="fa-regular fa-clock"></i>
-                            15 minutos
-                        </span>
-
-                    </div>
-
-
-                    <div>
-
-                        <div class="featured-logo orange-logo">
-                            <?= $partidoDestacado['visit_icon'] ?? '🐯' ?>
-                        </div>
-
-                        <strong><?= htmlspecialchars($partidoDestacado['visitante'], ENT_QUOTES, 'UTF-8') ?></strong>
-
-                    </div>
-
-                </div>
-
-
-                <div class="featured-location">
-
-                    <i class="fa-solid fa-location-dot"></i>
-
-                    <span>
-                        <?= htmlspecialchars($partidoDestacado['cancha'], ENT_QUOTES, 'UTF-8') ?><br>
-                        <small><?= htmlspecialchars($partidoDestacado['estadio'], ENT_QUOTES, 'UTF-8') ?></small>
-                    </span>
-
-                </div>
-
-
-                <button
-                    class="primary-button"
-                    type="button"
-                >
-
-                    Ver detalles
-
-                    <i class="fa-solid fa-arrow-right"></i>
-
-                </button>
-
-            </article>
-
-
-            <!-- TABLA -->
-
-            <article class="standings-card">
-
-                <div class="card-heading">
-
-                    <i class="fa-solid fa-ranking-star"></i>
-
-                    <h3>Tabla de posiciones</h3>
-
-                </div>
-
-
-                <div class="standings-header">
-
-                    <span>#</span>
-
-                    <span>Equipo</span>
-
-                    <span>PJ</span>
-
-                    <span>DG</span>
-
-                    <span>PTS</span>
-
-                </div>
-
-
-                <?php foreach ($posiciones as $equipo): ?>
-
-                    <div class="standing-row">
-
-                        <span class="position">
-                            <?= $equipo['pos'] ?>
-                        </span>
-
-                        <div class="standing-team">
-
-                            <div class="mini-logo">
-                                <?= $equipo['icon'] ?>
-                            </div>
-
-                            <span><?= htmlspecialchars($equipo['equipo'], ENT_QUOTES, 'UTF-8') ?></span>
-
-                        </div>
-
-                        <span><?= $equipo['pj'] ?></span>
-
-                        <span><?= $equipo['dg'] ?></span>
-
-                        <strong class="points">
-                            <?= $equipo['pts'] ?>
-                        </strong>
-
-                    </div>
-
-                <?php endforeach; ?>
-
-
-                <button
-                    class="standings-link"
-                    type="button"
-                >
-
-                    Ver tabla completa
-
-                    <i class="fa-solid fa-arrow-right"></i>
-
-                </button>
-
-            </article>
-
-        </aside>
 
     </div>
 
