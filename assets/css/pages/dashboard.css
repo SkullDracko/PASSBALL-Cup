@@ -172,6 +172,45 @@ a {
 
 
 /* =========================================================
+   LOGOS INSTITUCIONALES
+   ========================================================= */
+
+.topbar-institutional {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    flex-shrink: 0;
+}
+
+.institutional-divider {
+
+    width: 1px;
+
+    height: 38px;
+
+    background:
+        rgba(255,255,255,0.25);
+}
+
+.institutional-logo {
+
+    height: 42px;
+
+    max-height: 42px;
+
+    width: auto;
+
+    display: block;
+
+    object-fit: contain;
+}
+
+
+/* =========================================================
    NAV
    ========================================================= */
 
@@ -1498,6 +1537,21 @@ a {
         width: 200px;
     }
 
+    .topbar-institutional {
+
+        gap: 9px;
+    }
+
+    .institutional-logo {
+
+        height: 34px;
+    }
+
+    .institutional-divider {
+
+        height: 30px;
+    }
+
     .topbar-nav {
 
         order: 3;
@@ -1632,6 +1686,21 @@ a {
     .topbar-logo img {
 
         width: 165px;
+    }
+
+    .topbar-institutional {
+
+        gap: 6px;
+    }
+
+    .institutional-logo {
+
+        height: 26px;
+    }
+
+    .institutional-divider {
+
+        height: 24px;
     }
 
     .topbar-user-name {
@@ -1777,6 +1846,11 @@ a {
     .topbar-logo img {
 
         width: 140px;
+    }
+
+    .topbar-institutional {
+
+        display: none;
     }
 
     .topbar-nav {

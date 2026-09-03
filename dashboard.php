@@ -174,6 +174,33 @@ if ($rolUsuario === 'admin') {
 
             </a>
 
+
+            <!-- LOGOS INSTITUCIONALES -->
+
+            <div class="topbar-institutional">
+
+                <span class="institutional-divider"></span>
+
+                <img
+                    src="assets/img/facmed.png"
+                    alt="FacMed"
+                    class="institutional-logo"
+                >
+
+                <img
+                    src="assets/img/medprev.png"
+                    alt="MedPrev"
+                    class="institutional-logo"
+                >
+
+                <img
+                    src="assets/img/password.jpeg"
+                    alt="PassWord"
+                    class="institutional-logo"
+                >
+
+            </div>
+
         </div>
 
 
