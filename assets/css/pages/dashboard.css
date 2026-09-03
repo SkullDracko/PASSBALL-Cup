@@ -1930,14 +1930,19 @@ a {
 
 @media (max-width: 420px) {
 
-    .topbar-logo {
+    .institutional-logos {
 
-        width: 145px;
+        display: none;
     }
 
-    .topbar-logo img {
+    .logo-divider {
 
-        width: 140px;
+        display: none;
+    }
+
+    .logo-passball {
+
+        width: 110px;
     }
 
     .topbar-nav {
