@@ -1,0 +1,966 @@
+/* =========================================================
+   PARTIDOS - ENCABEZADO
+   ========================================================= */
+
+#view-partidos .page-header {
+
+    margin: 4px 0 18px;
+}
+
+#view-partidos .page-header h1 {
+
+    font-size: 29px;
+
+    line-height: 1.2;
+
+    margin-bottom: 7px;
+
+    font-weight: 800;
+}
+
+#view-partidos .page-header h1 i {
+
+    color: var(--purple);
+
+    margin-right: 8px;
+
+    font-size: 26px;
+}
+
+#view-partidos .page-header p {
+
+    color: var(--text-light);
+
+    font-size: 14px;
+}
+
+#view-partidos .page-header strong {
+
+    color: var(--purple);
+}
+
+
+/* =========================================================
+   PARTIDOS - ESTADÍSTICAS
+   ========================================================= */
+
+#view-partidos .partidos-stats {
+
+    gap: 14px;
+
+    margin-bottom: 16px;
+}
+
+#view-partidos .stat-card {
+
+    min-height: 108px;
+
+    padding: 18px;
+
+    gap: 17px;
+}
+
+#view-partidos .stat-icon {
+
+    width: 58px;
+
+    height: 58px;
+
+    font-size: 22px;
+}
+
+#view-partidos .stat-icon.purple {
+
+    background:
+        linear-gradient(
+            145deg,
+            #63309a,
+            #35116c
+        );
+}
+
+#view-partidos .stat-icon.orange {
+
+    background:
+        linear-gradient(
+            145deg,
+            #ff922c,
+            #ed6500
+        );
+}
+
+#view-partidos .stat-info {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+#view-partidos .stat-info strong {
+
+    font-size: 23px;
+
+    line-height: 1;
+
+    margin-bottom: 5px;
+}
+
+#view-partidos .stat-info span {
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    text-transform: uppercase;
+}
+
+#view-partidos .stat-info small {
+
+    color: var(--text-light);
+
+    font-size: 11px;
+
+    margin-top: 4px;
+}
+
+
+/* =========================================================
+   PARTIDOS - SECCIÓN
+   ========================================================= */
+
+#view-partidos .matches-section {
+
+    background: white;
+
+    border-radius: var(--radius);
+
+    box-shadow: var(--shadow);
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   PARTIDOS - BARRA DE HERRAMIENTAS
+   ========================================================= */
+
+#view-partidos .matches-toolbar {
+
+    min-height: 65px;
+
+    border-bottom: 1px solid var(--border);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 0 15px;
+}
+
+#view-partidos .match-tabs {
+
+    display: flex;
+
+    align-items: stretch;
+
+    height: 65px;
+
+    gap: 3px;
+}
+
+#view-partidos .match-tab {
+
+    position: relative;
+
+    border: none;
+
+    background: transparent;
+
+    color: var(--text-light);
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    padding: 0 16px;
+
+    cursor: pointer;
+
+    transition: var(--transition, 0.2s ease);
+}
+
+#view-partidos .match-tab i {
+
+    margin-right: 7px;
+}
+
+#view-partidos .match-tab:hover {
+
+    color: var(--purple);
+}
+
+#view-partidos .match-tab.active {
+
+    color: var(--purple);
+
+    background: transparent;
+}
+
+#view-partidos .match-tab.active::after {
+
+    content: "";
+
+    position: absolute;
+
+    left: 10px;
+
+    right: 10px;
+
+    bottom: 0;
+
+    height: 3px;
+
+    background: var(--purple);
+
+    border-radius: 3px 3px 0 0;
+}
+
+
+/* =========================================================
+   PARTIDOS - HERRAMIENTAS
+   ========================================================= */
+
+#view-partidos .match-tools {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+#view-partidos .match-search {
+
+    height: 40px;
+
+    min-width: 240px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 8px;
+
+    display: flex;
+
+    align-items: center;
+
+    padding: 0 12px;
+
+    color: var(--text-light);
+}
+
+#view-partidos .match-search:focus-within {
+
+    border-color: var(--purple);
+
+    box-shadow:
+        0 0 0 3px rgba(75, 35, 133, 0.08);
+}
+
+#view-partidos .match-search i {
+
+    font-size: 14px;
+
+    margin-right: 9px;
+
+    color: var(--purple);
+}
+
+#view-partidos .match-search input {
+
+    width: 100%;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    font-size: 13px;
+
+    color: var(--text);
+}
+
+#view-partidos .filter-box {
+
+    height: 40px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 8px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 0 11px;
+
+    color: var(--text-light);
+}
+
+#view-partidos .filter-box select {
+
+    border: none;
+
+    outline: none;
+
+    background: white;
+
+    color: var(--text-light);
+
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   PARTIDOS - AVISO 15 MIN
+   ========================================================= */
+
+#view-partidos .duration-notice {
+
+    margin: 18px 15px;
+
+    padding: 12px 15px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #f5effb,
+            #faf8fd
+        );
+
+    border-radius: 10px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+}
+
+#view-partidos .notice-icon {
+
+    width: 32px;
+
+    height: 32px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: var(--purple);
+
+    font-size: 18px;
+
+    flex-shrink: 0;
+}
+
+#view-partidos .duration-notice strong {
+
+    display: block;
+
+    font-size: 13px;
+
+    margin-bottom: 3px;
+}
+
+#view-partidos .duration-notice p {
+
+    font-size: 11px;
+
+    color: var(--text-light);
+}
+
+
+/* =========================================================
+   PARTIDOS - LAYOUT
+   ========================================================= */
+
+#view-partidos .matches-layout {
+
+    display: grid;
+
+    grid-template-columns: 1fr;
+
+    gap: 20px;
+
+    padding: 0 15px 15px;
+}
+
+
+/* =========================================================
+   PARTIDOS - LISTA
+   ========================================================= */
+
+#view-partidos .matches-list {
+
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+    background: white;
+}
+
+#view-partidos .match-row {
+
+    min-height: 93px;
+
+    display: grid;
+
+    grid-template-columns:
+        62px
+        82px
+        minmax(220px, 1fr)
+        150px
+        75px
+        35px;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 10px 12px;
+
+    border-bottom: 1px solid var(--border);
+
+    transition: var(--transition, 0.2s ease);
+}
+
+#view-partidos .match-row:last-of-type {
+
+    border-bottom: none;
+}
+
+#view-partidos .match-row:hover {
+
+    background: #fbf9fd;
+}
+
+
+/* =========================================================
+   PARTIDOS - FECHA / HORA
+   ========================================================= */
+
+#view-partidos .match-date {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    line-height: 1;
+}
+
+#view-partidos .match-date strong {
+
+    font-size: 21px;
+}
+
+#view-partidos .match-date span {
+
+    color: var(--orange);
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    margin-top: 4px;
+}
+
+#view-partidos .match-time {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+#view-partidos .match-time strong {
+
+    font-size: 12px;
+}
+
+#view-partidos .match-time span {
+
+    color: var(--text-light);
+
+    font-size: 10px;
+}
+
+#view-partidos .match-time i {
+
+    margin-right: 3px;
+}
+
+
+/* =========================================================
+   PARTIDOS - EQUIPOS
+   ========================================================= */
+
+#view-partidos .match-teams {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 40px 1fr;
+
+    align-items: center;
+
+    gap: 6px;
+}
+
+#view-partidos .team {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    min-width: 0;
+}
+
+#view-partidos .team strong {
+
+    font-size: 12px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+#view-partidos .team-logo {
+
+    width: 38px;
+
+    height: 38px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 19px;
+
+    flex-shrink: 0;
+
+    border: 2px solid white;
+
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+#view-partidos .purple-logo {
+
+    background:
+        linear-gradient(
+            145deg,
+            #6833a1,
+            #32106c
+        );
+}
+
+#view-partidos .orange-logo {
+
+    background:
+        linear-gradient(
+            145deg,
+            #ff9b3e,
+            #ed6100
+        );
+}
+
+#view-partidos .vs {
+
+    text-align: center;
+
+    font-size: 12px;
+
+    font-weight: 900;
+
+    color: var(--purple);
+
+    text-decoration: underline;
+
+    text-underline-offset: 5px;
+}
+
+
+/* =========================================================
+   PARTIDOS - UBICACIÓN
+   ========================================================= */
+
+#view-partidos .match-location {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: var(--purple);
+}
+
+#view-partidos .match-location > i {
+
+    font-size: 14px;
+}
+
+#view-partidos .match-location div {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+#view-partidos .match-location strong {
+
+    font-size: 10px;
+}
+
+#view-partidos .match-location span {
+
+    color: var(--text-light);
+
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   PARTIDOS - ESTADO
+   ========================================================= */
+
+#view-partidos .match-status {
+
+    display: flex;
+
+    justify-content: center;
+}
+
+#view-partidos .status {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    border-radius: 20px;
+
+    padding: 5px 8px;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+#view-partidos .status.upcoming {
+
+    color: var(--purple);
+
+    background: #f0e9fa;
+}
+
+#view-partidos .status.live {
+
+    color: #c75200;
+
+    background: #fff0e5;
+}
+
+#view-partidos .status.finished {
+
+    color: #25a55f;
+
+    background: #eaf8f0;
+}
+
+#view-partidos .live-dot {
+
+    width: 6px;
+
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: var(--orange);
+
+    animation: partidosPulse 1.2s infinite;
+}
+
+@keyframes partidosPulse {
+
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+
+/* =========================================================
+   PARTIDOS - BOTÓN DETALLES
+   ========================================================= */
+
+#view-partidos .match-details {
+
+    width: 31px;
+
+    height: 31px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    background: var(--purple);
+
+    color: white;
+
+    cursor: pointer;
+
+    transition: var(--transition, 0.2s ease);
+}
+
+#view-partidos .match-details:hover {
+
+    background: var(--orange);
+
+    transform: translateX(2px);
+}
+
+
+/* =========================================================
+   PARTIDOS - SIN RESULTADOS
+   ========================================================= */
+
+#view-partidos .empty-results {
+
+    display: none;
+
+    min-height: 260px;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    color: var(--text-light);
+}
+
+#view-partidos .empty-results.show {
+
+    display: flex;
+}
+
+#view-partidos .empty-results i {
+
+    font-size: 27px;
+
+    margin-bottom: 5px;
+}
+
+#view-partidos .empty-results strong {
+
+    font-size: 14px;
+
+    color: var(--text);
+}
+
+#view-partidos .empty-results span {
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   PARTIDOS - RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1250px) {
+
+    #view-partidos .match-row {
+
+        grid-template-columns:
+            52px
+            75px
+            minmax(180px, 1fr)
+            120px
+            65px
+            30px;
+    }
+}
+
+@media (max-width: 1050px) {
+
+    #view-partidos .partidos-stats {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    #view-partidos .matches-layout {
+
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 850px) {
+
+    #view-partidos .match-row {
+
+        grid-template-columns:
+            50px
+            70px
+            1fr
+            30px;
+    }
+
+    #view-partidos .match-location,
+    #view-partidos .match-status {
+
+        display: none;
+    }
+}
+
+@media (max-width: 700px) {
+
+    #view-partidos .match-row {
+
+        grid-template-columns:
+            45px
+            65px
+            1fr
+            30px;
+
+        gap: 5px;
+
+        padding: 10px 7px;
+    }
+
+    #view-partidos .team-logo {
+
+        width: 32px;
+
+        height: 32px;
+
+        font-size: 16px;
+    }
+
+    #view-partidos .team strong {
+
+        font-size: 10px;
+    }
+
+    #view-partidos .match-teams {
+
+        grid-template-columns:
+            1fr 25px 1fr;
+    }
+
+    #view-partidos .match-time strong {
+
+        font-size: 10px;
+    }
+
+    #view-partidos .match-details {
+
+        width: 27px;
+
+        height: 27px;
+    }
+}
+
+@media (max-width: 650px) {
+
+    #view-partidos .matches-toolbar {
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+        padding: 10px;
+
+        height: auto;
+    }
+
+    #view-partidos .match-tabs {
+
+        height: 45px;
+
+        overflow-x: auto;
+    }
+
+    #view-partidos .match-tab {
+
+        padding: 0 10px;
+
+        white-space: nowrap;
+    }
+
+    #view-partidos .match-tools {
+
+        width: 100%;
+    }
+
+    #view-partidos .match-search {
+
+        min-width: 0;
+
+        flex: 1;
+    }
+
+    #view-partidos .filter-box {
+
+        flex-shrink: 0;
+    }
+
+    #view-partidos .matches-layout {
+
+        padding: 0 10px 10px;
+    }
+}
