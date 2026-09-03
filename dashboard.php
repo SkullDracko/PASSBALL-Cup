@@ -160,19 +160,60 @@ if ($rolUsuario === 'admin') {
 
         <div class="nav-left">
 
-            <!-- LOGO -->
+            <!-- ÁREA DE LOGOS -->
 
-            <a
-                href="dashboard.php"
-                class="topbar-logo"
-            >
+            <div class="brand-area">
 
-                <img
-                    src="assets/img/passball-cup.png"
-                    alt="PASSBALL Cup"
+                <div class="institutional-logos">
+
+                    <!-- FACMED -->
+
+                    <img
+                        src="assets/img/facmed.png"
+                        alt="Facultad de Medicina UANL"
+                        class="logo-facmed"
+                    >
+
+                    <!-- MEDPREV -->
+
+                    <img
+                        src="assets/img/medprev.png"
+                        alt="Medicina Preventiva y Salud Pública"
+                        class="logo-medprev"
+                    >
+
+                    <!-- PASSWORD -->
+
+                    <img
+                        src="assets/img/password.png"
+                        alt="PASSWORD"
+                        class="logo-password"
+                    >
+
+                </div>
+
+
+                <!-- SEPARADOR -->
+
+                <div class="logo-divider"></div>
+
+
+                <!-- PASSBALL CUP -->
+
+                <a
+                    href="dashboard.php"
+                    class="topbar-logo"
                 >
 
-            </a>
+                    <img
+                        src="assets/img/passball-cup.png"
+                        alt="PASSBALL Cup"
+                        class="logo-passball"
+                    >
+
+                </a>
+
+            </div>
 
         </div>
 

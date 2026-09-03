@@ -141,12 +141,85 @@ a {
 
 
 /* =========================================================
-   LOGO
+   LOGOS
    ========================================================= */
+
+.brand-area {
+
+    display: flex;
+
+    align-items: center;
+
+    flex-shrink: 0;
+
+    height: 100%;
+}
+
+.institutional-logos {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    height: 100%;
+}
+
+.logo-divider {
+
+    width: 1px;
+
+    height: 42px;
+
+    background:
+        rgba(255,255,255,0.35);
+
+    margin: 0 16px;
+}
+
+.logo-facmed {
+
+    width: 78px;
+
+    max-height: 54px;
+
+    object-fit: contain;
+
+    filter:
+        brightness(0)
+        invert(1);
+}
+
+.logo-medprev {
+
+    width: 58px;
+
+    max-height: 58px;
+
+    object-fit: contain;
+
+    filter:
+        brightness(0)
+        invert(1);
+}
+
+.logo-password {
+
+    width: 125px;
+
+    max-height: 48px;
+
+    object-fit: contain;
+
+    filter:
+        brightness(0)
+        invert(1);
+}
 
 .topbar-logo {
 
-    width: 250px;
+    width: auto;
 
     flex-shrink: 0;
 
@@ -155,9 +228,24 @@ a {
     align-items: center;
 }
 
+.logo-passball {
+
+    width: 155px;
+
+    max-height: 58px;
+
+    object-fit: contain;
+
+    display: block;
+
+    filter:
+        brightness(0)
+        invert(1);
+}
+
 .topbar-logo img {
 
-    width: 230px;
+    width: 155px;
 
     max-width: 100%;
 
@@ -1432,14 +1520,34 @@ a {
             20px;
     }
 
-    .topbar-logo {
+    .institutional-logos {
 
-        width: 205px;
+        gap: 9px;
     }
 
-    .topbar-logo img {
+    .logo-divider {
 
-        width: 195px;
+        margin: 0 12px;
+    }
+
+    .logo-facmed {
+
+        width: 65px;
+    }
+
+    .logo-medprev {
+
+        width: 48px;
+    }
+
+    .logo-password {
+
+        width: 105px;
+    }
+
+    .logo-passball {
+
+        width: 130px;
     }
 
     .nav-item {
@@ -1493,9 +1601,34 @@ a {
             18px;
     }
 
-    .topbar-logo {
+    .institutional-logos {
 
-        width: 200px;
+        gap: 7px;
+    }
+
+    .logo-divider {
+
+        margin: 0 10px;
+    }
+
+    .logo-facmed {
+
+        width: 55px;
+    }
+
+    .logo-medprev {
+
+        width: 42px;
+    }
+
+    .logo-password {
+
+        width: 90px;
+    }
+
+    .logo-passball {
+
+        width: 115px;
     }
 
     .topbar-nav {
@@ -1624,14 +1757,42 @@ a {
         gap: 10px;
     }
 
-    .topbar-logo {
+    .institutional-logos {
 
-        width: 170px;
+        gap: 6px;
     }
 
-    .topbar-logo img {
+    .logo-divider {
 
-        width: 165px;
+        margin: 0 8px;
+
+        height: 32px;
+    }
+
+    .logo-facmed {
+
+        width: 44px;
+
+        max-height: 36px;
+    }
+
+    .logo-medprev {
+
+        width: 34px;
+
+        max-height: 40px;
+    }
+
+    .logo-password {
+
+        width: 72px;
+
+        max-height: 34px;
+    }
+
+    .logo-passball {
+
+        width: 92px;
     }
 
     .topbar-user-name {
