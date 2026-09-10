@@ -491,6 +491,93 @@ a {
 
 
 /* =========================================================
+   BOTÓN MENÚ MÓVIL
+   ========================================================= */
+
+.menu-button {
+
+    display: none;
+
+    border: 1px solid rgba(255,255,255,.3);
+
+    background: rgba(255,255,255,.08);
+
+    color: white;
+
+    width: 42px;
+    height: 42px;
+
+    border-radius: 8px;
+
+    font-size: 18px;
+
+    cursor: pointer;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+}
+
+.menu-button i {
+
+    font-size: 18px;
+}
+
+.menu-button:hover {
+
+    background: rgba(255,255,255,.15);
+}
+
+
+/* =========================================================
+   MENÚ MÓVIL DESPLEGADO
+   ========================================================= */
+
+.topbar-nav.mobile-open {
+
+    display: flex;
+
+    position: absolute;
+
+    top: 100%;
+    left: 0;
+    right: 0;
+
+    background: var(--purple-dark, #28124f);
+
+    flex-direction: column;
+
+    align-items: stretch;
+
+    padding: 10px 15px 15px;
+
+    margin: 0;
+
+    gap: 4px;
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,.25);
+
+    z-index: 100;
+}
+
+.topbar-nav.mobile-open .nav-item {
+
+    padding: 13px 15px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+}
+
+.topbar-nav.mobile-open .nav-tab {
+
+    justify-content: flex-start;
+}
+
+
+/* =========================================================
    CONTENIDO GENERAL
    ========================================================= */
 
@@ -1633,13 +1720,7 @@ a {
 
     .topbar-nav {
 
-        order: 3;
-
-        width: 100%;
-
-        overflow-x: auto;
-
-        padding-bottom: 3px;
+        display: none;
     }
 
     .nav-item {
@@ -1650,6 +1731,13 @@ a {
     .topbar-user {
 
         margin-left: auto;
+    }
+
+    .menu-button {
+
+        display: flex;
+
+        margin-left: 14px;
     }
 
     .dashboard-content {
@@ -3265,4 +3353,373 @@ a {
 
         width: 100%;
     }
+}
+
+
+/* =========================================================
+   BANNER DE USUARIO COMPACTO (MÓVIL)
+   ≤ 767px — el panel izquierdo se compacta a 145px
+   ========================================================= */
+
+@media (max-width: 767px) {
+
+    .profile-panel {
+
+        width: 100%;
+
+        height: 145px;
+
+        min-height: 145px;
+
+        max-height: 145px;
+
+        border-radius: 15px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        background-position:
+            center
+            35%;
+    }
+
+    .profile-top {
+
+        padding-top: 0;
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 3px;
+    }
+
+    .profile-avatar {
+
+        width: 48px;
+
+        height: 48px;
+
+        margin:
+            0
+            auto
+            6px;
+    }
+
+    .profile-avatar svg {
+
+        width: 26px;
+
+        height: 26px;
+    }
+
+    .profile-top h2 {
+
+        font-size: 20px;
+
+        line-height: 1;
+
+        margin-bottom: 0;
+    }
+
+    .profile-role {
+
+        font-size: 14px;
+    }
+
+    .profile-quote {
+
+        position: static;
+
+        transform: none;
+
+        margin:
+            4px
+            12px
+            0;
+    }
+
+    .quote-mark {
+
+        display: none;
+    }
+
+    .profile-quote p {
+
+        font-size: 14px;
+
+        line-height: 1.2;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+    }
+
+    .profile-quote span {
+
+        margin-top: 3px;
+
+        font-size: 13px;
+    }
+
+}
+
+
+/* =========================================================
+   TABLET / IPAD HORIZONTAL
+   1025px - 1400px
+   ========================================================= */
+
+@media (min-width: 1025px) and (max-width: 1400px) {
+
+    body {
+
+        overflow-x: hidden;
+    }
+
+
+    /* HEADER */
+
+    .topbar,
+    header {
+
+        height: 82px;
+
+        min-height: 82px;
+    }
+
+    .topbar {
+
+        gap: 18px;
+
+        padding: 0 24px;
+    }
+
+    .institutional-logos {
+
+        gap: 12px;
+    }
+
+    .institutional-logos img {
+
+        max-height: 42px;
+
+        width: auto;
+
+        object-fit: contain;
+    }
+
+    .logo-divider {
+
+        height: 38px;
+
+        width: 1px;
+
+        margin: 0 4px;
+    }
+
+    .logo-passball {
+
+        max-width: 155px;
+
+        height: auto;
+    }
+
+    .topbar-nav {
+
+        flex: initial;
+
+        gap: 5px;
+
+        margin-left: auto;
+    }
+
+    .topbar-nav .nav-item {
+
+        padding: 12px 10px;
+
+        font-size: 13px;
+
+        white-space: nowrap;
+    }
+
+    .topbar-user {
+
+        margin-left: 8px;
+    }
+
+
+    /* ESTRUCTURA PRINCIPAL */
+
+    .dashboard-content {
+
+        grid-template-columns:
+
+            230px
+            minmax(0, 1fr);
+
+        gap: 24px;
+
+        width: min(1250px, calc(100% - 40px));
+
+        margin: 25px auto 20px;
+
+        padding: 0 0 20px;
+    }
+
+    .profile-panel {
+
+        border-radius: 14px;
+    }
+
+}
+
+
+/* =========================================================
+   MÓVIL — HEADER Y CONTENEDOR
+   ≤ 767px
+   ========================================================= */
+
+@media (max-width: 767px) {
+
+    body {
+
+        overflow-x: hidden;
+    }
+
+
+    /* HEADER */
+
+    .topbar,
+    header {
+
+        height: 82px;
+
+        min-height: 82px;
+    }
+
+    .institutional-logos {
+
+        display: none;
+    }
+
+    .logo-divider {
+
+        display: none;
+    }
+
+    .logo-passball {
+
+        width: 150px;
+
+        max-width: 150px;
+    }
+
+
+    /* CONTENEDOR */
+
+    .dashboard-content {
+
+        display: flex;
+
+        flex-direction: column;
+
+        width: 100%;
+
+        margin: 0;
+
+        padding: 15px;
+
+        gap: 18px;
+    }
+
+}
+
+
+/* =========================================================
+   TABLET / IPAD
+   768px - 1199px
+   ========================================================= */
+
+@media (min-width: 768px) and (max-width: 1199px) {
+
+    body {
+
+        overflow-x: hidden;
+    }
+
+
+    /* CONTENEDOR GENERAL */
+
+    .dashboard-content {
+
+        width: calc(100% - 32px);
+
+        max-width: 1050px;
+
+        display: grid;
+
+        grid-template-columns:
+
+            180px
+            minmax(0, 1fr);
+
+        gap: 16px;
+
+        margin: 16px auto 0;
+
+        padding: 0 0 16px;
+
+        overflow: hidden;
+    }
+
+
+    /* BANNER LATERAL */
+
+    .profile-panel {
+
+        width: 180px;
+
+        height: calc(100vh - 130px);
+
+        min-height: 560px;
+
+        max-height: 700px;
+
+        border-radius: 12px;
+
+        overflow: hidden;
+
+        background-position: center;
+    }
+
+
+    /* CONTENIDO PRINCIPAL */
+
+    .main-area {
+
+        width: 100%;
+
+        min-width: 0;
+    }
+
+
+    /* FOOTER */
+
+    .dashboard-footer {
+
+        margin-top: 10px;
+
+        font-size: 8px;
+    }
+
 }

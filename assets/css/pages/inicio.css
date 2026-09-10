@@ -1,0 +1,1105 @@
+/* ============================================================
+   PASSBALL Cup - Inicio
+   Estilos de la sección Inicio, scoped a #view-inicio.
+   El header/nav/banner de perfil responsivo vive en
+   dashboard.css (shell). Aquí solo el contenido nuevo.
+   ============================================================ */
+
+
+/* ============================================================
+   BIENVENIDA
+   ============================================================ */
+
+#view-inicio .bienvenida {
+
+    margin-bottom: 16px;
+}
+
+#view-inicio .bienvenida h1 {
+
+    font-size: clamp(26px, 2.2vw, 34px);
+
+    line-height: 1.15;
+
+    font-weight: 800;
+
+    color: var(--text, #24164a);
+
+    margin-bottom: 6px;
+}
+
+#view-inicio .bienvenida h1 span {
+
+    font-size: 24px;
+
+    margin-left: 5px;
+}
+
+#view-inicio .bienvenida p {
+
+    font-size: 14px;
+
+    color: var(--text-light, #6e6680);
+
+    line-height: 1.4;
+}
+
+
+/* ============================================================
+   ESTADÍSTICAS
+   ============================================================ */
+
+#view-inicio .estadisticas {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 16px;
+}
+
+#view-inicio .card-estadistica {
+
+    background: var(--white, #fff);
+
+    border-radius: var(--radius, 16px);
+
+    min-height: 118px;
+
+    padding: 18px 16px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    box-shadow:
+        var(--shadow, 0 8px 25px rgba(47, 25, 83, 0.08));
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+#view-inicio .card-estadistica:hover {
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        var(--shadow-hover, 0 14px 35px rgba(47, 25, 83, 0.14));
+}
+
+
+/* ============================================================
+   ICONO (CÍRCULO)
+   ============================================================ */
+
+#view-inicio .icono-card {
+
+    width: 56px;
+
+    height: 56px;
+
+    min-width: 56px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: white;
+
+    font-size: 22px;
+
+    box-shadow:
+        inset 0 1px 1px rgba(255,255,255,0.25);
+}
+
+#view-inicio .icono-card.morado {
+
+    background:
+        linear-gradient(
+            145deg,
+            var(--purple-light, #7442a1),
+            var(--purple-dark, #28124f)
+        );
+}
+
+#view-inicio .icono-card.naranja {
+
+    background:
+        linear-gradient(
+            145deg,
+            var(--orange-light, #ff8a24),
+            var(--orange, #ff7200)
+        );
+}
+
+
+/* ============================================================
+   CONTENIDO CARD
+   ============================================================ */
+
+#view-inicio .info-card {
+
+    min-width: 0;
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+#view-inicio .info-card strong {
+
+    font-size: 24px;
+
+    line-height: 1;
+
+    font-weight: 800;
+
+    margin-bottom: 6px;
+}
+
+#view-inicio .info-card span {
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 0.02em;
+
+    margin-bottom: 4px;
+}
+
+#view-inicio .info-card small {
+
+    font-size: 11px;
+
+    line-height: 1.4;
+
+    color: var(--text-light, #6e6680);
+}
+
+
+/* ============================================================
+   PRÓXIMO PARTIDO
+   ============================================================ */
+
+#view-inicio .proximo-partido {
+
+    margin-top: 18px;
+
+    background: var(--white, #fff);
+
+    border-radius: var(--radius, 16px);
+
+    box-shadow:
+        var(--shadow, 0 8px 25px rgba(47, 25, 83, 0.08));
+
+    overflow: hidden;
+}
+
+#view-inicio .titulo-seccion {
+
+    min-height: 62px;
+
+    padding: 0 25px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    border-bottom:
+        1px solid var(--border, #e8e3ef);
+}
+
+#view-inicio .titulo-seccion i {
+
+    font-size: 19px;
+
+    color: var(--purple, #4b2780);
+}
+
+#view-inicio .titulo-seccion span {
+
+    font-size: 17px;
+
+    font-weight: 800;
+}
+
+
+/* --- Íconos de info del partido (Font Awesome) --- */
+
+#view-inicio .match-info {
+
+    align-items: center;
+}
+
+#view-inicio .match-info i {
+
+    width: 15px;
+
+    height: 15px;
+
+    font-size: 15px;
+
+    color: var(--purple, #4b2780);
+
+    flex-shrink: 0;
+}
+
+#view-inicio .match-info span {
+
+    user-select: text;
+}
+
+
+/* ============================================================
+   SIN PARTIDO
+   ============================================================ */
+
+#view-inicio .partido-vacio {
+
+    min-height: 225px;
+
+    padding: 30px 20px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+}
+
+#view-inicio .icono-partido {
+
+    width: 58px;
+
+    height: 58px;
+
+    border-radius: 50%;
+
+    background: #f3eef9;
+
+    color: #7550a2;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 24px;
+
+    margin-bottom: 13px;
+}
+
+#view-inicio .partido-vacio strong {
+
+    font-size: 15px;
+
+    font-weight: 700;
+}
+
+#view-inicio .partido-vacio p {
+
+    margin-top: 5px;
+
+    font-size: 12px;
+
+    color: var(--text-light, #6e6680);
+}
+
+
+/* ============================================================
+   ACCESOS RÁPIDOS
+   ============================================================ */
+
+#view-inicio .accesos {
+
+    margin-top: 18px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 16px;
+}
+
+#view-inicio .acceso {
+
+    background: var(--white, #fff);
+
+    border-radius: var(--radius, 16px);
+
+    min-height: 112px;
+
+    padding: 18px 18px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    box-shadow:
+        var(--shadow, 0 8px 25px rgba(47, 25, 83, 0.08));
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+    cursor: pointer;
+}
+
+#view-inicio .acceso:hover {
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        var(--shadow-hover, 0 14px 35px rgba(47, 25, 83, 0.14));
+}
+
+#view-inicio .acceso > div {
+
+    flex: 1;
+
+    min-width: 0;
+}
+
+#view-inicio .acceso strong {
+
+    font-size: 15px;
+
+    font-weight: 800;
+
+    margin-bottom: 5px;
+
+    display: block;
+}
+
+#view-inicio .acceso p {
+
+    font-size: 11px;
+
+    line-height: 1.45;
+
+    color: var(--text-light, #6e6680);
+}
+
+
+/* ============================================================
+   FLECHA
+   ============================================================ */
+
+#view-inicio .flecha {
+
+    width: 32px;
+
+    height: 32px;
+
+    min-width: 32px;
+
+    border-radius: 8px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: white;
+
+    font-size: 17px;
+
+    font-weight: 700;
+
+    flex-shrink: 0;
+}
+
+#view-inicio .flecha.morado-fondo {
+
+    background: var(--purple, #4b2780);
+}
+
+#view-inicio .flecha.naranja-fondo {
+
+    background: var(--orange, #ff7200);
+}
+
+
+/* ============================================================
+   TABLET VERTICAL
+   ≤ 1100px
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+    #view-inicio .estadisticas {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    #view-inicio .bienvenida h1 {
+
+        font-size: 24px;
+    }
+
+}
+
+
+/* ============================================================
+   TABLET / IPAD HORIZONTAL
+   1025px - 1400px
+   ============================================================ */
+
+@media (min-width: 1025px) and (max-width: 1400px) {
+
+    /* BIENVENIDA */
+
+    #view-inicio .bienvenida h1 {
+
+        font-size: 27px;
+
+        margin-bottom: 6px;
+    }
+
+    #view-inicio .bienvenida p {
+
+        font-size: 14px;
+
+        margin-bottom: 18px;
+    }
+
+
+    /* ESTADÍSTICAS */
+
+    #view-inicio .estadisticas {
+
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+
+        gap: 14px;
+    }
+
+    #view-inicio .card-estadistica {
+
+        min-width: 0;
+
+        height: 92px;
+
+        min-height: 92px;
+
+        padding: 14px;
+    }
+
+    #view-inicio .icono-card {
+
+        width: 48px;
+
+        height: 48px;
+
+        min-width: 48px;
+    }
+
+    #view-inicio .info-card strong {
+
+        font-size: 20px;
+    }
+
+    #view-inicio .info-card small {
+
+        font-size: 9px;
+    }
+
+
+    /* PRÓXIMO PARTIDO */
+
+    #view-inicio .proximo-partido {
+
+        margin-top: 18px;
+
+        min-height: 260px;
+    }
+
+    #view-inicio .titulo-seccion {
+
+        min-height: auto;
+
+        padding: 15px 20px;
+    }
+
+    #view-inicio .proximo-partido .match-layout,
+    #view-inicio .proximo-partido .partido-vacio {
+
+        min-height: 200px;
+    }
+
+
+    /* ACCESOS */
+
+    #view-inicio .accesos {
+
+        grid-template-columns:
+            repeat(3, 1fr);
+
+        gap: 14px;
+
+        margin-top: 18px;
+    }
+
+    #view-inicio .acceso {
+
+        min-width: 0;
+
+        height: 105px;
+
+        min-height: 105px;
+
+        padding: 15px;
+    }
+
+    #view-inicio .acceso strong {
+
+        font-size: 13px;
+    }
+
+    #view-inicio .acceso p {
+
+        font-size: 9px;
+    }
+
+}
+
+
+/* ============================================================
+   MÓVIL
+   ≤ 767px
+   ============================================================ */
+
+@media (max-width: 767px) {
+
+    /* BIENVENIDA */
+
+    #view-inicio .bienvenida {
+
+        margin-bottom: 14px;
+    }
+
+    #view-inicio .bienvenida h1 {
+
+        font-size: 21px;
+
+        line-height: 1.2;
+    }
+
+    #view-inicio .bienvenida h1 span {
+
+        font-size: 18px;
+    }
+
+    #view-inicio .bienvenida p {
+
+        font-size: 12px;
+    }
+
+
+    /* ESTADÍSTICAS (columna, filas compactas) */
+
+    #view-inicio .estadisticas {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 8px;
+    }
+
+    #view-inicio .card-estadistica {
+
+        width: 100%;
+
+        height: 62px;
+
+        min-height: 62px;
+
+        display: flex;
+
+        align-items: center;
+
+        padding: 10px 12px;
+
+        border-radius: 11px;
+
+        gap: 12px;
+    }
+
+    #view-inicio .card-estadistica .icono-card {
+
+        width: 43px;
+
+        height: 43px;
+
+        min-width: 43px;
+
+        font-size: 17px;
+    }
+
+    #view-inicio .info-card strong {
+
+        font-size: 18px;
+
+        margin-bottom: 3px;
+    }
+
+    #view-inicio .info-card span {
+
+        font-size: 10px;
+
+        margin-bottom: 2px;
+    }
+
+    #view-inicio .info-card small {
+
+        font-size: 8px;
+    }
+
+
+    /* PRÓXIMO PARTIDO */
+
+    #view-inicio .proximo-partido {
+
+        margin-top: 12px;
+
+        min-height: 180px;
+
+        border-radius: 12px;
+    }
+
+    #view-inicio .titulo-seccion {
+
+        min-height: 50px;
+
+        padding: 0 16px;
+
+        gap: 9px;
+    }
+
+    #view-inicio .titulo-seccion i {
+
+        font-size: 15px;
+    }
+
+    #view-inicio .titulo-seccion span {
+
+        font-size: 13px;
+    }
+
+    #view-inicio .partido-vacio {
+
+        min-height: 180px;
+
+        padding: 20px 16px;
+    }
+
+    #view-inicio .icono-partido {
+
+        width: 46px;
+
+        height: 46px;
+
+        font-size: 18px;
+
+        margin-bottom: 10px;
+    }
+
+    #view-inicio .partido-vacio strong {
+
+        font-size: 13px;
+    }
+
+    #view-inicio .partido-vacio p {
+
+        font-size: 10px;
+    }
+
+
+    /* LAYOUT PARTIDO (apilado) */
+
+    #view-inicio .match-layout {
+
+        grid-template-columns: 1fr;
+
+        gap: 18px;
+
+        padding: 22px 18px;
+
+        min-height: 0;
+    }
+
+    #view-inicio .match-center {
+
+        border-left: none;
+
+        border-right: none;
+
+        border-top: 1px solid var(--border, #e8e3ef);
+
+        border-bottom: 1px solid var(--border, #e8e3ef);
+
+        min-height: 0;
+
+        padding: 18px 0;
+    }
+
+    #view-inicio .match-button-container {
+
+        justify-content: center;
+
+        padding-bottom: 18px;
+    }
+
+
+    /* ACCESOS (columna) */
+
+    #view-inicio .accesos {
+
+        margin-top: 12px;
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 8px;
+    }
+
+    #view-inicio .acceso {
+
+        width: 100%;
+
+        height: 65px;
+
+        min-height: 65px;
+
+        padding: 9px 13px;
+
+        border-radius: 11px;
+
+        gap: 12px;
+    }
+
+    #view-inicio .acceso .icono-card {
+
+        width: 42px;
+
+        height: 42px;
+
+        min-width: 42px;
+
+        font-size: 16px;
+    }
+
+    #view-inicio .acceso strong {
+
+        font-size: 12px;
+
+        margin-bottom: 2px;
+    }
+
+    #view-inicio .acceso p {
+
+        font-size: 9px;
+
+        line-height: 1.3;
+    }
+
+    #view-inicio .acceso .flecha {
+
+        width: 26px;
+
+        height: 26px;
+
+        min-width: 26px;
+
+        font-size: 13px;
+    }
+
+}
+
+
+/* ============================================================
+   MÓVILES MUY PEQUEÑOS
+   ≤ 380px
+   ============================================================ */
+
+@media (max-width: 380px) {
+
+    #view-inicio .bienvenida h1 {
+
+        font-size: 19px;
+    }
+
+    #view-inicio .info-card small {
+
+        font-size: 8px;
+    }
+
+    #view-inicio .acceso p {
+
+        font-size: 8px;
+    }
+
+}
+
+
+/* ============================================================
+   TABLET / IPAD
+   768px - 1199px
+   ============================================================ */
+
+@media (min-width: 768px) and (max-width: 1199px) {
+
+    /* BIENVENIDA */
+
+    #view-inicio .bienvenida h1 {
+
+        font-size: 24px;
+
+        line-height: 1.15;
+
+        margin: 0 0 3px;
+    }
+
+    #view-inicio .bienvenida p {
+
+        font-size: 12px;
+
+        margin-bottom: 14px;
+    }
+
+
+    /* ESTADÍSTICAS */
+
+    #view-inicio .estadisticas {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 10px;
+    }
+
+    #view-inicio .card-estadistica {
+
+        width: 100%;
+
+        height: 72px;
+
+        min-height: 72px;
+
+        padding: 10px;
+
+        display: flex;
+
+        align-items: center;
+
+        min-width: 0;
+
+        gap: 10px;
+    }
+
+    #view-inicio .card-estadistica .icono-card {
+
+        width: 42px;
+
+        height: 42px;
+
+        min-width: 42px;
+    }
+
+    #view-inicio .info-card strong {
+
+        font-size: 18px;
+
+        line-height: 1;
+    }
+
+    #view-inicio .info-card span {
+
+        font-size: 9px;
+    }
+
+    #view-inicio .info-card small {
+
+        font-size: 8px;
+    }
+
+
+    /* PRÓXIMO PARTIDO */
+
+    #view-inicio .proximo-partido {
+
+        width: 100%;
+
+        margin-top: 10px;
+
+        min-height: 180px;
+    }
+
+    #view-inicio .titulo-seccion {
+
+        height: 40px;
+
+        min-height: 40px;
+
+        padding: 10px 14px;
+    }
+
+
+    /* Layout compacto del partido (cabe en 180px con botón) */
+
+    #view-inicio .proximo-partido .match-layout {
+
+        padding: 10px 14px;
+    }
+
+    #view-inicio .proximo-partido .match-layout,
+    #view-inicio .proximo-partido .partido-vacio {
+
+        min-height: 140px;
+    }
+
+    #view-inicio .proximo-partido .team-shield {
+
+        width: 56px;
+
+        height: 64px;
+
+        font-size: 22px;
+
+        margin-bottom: 5px;
+    }
+
+    #view-inicio .proximo-partido .team-label {
+
+        font-size: 8px;
+
+        margin-bottom: 3px;
+    }
+
+    #view-inicio .proximo-partido .team-name {
+
+        font-size: 13px;
+    }
+
+    #view-inicio .proximo-partido .match-round {
+
+        font-size: 9px;
+
+        margin-bottom: 4px;
+    }
+
+    #view-inicio .proximo-partido .match-vs-large {
+
+        font-size: 18px;
+
+        margin-bottom: 8px;
+    }
+
+    #view-inicio .proximo-partido .match-info {
+
+        gap: 5px;
+    }
+
+    #view-inicio .proximo-partido .match-info div {
+
+        font-size: 10px;
+
+        gap: 7px;
+    }
+
+    #view-inicio .proximo-partido .match-info i {
+
+        font-size: 11px;
+
+        width: 11px;
+
+        height: 11px;
+    }
+
+    #view-inicio .proximo-partido .match-button-container {
+
+        padding: 0 14px 12px;
+    }
+
+    #view-inicio .proximo-partido .match-button {
+
+        padding: 8px 14px;
+
+        font-size: 11px;
+    }
+
+
+    /* ACCESOS */
+
+    #view-inicio .accesos {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 10px;
+
+        margin-top: 10px;
+    }
+
+    #view-inicio .acceso {
+
+        width: 100%;
+
+        height: 82px;
+
+        min-height: 82px;
+
+        padding: 10px;
+
+        min-width: 0;
+    }
+
+    #view-inicio .acceso strong {
+
+        font-size: 10px;
+    }
+
+    #view-inicio .acceso p {
+
+        font-size: 7px;
+
+        line-height: 1.2;
+    }
+
+    #view-inicio .acceso .icono-card {
+
+        width: 38px;
+
+        height: 38px;
+
+        min-width: 38px;
+    }
+
+}

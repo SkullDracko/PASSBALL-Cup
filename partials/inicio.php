@@ -3,9 +3,9 @@
  * ============================================================
  * PASSBALL Cup - Inicio (vista dentro del dashboard)
  * ============================================================
- * Partial que se incluye dentro de <div id="view-inicio">
- * en dashboard.php. Contiene los datos y el markup de la
- * sección Inicio.
+ * Partial incluido en <div id="view-inicio"> de dashboard.php.
+ * El header, la navegación y el banner de perfil (banner-usuario)
+ * los aporta el shell (dashboard.php); aquí solo va el contenido.
  * ============================================================
  */
 
@@ -87,15 +87,19 @@ try {
     $proximoPartido = null;
     $totalFinalizados = 0;
 }
+
+// Datos de liderazgo (pendiente de definir en BD)
+$lider = false;
 ?>
 
 
 <!-- BIENVENIDA -->
 
-<div class="welcome-section">
+<div class="bienvenida">
 
     <h1>
-        ¡Bienvenido, <?= $nombreUsuario ?>! 👋
+        ¡Bienvenido, <?= htmlspecialchars($nombreUsuario) ?>!
+        <span>👋</span>
     </h1>
 
     <p>
@@ -105,38 +109,28 @@ try {
 </div>
 
 
-
 <!-- =================================================
      ESTADÍSTICAS
      ================================================= -->
 
-<section class="stats-grid">
+<div class="estadisticas">
 
 
     <!-- EQUIPO -->
 
-    <article class="stat-card">
+    <div class="card-estadistica">
 
-        <div class="stat-icon purple">
-
-            <svg viewBox="0 0 24 24">
-
-                <path d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3zM16 13c-3.3 0-6 1.8-6 4v2h12v-2c0-2.2-2.7-4-6-4zM8 13c-2.8 0-5 1.5-5 3.5V18h5v-2c0-1.1.4-2.1 1.1-3A6 6 0 0 0 8 13z"/>
-
-            </svg>
-
+        <div class="icono-card morado">
+            <i class="fa-solid fa-users"></i>
         </div>
 
-
-        <div class="stat-content">
+        <div class="info-card">
 
             <strong>
                 <?= $totalEquipos ?>
             </strong>
 
-            <span class="stat-title">
-                EQUIPO
-            </span>
+            <span>EQUIPO</span>
 
             <small>
                 Tu equipo registrado
@@ -144,42 +138,24 @@ try {
 
         </div>
 
-    </article>
-
+    </div>
 
 
     <!-- INSCRITOS -->
 
-    <article class="stat-card">
+    <div class="card-estadistica">
 
-        <div class="stat-icon orange">
-
-            <svg viewBox="0 0 24 24">
-
-                <circle
-                    cx="12"
-                    cy="8"
-                    r="4"
-                />
-
-                <path
-                    d="M4 21c.7-4 3.3-6 8-6s7.3 2 8 6"
-                />
-
-            </svg>
-
+        <div class="icono-card naranja">
+            <i class="fa-solid fa-user"></i>
         </div>
 
-
-        <div class="stat-content">
+        <div class="info-card">
 
             <strong>
                 <?= $totalInscritos ?>
             </strong>
 
-            <span class="stat-title">
-                INSCRITOS
-            </span>
+            <span>INSCRITOS</span>
 
             <small>
                 Total de participantes
@@ -187,34 +163,24 @@ try {
 
         </div>
 
-    </article>
-
+    </div>
 
 
     <!-- PARTIDOS -->
 
-    <article class="stat-card">
+    <div class="card-estadistica">
 
-        <div class="stat-icon purple">
-
-            <svg viewBox="0 0 24 24">
-
-                <path d="M7 2v2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm12 17H5V9h14v10zM7 11h4v3H7v-3z"/>
-
-            </svg>
-
+        <div class="icono-card morado">
+            <i class="fa-solid fa-calendar-days"></i>
         </div>
 
-
-        <div class="stat-content">
+        <div class="info-card">
 
             <strong>
                 <?= $totalFinalizados ?>
             </strong>
 
-            <span class="stat-title">
-                PARTIDOS JUGADOS
-            </span>
+            <span>PARTIDOS JUGADOS</span>
 
             <small>
                 Sigue participando
@@ -222,75 +188,49 @@ try {
 
         </div>
 
-    </article>
-
+    </div>
 
 
     <!-- LÍDER -->
 
-    <article class="stat-card">
+    <div class="card-estadistica">
 
-        <div class="stat-icon orange">
-
-            <svg viewBox="0 0 24 24">
-
-                <path d="M12 2l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5-4.7-4.6 6.5-.9L12 2z"/>
-
-            </svg>
-
+        <div class="icono-card naranja">
+            <i class="fa-solid fa-star"></i>
         </div>
 
+        <div class="info-card">
 
-        <div class="stat-content">
-
-            <strong class="leader-text">
-                LÍDER
+            <strong>
+                <?= $lider ? 'LÍDER' : 'SIN LÍDER' ?>
             </strong>
 
-            <span class="leader-message">
-                Aún no hay líder
-            </span>
-
             <small>
-                ¡Tú puedes serlo!
+                <?= $lider
+                    ? 'Tu equipo es líder'
+                    : '¡Tú puedes serlo!' ?>
             </small>
 
         </div>
 
-    </article>
+    </div>
 
-
-</section>
-
+</div>
 
 
 <!-- =================================================
      PRÓXIMO PARTIDO
      ================================================= -->
 
-<section class="next-match-card">
+<div class="proximo-partido">
 
+    <div class="titulo-seccion">
 
-    <!-- HEADER -->
+        <i class="fa-regular fa-calendar"></i>
 
-    <div class="next-match-header">
-
-        <div class="next-match-title">
-
-            <svg viewBox="0 0 24 24">
-
-                <path d="M7 2v2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm12 17H5V9h14v10z"/>
-
-            </svg>
-
-            <h2>
-                Próximo Partido
-            </h2>
-
-        </div>
+        <span>Próximo Partido</span>
 
     </div>
-
 
 
     <?php if ($proximoPartido): ?>
@@ -300,160 +240,97 @@ try {
 
         <div class="match-layout">
 
-
-            <!-- EQUIPO LOCAL -->
-
             <div class="team-side">
-
 
                 <div
                     class="team-shield purple-shield"
-                    style="
-                        --team-color:
-                        <?= htmlspecialchars(
-                            $proximoPartido['local_color'] ?? '#4b2780'
-                        ) ?>
-                    "
+                    style="--team-color: <?= htmlspecialchars(
+                        $proximoPartido['local_color'] ?? '#4b2780'
+                    ) ?>"
                 >
-
                     ⚽
-
                 </div>
-
 
                 <span class="team-label">
                     TU EQUIPO
                 </span>
 
-
                 <strong class="team-name">
-                    <?= htmlspecialchars(
-                        $proximoPartido['local_nombre']
-                    ) ?>
+                    <?= htmlspecialchars($proximoPartido['local_nombre']) ?>
                 </strong>
-
 
             </div>
 
 
-
-            <!-- CENTRO -->
-
             <div class="match-center">
-
 
                 <span class="match-round">
                     JORNADA 1
                 </span>
 
-
                 <strong class="match-vs-large">
                     VS
                 </strong>
 
-
                 <div class="match-info">
 
-
                     <div>
-
-                        <svg viewBox="0 0 24 24">
-                            <path d="M7 2v2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm12 17H5V9h14v10z"/>
-                        </svg>
-
+                        <i class="fa-regular fa-calendar"></i>
                         <span>
-                            <?= date(
-                                'd/m/Y',
-                                strtotime($proximoPartido['fecha'])
-                            ) ?>
+                            <?= date('d/m/Y', strtotime($proximoPartido['fecha'])) ?>
                         </span>
-
                     </div>
-
 
                     <?php if (!empty($proximoPartido['hora'])): ?>
 
                         <div>
-
-                            <svg viewBox="0 0 24 24">
-                                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm1-13h-2v6l5 3 1-1.7-4-2.3V7z"/>
-                            </svg>
-
+                            <i class="fa-regular fa-clock"></i>
                             <span>
-                                <?= date(
-                                    'H:i',
-                                    strtotime($proximoPartido['hora'])
-                                ) ?>
+                                <?= date('H:i', strtotime($proximoPartido['hora'])) ?>
                                 hrs
                             </span>
-
                         </div>
 
                     <?php endif; ?>
-
 
                     <?php if (!empty($proximoPartido['cancha'])): ?>
 
                         <div>
-
-                            <svg viewBox="0 0 24 24">
-                                <path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/>
-                            </svg>
-
+                            <i class="fa-solid fa-location-dot"></i>
                             <span>
-                                <?= htmlspecialchars(
-                                    $proximoPartido['cancha']
-                                ) ?>
+                                <?= htmlspecialchars($proximoPartido['cancha']) ?>
                             </span>
-
                         </div>
 
                     <?php endif; ?>
-
 
                 </div>
 
             </div>
 
 
-
-            <!-- EQUIPO VISITA -->
-
             <div class="team-side">
-
 
                 <div
                     class="team-shield orange-shield"
-                    style="
-                        --team-color:
-                        <?= htmlspecialchars(
-                            $proximoPartido['visita_color'] ?? '#ff7200'
-                        ) ?>
-                    "
+                    style="--team-color: <?= htmlspecialchars(
+                        $proximoPartido['visita_color'] ?? '#ff7200'
+                    ) ?>"
                 >
-
                     ⚽
-
                 </div>
-
 
                 <span class="team-label">
                     RIVALES
                 </span>
 
-
                 <strong class="team-name">
-                    <?= htmlspecialchars(
-                        $proximoPartido['visita_nombre']
-                    ) ?>
+                    <?= htmlspecialchars($proximoPartido['visita_nombre']) ?>
                 </strong>
-
 
             </div>
 
-
         </div>
-
 
 
         <!-- BOTÓN -->
@@ -461,8 +338,9 @@ try {
         <div class="match-button-container">
 
             <a
-                href="partidos/index.php"
-                class="match-button"
+                href="#"
+                class="match-button match-tab"
+                data-target="view-partidos"
             >
                 Ver detalles
                 <span>→</span>
@@ -476,15 +354,15 @@ try {
 
         <!-- SIN PARTIDO -->
 
-        <div class="empty-match">
+        <div class="partido-vacio">
 
-            <div class="empty-match-icon">
-
+            <div class="icono-partido">
+                <i class="fa-regular fa-calendar"></i>
             </div>
 
-            <h3>
+            <strong>
                 No hay partidos programados aún
-            </h3>
+            </strong>
 
             <p>
                 Cuando haya un próximo partido aparecerá aquí.
@@ -495,135 +373,97 @@ try {
 
     <?php endif; ?>
 
-
-</section>
-
+</div>
 
 
 <!-- =================================================
-     ACCIONES
+     ACCESOS RÁPIDOS
      ================================================= -->
 
-<section class="quick-actions">
+<div class="accesos">
 
 
     <!-- EQUIPOS -->
 
     <a
-        href="equipos/index.php"
-        class="quick-card purple-action"
+        href="#"
+        class="acceso quick-tab"
+        data-target="view-equipos"
     >
 
-        <div class="quick-icon">
-
-            <svg viewBox="0 0 24 24">
-
-                <path d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3zM16 13c-3.3 0-6 1.8-6 4v2h12v-2c0-2.2-2.7-4-6-4zM8 13c-2.8 0-5 1.5-5 3.5V18h5v-2c0-1.1.4-2.1 1.1-3A6 6 0 0 0 8 13z"/>
-
-            </svg>
-
+        <div class="icono-card morado">
+            <i class="fa-solid fa-users"></i>
         </div>
 
-
         <div>
-
-            <h3>
-                Equipos
-            </h3>
+            <strong>Equipos</strong>
 
             <p>
                 Gestiona tu equipo<br>
                 y conoce a los participantes
             </p>
-
         </div>
 
-
-        <span class="quick-arrow">
+        <span class="flecha morado-fondo">
             →
         </span>
 
     </a>
-
 
 
     <!-- VOTOS -->
 
     <a
-        href="apuestas/index.php"
-        class="quick-card orange-action"
+        href="#"
+        class="acceso quick-tab"
+        data-target="view-votos"
     >
 
-        <div class="quick-icon">
-
-            <svg viewBox="0 0 24 24">
-
-                <path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2zm0 17a7 7 0 1 1 7-7 7 7 0 0 1-7 7zm1-11h-2v4H8v2h3v3h2v-3h3v-2h-3V8z"/>
-
-            </svg>
-
+        <div class="icono-card naranja">
+            <i class="fa-solid fa-circle-plus"></i>
         </div>
 
-
         <div>
-
-            <h3>
-                Votos
-            </h3>
+            <strong>Votos</strong>
 
             <p>
                 Participa y vota<br>
                 por tus favoritos
             </p>
-
         </div>
 
-
-        <span class="quick-arrow">
+        <span class="flecha naranja-fondo">
             →
         </span>
 
     </a>
-
 
 
     <!-- COMUNIDAD -->
 
     <a
-        href="comunidad/index.php"
-        class="quick-card purple-action"
+        href="#"
+        class="acceso quick-tab"
+        data-target="view-comunidad"
     >
 
-        <div class="quick-icon">
-
-            <svg viewBox="0 0 24 24">
-
-                <path d="M20 4H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3v3l4-3h9a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM6 9h12v2H6V9zm0 4h8v2H6v-2z"/>
-
-            </svg>
-
+        <div class="icono-card morado">
+            <i class="fa-solid fa-comment"></i>
         </div>
 
-
         <div>
-
-            <h3>
-                Comunidad
-            </h3>
+            <strong>Comunidad</strong>
 
             <p>
                 Participa en la comunidad<br>
                 y conversa con otros
             </p>
-
         </div>
 
-
-        <span class="quick-arrow">
+        <span class="flecha morado-fondo">
             →
         </span>
 
     </a>
 
-
-</section>
+</div>

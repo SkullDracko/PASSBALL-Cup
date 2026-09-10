@@ -117,6 +117,13 @@ if ($rolUsuario === 'admin') {
         href="assets/css/pages/dashboard.css"
     >
 
+    <!-- CSS DE INICIO -->
+
+    <link
+        rel="stylesheet"
+        href="assets/css/pages/inicio.css"
+    >
+
     <!-- CSS DE PARTIDOS -->
 
     <link
@@ -335,7 +342,26 @@ if ($rolUsuario === 'admin') {
                 ⌄
             </span>
 
+            <a href="controllers/logout.php" class="topbar-logout">
+                <svg viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+                </svg>
+                <span>Salir</span>
+            </a>
+
         </div>
+
+
+        <!-- BOTÓN MENÚ MÓVIL -->
+
+        <button
+            type="button"
+            class="menu-button"
+            id="menuButton"
+            aria-label="Abrir menú"
+        >
+            <i class="fa-solid fa-bars"></i>
+        </button>
 
     </header>
 
