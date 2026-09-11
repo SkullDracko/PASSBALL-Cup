@@ -1,0 +1,227 @@
+/* ============================================
+   PASSBALL CUP - PANEL ADMIN
+   ============================================ */
+
+:root {
+    --admin-purple:       #6d28d9;
+    --admin-purple-dark:  #4c1d95;
+    --admin-purple-deep:  #2e1065;
+    --admin-bg:           #1b1030;
+    --admin-surface:      #241243;
+    --admin-border:       #3b2271;
+    --admin-text:         #ede9fe;
+    --admin-muted:        #a78bfa;
+}
+
+
+/* ============================================
+   LOGIN ADMIN
+   ============================================ */
+
+.admin-login {
+    position: relative;
+
+    width: 100%;
+
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px 20px;
+
+    background:
+        radial-gradient(
+            circle at 15% 15%,
+            rgba(109, 40, 217, 0.35),
+            transparent 45%
+        ),
+        radial-gradient(
+            circle at 85% 85%,
+            rgba(76, 29, 149, 0.40),
+            transparent 50%
+        ),
+        linear-gradient(
+            160deg,
+            var(--admin-bg),
+            var(--admin-purple-deep)
+        );
+
+    overflow: hidden;
+}
+
+
+.admin-login::before {
+    content: "";
+
+    position: absolute;
+
+    width: 460px;
+    height: 460px;
+
+    left: -160px;
+    top: -160px;
+
+    background: rgba(109, 40, 217, 0.18);
+
+    border-radius: 50%;
+
+    filter: blur(30px);
+}
+
+
+.admin-login-card {
+    position: relative;
+
+    z-index: 2;
+
+    width: 440px;
+
+    min-height: auto;
+
+    padding: 48px 42px 42px;
+
+    background: rgba(36, 18, 67, 0.92);
+
+    border: 1px solid var(--admin-border);
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 30px 70px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+
+/* Badge */
+
+.admin-login-badge {
+    width: 64px;
+    height: 64px;
+
+    margin: 0 auto 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--admin-purple-dark),
+            var(--admin-purple)
+        );
+
+    border-radius: 18px;
+
+    color: #6d28d9;
+
+    box-shadow:
+        0 10px 24px rgba(109, 40, 217, 0.45);
+}
+
+
+.admin-login-badge svg {
+    width: 34px;
+    height: 34px;
+}
+
+
+/* Título */
+
+.admin-login-title {
+    margin: 0 0 8px;
+
+    text-align: center;
+
+    font-family: "Inter", sans-serif;
+
+    font-size: 22px;
+
+    font-weight: 800;
+
+    color: var(--admin-text);
+}
+
+
+.admin-login-subtitle {
+    margin: 0 0 28px;
+
+    text-align: center;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+    color: var(--admin-muted);
+}
+
+
+/* Inputs */
+
+.admin-input {
+    background: rgba(10, 5, 25, 0.45);
+
+    border: 1.5px solid var(--admin-border);
+
+    color: var(--admin-text);
+}
+
+
+.admin-input::placeholder {
+    color: #6f5d9c;
+}
+
+
+.admin-input:focus {
+    border-color: var(--admin-muted);
+
+    box-shadow:
+        0 0 0 4px rgba(167, 139, 250, 0.12);
+}
+
+
+/* Botón */
+
+.admin-login-button {
+    background:
+        linear-gradient(
+            135deg,
+            var(--admin-purple-dark),
+            var(--admin-purple)
+        );
+
+    box-shadow:
+        0 7px 18px rgba(109, 40, 217, 0.30);
+}
+
+
+.admin-login-button:hover {
+    box-shadow:
+        0 12px 25px rgba(109, 40, 217, 0.42);
+}
+
+
+/* Enlace de regreso */
+
+.admin-back-link {
+    margin-top: 26px;
+
+    color: var(--admin-muted);
+}
+
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 600px) {
+
+    .admin-login-card {
+        width: 100%;
+
+        padding: 38px 22px 32px;
+    }
+
+}

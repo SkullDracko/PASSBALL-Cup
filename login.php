@@ -236,9 +236,8 @@ $error = $_GET['error'] ?? '';
                     id="matricula"
                     class="login-input"
                     placeholder="Ej: 1234567"
-                    maxlength="7"
-                    pattern="\d{7}"
-                    inputmode="numeric"
+                    pattern="[A-Za-z0-9]{3,20}"
+                    inputmode="text"
                     autocomplete="username"
                     required
                     autofocus
@@ -327,6 +326,20 @@ $error = $_GET['error'] ?? '';
 
 
         </div>
+
+
+        <!-- ======================================
+             ENLACE ADMINISTRADOR
+             ====================================== -->
+
+        <a
+            href="admin/login.php"
+            class="login-admin-link"
+        >
+
+            ¿Eres administrador?
+
+        </a>
 
 
     </section>
