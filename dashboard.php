@@ -30,23 +30,20 @@ $rolUsuario = strtolower(
     $usuario['rol'] ?? 'participante'
 );
 
-
 /*
 |--------------------------------------------------------------------------
 | TEXTO DEL ROL
 |--------------------------------------------------------------------------
 */
 
-if ($rolUsuario === 'admin') {
+// Rol por defecto: participante. Si es capitán de un equipo, se muestra "Líder".
+$textoRol = 'Participante';
 
-    $textoRol = 'Administrador';
-
-} elseif ($rolUsuario === 'lider') {
-
-    $textoRol = 'Líder';
-
-} else {
-
+try {
+    if (es_capitan()) {
+        $textoRol = 'Líder';
+    }
+} catch (Exception $e) {
     $textoRol = 'Participante';
 }
 ?>

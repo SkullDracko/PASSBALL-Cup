@@ -2,6 +2,7 @@
 /**
  * PASSBALL Cup - Login vía AFI Hub
  * Recibe matrícula, verifica con AFI Hub, crea sesión local
+ * Esquema: tabla usuarios (BD definitiva)
  */
 
 session_start();
@@ -18,10 +19,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $matricula = trim($_POST['matricula'] ?? '');
 
-// Validar matrícula: 7 dígitos
-if (!preg_match('/^\d{7}$/', $matricula)) {
+// Validar matrícula: 3-20 caracteres alfanuméricos
+if (!preg_match('/^[A-Za-z0-9]{3,20}$/', $matricula)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'La matrícula debe tener exactamente 7 dígitos']);
+    echo json_encode(['success' => false, 'message' => 'Matrícula inválida']);
     exit;
 }
 
@@ -31,13 +32,10 @@ $isLocalhost = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1', 
 if ($isLocalhost) {
     // === MODO DESARROLLO: login directo sin AFI Hub ===
     $estudiante = [
-        'id'              => 1,
+        'afi_usuario_id'  => 'LOCAL-' . $matricula,
         'matricula'       => $matricula,
-        'nombre'          => 'Usuario',
-        'apellidop'       => 'Test',
-        'apellidom'       => 'Local',
-        'nombre_completo' => 'Test Local Usuario',
-        'semestre'        => 5,
+        'nombre'          => 'Jugador ' . $matricula,
+        'nombre_completo' => 'Jugador ' . $matricula,
     ];
 } else {
     // === PRODUCCIÓN: verificar con AFI Hub ===
@@ -68,32 +66,38 @@ if ($isLocalhost) {
     $estudiante = $data['estudiante'];
 }
 
-// Buscar o crear usuario en nuestra BD
+// Buscar o crear usuario en nuestra BD (tabla usuarios)
 try {
-    $stmt = $pdo->prepare("SELECT * FROM usuarios_passball WHERE matricula = ?");
+    $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE matricula = ?");
     $stmt->execute([$matricula]);
     $usuario = $stmt->fetch();
 
     if (!$usuario) {
-        $rol = ($matricula === '0000000') ? 'admin' : 'miembro';
-
         $insert = $pdo->prepare("
-            INSERT INTO usuarios_passball (afi_usuario_id, matricula, nombre, apellidop, apellidom, semestre, rol)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO usuarios (afi_usuario_id, nombre, matricula, rol, jugador_activo, estado)
+            VALUES (?, ?, ?, 'usuario', TRUE, 'activo')
         ");
         $insert->execute([
-            $estudiante['id'],
-            $estudiante['matricula'],
+            $estudiante['afi_usuario_id'],
             $estudiante['nombre'],
-            $estudiante['apellidop'],
-            $estudiante['apellidom'],
-            $estudiante['semestre'],
-            $rol,
+            $estudiante['matricula'],
         ]);
 
-        $stmt = $pdo->prepare("SELECT * FROM usuarios_passball WHERE matricula = ?");
+        $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE matricula = ?");
         $stmt->execute([$matricula]);
         $usuario = $stmt->fetch();
+    } else {
+        // Actualizar nombre (puede haber cambiado en AFI)
+        $update = $pdo->prepare("UPDATE usuarios SET nombre = ? WHERE id = ?");
+        $update->execute([$estudiante['nombre'], $usuario['id']]);
+        $usuario['nombre'] = $estudiante['nombre'];
+    }
+
+    // Usuario inactivo no puede entrar
+    if (($usuario['estado'] ?? 'activo') !== 'activo') {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Tu cuenta está deshabilitada']);
+        exit;
     }
 
     // Guardar en sesión
@@ -101,9 +105,6 @@ try {
         'id'        => $usuario['id'],
         'matricula' => $usuario['matricula'],
         'nombre'    => $usuario['nombre'],
-        'apellidop' => $usuario['apellidop'],
-        'apellidom' => $usuario['apellidom'],
-        'semestre'  => $usuario['semestre'],
         'rol'       => $usuario['rol'],
         'avatar'    => $usuario['avatar'],
     ];

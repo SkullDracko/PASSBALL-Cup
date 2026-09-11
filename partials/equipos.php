@@ -210,7 +210,7 @@ unset(
             <p class="team-role">
                 <i class="fa-solid fa-star"></i>
 
-                <?php if ($rolUsuario === 'lider'): ?>
+                <?php if (es_capitan((int) $miEquipo['id'])): ?>
                     Líder del equipo
                 <?php else: ?>
                     Miembro del equipo
