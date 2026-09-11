@@ -1,6 +1,6 @@
 <?php
 /**
- * PASSBALL Cup - Detalle de Equipo
+ * PASSBALL Cup - Detalle de Equipo (BD definitiva)
  */
 require_once __DIR__ . '/../controllers/auth.php';
 require_once __DIR__ . '/../config/database.php';
@@ -14,14 +14,15 @@ if ($equipoId <= 0) {
 }
 
 $stmt = $pdo->prepare("
-    SELECT e.*, u.nombre AS lider_nombre, u.apellidop AS lider_apellidop, u.apellidom AS lider_apellidom,
-           (SELECT COUNT(*) FROM equipo_miembros em WHERE em.equipo_id = e.id AND em.estado = 'activo') AS total_miembros
+    SELECT e.*, u.nombre AS capitan_nombre,
+           (SELECT COUNT(*) FROM equipo_miembros em
+            WHERE em.equipo_id = e.id AND em.estado = 'activo') AS total_miembros
     FROM equipos e
-    JOIN usuarios_passball u ON u.id = e.lider_id
-    WHERE e.id = ? AND e.activo = 1
+    LEFT JOIN usuarios u ON u.id = e.capitan_id
+    WHERE e.id = ? AND e.estado = 'activo'
 ");
 $stmt->execute([$equipoId]);
-$equipo = $stmt->fetch();
+$equipo = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$equipo) {
     header("Location: index.php");
@@ -29,139 +30,402 @@ if (!$equipo) {
 }
 
 $stmt = $pdo->prepare("
-    SELECT u.id, u.matricula, u.nombre, u.apellidop, u.apellidom, u.semestre, u.avatar,
-           em.fecha_union, em.estado
+    SELECT u.id, u.matricula, u.nombre, u.avatar, em.fecha_union
     FROM equipo_miembros em
-    JOIN usuarios_passball u ON u.id = em.usuario_id
+    JOIN usuarios u ON u.id = em.jugador_id
     WHERE em.equipo_id = ? AND em.estado = 'activo'
     ORDER BY em.fecha_union ASC
 ");
 $stmt->execute([$equipoId]);
-$miembros = $stmt->fetchAll();
+$miembros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$esLiderDeEste = ($usuario['id'] == $equipo['lider_id']);
+$esCapitan    = es_capitan($equipoId);
+$estoyEnEste  = false;
+$yaTengoOtro  = false;
 
-$stmt = $pdo->prepare("SELECT id FROM equipo_miembros WHERE usuario_id = ? AND estado = 'activo'");
-$stmt->execute([$usuario['id']]);
-$yaTieneEquipo = $stmt->fetch() !== false;
+foreach ($miembros as $m) {
+    if ((int) $m['id'] === (int) $usuario['id']) {
+        $estoyEnEste = true;
+        break;
+    }
+}
 
-$tituloPagina = $equipo['nombre'];
-require_once __DIR__ . '/../includes/header.php';
+if (!$estoyEnEste) {
+    $stmt = $pdo->prepare("SELECT id FROM equipo_miembros WHERE jugador_id = ? AND estado = 'activo' LIMIT 1");
+    $stmt->execute([$usuario['id']]);
+    $yaTengoOtro = (bool) $stmt->fetch();
+}
+
+$equipoLleno = (int) $equipo['total_miembros'] >= 7;
 ?>
 
-<div class="section-header">
-    <div class="section-header-left">
-        <a href="index.php" class="btn btn-secondary btn-sm">← Volver</a>
-        <h1 class="section-title"><?= htmlspecialchars($equipo['nombre']) ?></h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= htmlspecialchars($equipo['nombre']) ?> | <?= TORNEO_NOMBRE ?></title>
+    <link rel="icon" href="../assets/img/passball-cup.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-dark: #2f1e50;
+            --primary-mid:  #543b67;
+            --primary:      #7c4293;
+            --primary-light:#b99ac8;
+            --accent:       #e79eed;
+            --bg:           #f4f0f7;
+            --text:         #2e2e2e;
+            --shadow:       0 2px 12px rgba(47,30,80,0.10);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .top {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-mid));
+            color: #fff;
+            padding: 22px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .top h1 { font-size: 20px; font-weight: 800; }
+
+        .top a {
+            color: #fff;
+            background: rgba(255,255,255,0.14);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .top a:hover { background: rgba(255,255,255,0.25); }
+
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+
+        @media (max-width: 780px) { .layout { grid-template-columns: 1fr; } }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .team-head { display: flex; align-items: center; gap: 16px; }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 800;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .logo img { width: 100%; height: 100%; object-fit: cover; }
+
+        .team-head h2 { font-size: 20px; font-weight: 800; }
+
+        .muted { color: #777; font-size: 13px; }
+
+        .card h3 { font-size: 15px; font-weight: 800; margin-bottom: 14px; }
+
+        .member {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0ecf5;
+        }
+
+        .member:last-child { border-bottom: none; }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .member .grow { flex: 1; }
+
+        .member strong { font-size: 14px; }
+
+        .tag {
+            display: inline-block;
+            background: #8a5fb8;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+            margin-left: 8px;
+        }
+
+        .remove-btn {
+            background: #fdeeee;
+            color: #b3261e;
+            border: none;
+            border-radius: 6px;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn.secondary { background: #e8e0f2; color: var(--primary-mid); }
+
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .notice {
+            background: #f5f0fa;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
+            color: var(--primary-mid);
+            margin-top: 10px;
+        }
+
+        #msg {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        #msg.ok { display:block; background:#e8f7ee; color:#1a7f3a; }
+        #msg.err { display:block; background:#fdeeee; color:#b3261e; }
+    </style>
+</head>
+<body>
+
+    <div class="top">
+        <h1>🏠 <?= htmlspecialchars($equipo['nombre']) ?></h1>
+        <a href="index.php">← Volver a equipos</a>
     </div>
-</div>
 
-<div class="grid-2 detail-layout">
-    <div>
-        <div class="card team-info-card" style="border-top: 4px solid <?= htmlspecialchars($equipo['color_equipo']) ?>;">
-            <div class="team-info-header">
-                <div class="team-avatar-lg" style="background: <?= htmlspecialchars($equipo['color_equipo']) ?>;">
-                    <?= strtoupper(substr($equipo['nombre'], 0, 2)) ?>
-                </div>
-                <div>
-                    <h2 class="team-info-name"><?= htmlspecialchars($equipo['nombre']) ?></h2>
-                    <p class="text-muted">
-                        Líder: <?= htmlspecialchars($equipo['lider_apellidop'] . ' ' . $equipo['lider_apellidom'] . ' ' . $equipo['lider_nombre']) ?>
-                    </p>
-                </div>
-            </div>
+    <div class="wrap">
 
-            <?php if ($equipo['descripcion']): ?>
-                <p class="team-description"><?= nl2br(htmlspecialchars($equipo['descripcion'])) ?></p>
-            <?php endif; ?>
+        <div id="msg"></div>
 
-            <div class="team-stats">
-                <div>
-                    <span class="stat-number stat-number-sm"><?= $equipo['total_miembros'] ?></span>
-                    <span class="stat-label">/ 7 Miembros</span>
-                </div>
-                <div>
-                    <span class="text-muted text-sm">
-                        Creado: <?= date('d/m/Y', strtotime($equipo['fecha_creacion'])) ?>
-                    </span>
-                </div>
-            </div>
-        </div>
+        <div class="layout">
 
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">👥 Miembros (<?= $equipo['total_miembros'] ?>/7)</h3>
-            </div>
+            <div>
 
-            <?php if (empty($miembros)): ?>
-                <p class="text-muted text-center">No hay miembros aún</p>
-            <?php else: ?>
-                <div class="members-list">
-                    <?php foreach ($miembros as $i => $m): ?>
-                        <div class="member-item">
-                            <div class="member-avatar" style="background: <?= htmlspecialchars($equipo['color_equipo']) ?>;">
-                                <?= strtoupper(substr($m['nombre'], 0, 1) . substr($m['apellidop'], 0, 1)) ?>
+                <div class="card">
+
+                    <div class="team-head">
+
+                        <div class="logo">
+                            <?php if (!empty($equipo['logo'])): ?>
+                                <img src="<?= htmlspecialchars($equipo['logo']) ?>" alt="<?= htmlspecialchars($equipo['nombre']) ?>">
+                            <?php else: ?>
+                                <?= htmlspecialchars(mb_strtoupper(mb_substr($equipo['nombre'], 0, 2))) ?>
+                            <?php endif; ?>
+                        </div>
+
+                        <div>
+                            <h2><?= htmlspecialchars($equipo['nombre']) ?></h2>
+                            <div class="muted">
+                                Líder: <?= htmlspecialchars($equipo['capitan_nombre'] ?? '—') ?>
                             </div>
-                            <div class="member-info">
-                                <strong><?= htmlspecialchars($m['apellidop'] . ' ' . $m['apellidom'] . ' ' . $m['nombre']) ?></strong>
-                                <span class="text-muted text-sm">
-                                    Mat: <?= $m['matricula'] ?> · Sem <?= $m['semestre'] ?>
-                                </span>
-                            </div>
-                            <div class="member-actions">
-                                <?php if ($m['id'] == $equipo['lider_id']): ?>
-                                    <span class="badge badge-lider">⭐ Líder</span>
-                                <?php endif; ?>
-                                <?php if ($esLiderDeEste && $m['id'] != $usuario['id']): ?>
-                                    <button class="btn-remove-member" data-id="<?= $m['id'] ?>" title="Eliminar">✕</button>
-                                <?php endif; ?>
+                            <div class="muted">
+                                👥 <?= (int) $equipo['total_miembros'] ?>/7 miembros ·
+                                📅 Creado <?= date('d/m/Y', strtotime($equipo['fecha_creacion'])) ?>
                             </div>
                         </div>
-                    <?php endforeach; ?>
+
+                    </div>
+
                 </div>
-            <?php endif; ?>
+
+                <div class="card">
+
+                    <h3>Miembros (<?= (int) $equipo['total_miembros'] ?>/7)</h3>
+
+                    <?php if (empty($miembros)): ?>
+                        <div class="muted">No hay miembros aún.</div>
+                    <?php else: ?>
+                        <?php foreach ($miembros as $i => $m): ?>
+                            <div class="member">
+
+                                <div class="avatar">
+                                    <?php if (!empty($m['avatar'])): ?>
+                                        <img src="<?= htmlspecialchars($m['avatar']) ?>" alt="">
+                                    <?php else: ?>
+                                        <?= htmlspecialchars(mb_strtoupper(mb_substr($m['nombre'], 0, 1))) ?>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="grow">
+                                    <strong><?= htmlspecialchars($m['nombre']) ?></strong>
+
+                                    <?php if ((int) $m['id'] === (int) $equipo['capitan_id']): ?>
+                                        <span class="tag">⭐ Líder</span>
+                                    <?php endif; ?>
+
+                                    <?php if ((int) $m['id'] === (int) $usuario['id']): ?>
+                                        <span class="tag" style="background:#4caf50;">Tú</span>
+                                    <?php endif; ?>
+
+                                    <div class="muted">Mat: <?= htmlspecialchars($m['matricula']) ?></div>
+                                </div>
+
+                                <?php if ($esCapitan && (int) $m['id'] !== (int) $usuario['id']): ?>
+                                    <button
+                                        type="button"
+                                        class="remove-btn"
+                                        title="Eliminar del equipo"
+                                        onclick="eliminarMiembro(<?= (int) $m['id'] ?>)"
+                                    >✕</button>
+                                <?php endif; ?>
+
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+
+                </div>
+
+            </div>
+
+            <div>
+
+                <div class="card">
+
+                    <h3>Acciones</h3>
+
+                    <?php if ($estoyEnEste && $esCapitan): ?>
+
+                        <div class="notice">Eres el líder de este equipo.</div>
+
+                    <?php elseif ($estoyEnEste): ?>
+
+                        <button type="button" class="btn secondary" onclick="salirEquipo()">Salir de mi equipo</button>
+
+                    <?php elseif ($yaTengoOtro): ?>
+
+                        <div class="notice">Ya perteneces a otro equipo.</div>
+
+                    <?php elseif ($equipoLleno): ?>
+
+                        <div class="notice">El equipo ya está lleno (máximo 7 miembros).</div>
+
+                    <?php else: ?>
+
+                        <button type="button" class="btn" onclick="unirse(<?= (int) $equipo['id'] ?>)">Unirme a este equipo</button>
+
+                    <?php endif; ?>
+
+                </div>
+
+            </div>
+
         </div>
+
     </div>
 
-    <div>
-        <div class="card sidebar-card">
-            <h3 class="card-title">Acciones</h3>
+    <script>
+        function api(action, data, cb) {
+            var body = new URLSearchParams(data);
+            body.append('action', action);
 
-            <?php if ($yaTieneEquipo && !$esLiderDeEste): ?>
-                <p class="text-muted text-sm">Ya perteneces a otro equipo</p>
-            <?php elseif ($esLiderDeEste): ?>
-                <p class="text-muted text-sm">Eres el líder de este equipo</p>
-            <?php elseif ($equipo['total_miembros'] >= 7): ?>
-                <p class="text-muted text-sm">Equipo lleno</p>
-            <?php elseif ($yaTieneEquipo): ?>
-                <p class="text-muted text-sm">Ya tienes un equipo</p>
-            <?php else: ?>
-                <button class="btn btn-primary" id="btnUnirse" data-equipo-id="<?= $equipo['id'] ?>">
-                    Unirme a este equipo
-                </button>
-            <?php endif; ?>
+            fetch('../controllers/equiposController.php', {
+                method: 'POST',
+                body: body
+            })
+            .then(function (r) { return r.json(); })
+            .then(cb)
+            .catch(function () {
+                msg('Error de conexión. Intenta de nuevo.', false);
+            });
+        }
 
-            <?php if ($esLiderDeEste): ?>
-                <button class="btn btn-secondary btn-full" onclick="eliminarEquipo(<?= $equipo['id'] ?>)">
-                    🗑️ Eliminar Equipo
-                </button>
-            <?php endif; ?>
+        function msg(text, ok) {
+            var el = document.getElementById('msg');
+            el.textContent = text;
+            el.className = ok ? 'ok' : 'err';
+        }
 
-            <?php if ($yaTieneEquipo && !$esLiderDeEste): ?>
-                <button class="btn btn-secondary btn-full" onclick="salirEquipo()">
-                    Salir de mi equipo
-                </button>
-            <?php endif; ?>
-        </div>
+        function unirse(id) {
+            if (!confirm('¿Quieres unirte a este equipo?')) return;
+            api('unirse', { equipo_id: id }, function (d) {
+                msg(d.message, d.success);
+                if (d.success) setTimeout(function () { location.reload(); }, 900);
+            });
+        }
 
-        <div class="card sidebar-card">
-            <h3 class="card-title">🎨 Color</h3>
-            <div class="team-color-preview" style="background: <?= htmlspecialchars($equipo['color_equipo']) ?>;"></div>
-        </div>
-    </div>
-</div>
+        function salirEquipo() {
+            if (!confirm('¿Salir de tu equipo actual?')) return;
+            api('salir', {}, function (d) {
+                msg(d.message, d.success);
+                if (d.success) setTimeout(function () { location.reload(); }, 900);
+            });
+        }
 
-<script src="../assets/js/app.js"></script>
-<script src="../assets/js/equipos.js"></script>
+        function eliminarMiembro(miembroId) {
+            if (!confirm('¿Eliminar a este miembro del equipo?')) return;
+            api('eliminar_miembro', {
+                equipo_id: <?= (int) $equipo['id'] ?>,
+                miembro_id: miembroId
+            }, function (d) {
+                msg(d.message, d.success);
+                if (d.success) setTimeout(function () { location.reload(); }, 900);
+            });
+        }
+    </script>
 
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+</body>
+</html>

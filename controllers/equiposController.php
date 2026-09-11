@@ -1,7 +1,7 @@
 <?php
 /**
  * PASSBALL Cup - Controller de Equipos
- * Maneja CRUD de equipos y membresías
+ * CRUD de equipos y membresías (BD definitiva)
  */
 
 session_start();
@@ -13,14 +13,21 @@ header('Content-Type: application/json');
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
+// Helper local: ¿el usuario es capitán del equipo dado?
+function esCapitanDe($pdo, $usuarioId, $equipoId): bool {
+    $stmt = $pdo->prepare("SELECT id FROM equipos WHERE id = ? AND capitan_id = ?");
+    $stmt->execute([$equipoId, $usuarioId]);
+    return (bool) $stmt->fetch();
+}
+
 switch ($action) {
 
     // =============================
     // CREAR EQUIPO
     // =============================
     case 'crear':
-        // Verificar que no tenga ya un equipo (como líder o miembro)
-        $stmt = $pdo->prepare("SELECT id FROM equipo_miembros WHERE usuario_id = ? AND estado = 'activo'");
+        // Verificar que no tenga ya un equipo
+        $stmt = $pdo->prepare("SELECT id FROM equipo_miembros WHERE jugador_id = ? AND estado = 'activo'");
         $stmt->execute([$usuario['id']]);
         if ($stmt->fetch()) {
             http_response_code(400);
@@ -29,8 +36,6 @@ switch ($action) {
         }
 
         $nombre = trim($_POST['nombre'] ?? '');
-        $color  = trim($_POST['color'] ?? '#7c4293');
-        $desc   = trim($_POST['descripcion'] ?? '');
 
         if (strlen($nombre) < 3 || strlen($nombre) > 100) {
             http_response_code(400);
@@ -50,25 +55,16 @@ switch ($action) {
         try {
             $pdo->beginTransaction();
 
-            // Crear equipo
-            $stmt = $pdo->prepare("INSERT INTO equipos (nombre, lider_id, color_equipo, descripcion) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$nombre, $usuario['id'], $color, $desc ?: null]);
+            $stmt = $pdo->prepare("INSERT INTO equipos (nombre, capitan_id, estado) VALUES (?, ?, 'activo')");
+            $stmt->execute([$nombre, $usuario['id']]);
             $equipoId = $pdo->lastInsertId();
 
-            // Agregar al líder como miembro
-            $stmt = $pdo->prepare("INSERT INTO equipo_miembros (equipo_id, usuario_id, estado) VALUES (?, ?, 'activo')");
+            $stmt = $pdo->prepare("INSERT INTO equipo_miembros (equipo_id, jugador_id, estado) VALUES (?, ?, 'activo')");
             $stmt->execute([$equipoId, $usuario['id']]);
-
-            // Actualizar rol del usuario a líder
-            $stmt = $pdo->prepare("UPDATE usuarios_passball SET rol = 'lider' WHERE id = ?");
-            $stmt->execute([$usuario['id']]);
 
             $pdo->commit();
 
-            // Actualizar sesión
-            $_SESSION['usuario']['rol'] = 'lider';
-
-            echo json_encode(['success' => true, 'message' => 'Equipo creado exitosamente', 'equipo_id' => $equipoId]);
+            echo json_encode(['success' => true, 'message' => 'Equipo creado exitosamente. Sube un logo desde el panel.', 'equipo_id' => $equipoId]);
 
         } catch (PDOException $e) {
             $pdo->rollBack();
@@ -85,12 +81,13 @@ switch ($action) {
         $busqueda = trim($_GET['q'] ?? '');
 
         $sql = "
-            SELECT e.*, 
-                   u.nombre AS lider_nombre, u.apellidop AS lider_apellidop,
-                   (SELECT COUNT(*) FROM equipo_miembros em WHERE em.equipo_id = e.id AND em.estado = 'activo') AS total_miembros
+            SELECT
+                e.*,
+                u.nombre AS capitan_nombre,
+                (SELECT COUNT(*) FROM equipo_miembros em WHERE em.equipo_id = e.id AND em.estado = 'activo') AS total_miembros
             FROM equipos e
-            JOIN usuarios_passball u ON u.id = e.lider_id
-            WHERE e.activo = 1
+            LEFT JOIN usuarios u ON u.id = e.capitan_id
+            WHERE e.estado = 'activo'
         ";
         $params = [];
 
@@ -121,10 +118,10 @@ switch ($action) {
         }
 
         $stmt = $pdo->prepare("
-            SELECT e.*, u.nombre AS lider_nombre, u.apellidop AS lider_apellidop, u.apellidom AS lider_apellidom
+            SELECT e.*, u.nombre AS capitan_nombre
             FROM equipos e
-            JOIN usuarios_passball u ON u.id = e.lider_id
-            WHERE e.id = ? AND e.activo = 1
+            LEFT JOIN usuarios u ON u.id = e.capitan_id
+            WHERE e.id = ? AND e.estado = 'activo'
         ");
         $stmt->execute([$equipoId]);
         $equipo = $stmt->fetch();
@@ -135,13 +132,11 @@ switch ($action) {
             exit;
         }
 
-        // Obtener miembros
         $stmt = $pdo->prepare("
-            SELECT u.id, u.matricula, u.nombre, u.apellidop, u.apellidom, u.semestre, u.avatar,
-                   em.fecha_union, em.estado
+            SELECT u.id, u.matricula, u.nombre, u.avatar, em.fecha_union, em.estado
             FROM equipo_miembros em
-            JOIN usuarios_passball u ON u.id = em.usuario_id
-            WHERE em.equipo_id = ?
+            JOIN usuarios u ON u.id = em.jugador_id
+            WHERE em.equipo_id = ? AND em.estado = 'activo'
             ORDER BY em.fecha_union ASC
         ");
         $stmt->execute([$equipoId]);
@@ -165,7 +160,7 @@ switch ($action) {
         }
 
         // Verificar que no esté ya en un equipo
-        $stmt = $pdo->prepare("SELECT id FROM equipo_miembros WHERE usuario_id = ? AND estado = 'activo'");
+        $stmt = $pdo->prepare("SELECT id FROM equipo_miembros WHERE jugador_id = ? AND estado = 'activo'");
         $stmt->execute([$usuario['id']]);
         if ($stmt->fetch()) {
             http_response_code(400);
@@ -174,7 +169,7 @@ switch ($action) {
         }
 
         // Verificar que el equipo exista y esté activo
-        $stmt = $pdo->prepare("SELECT id, nombre FROM equipos WHERE id = ? AND activo = 1");
+        $stmt = $pdo->prepare("SELECT id, nombre FROM equipos WHERE id = ? AND estado = 'activo'");
         $stmt->execute([$equipoId]);
         $equipo = $stmt->fetch();
         if (!$equipo) {
@@ -194,7 +189,7 @@ switch ($action) {
         }
 
         try {
-            $stmt = $pdo->prepare("INSERT INTO equipo_miembros (equipo_id, usuario_id, estado) VALUES (?, ?, 'activo')");
+            $stmt = $pdo->prepare("INSERT INTO equipo_miembros (equipo_id, jugador_id, estado) VALUES (?, ?, 'activo')");
             $stmt->execute([$equipoId, $usuario['id']]);
 
             echo json_encode(['success' => true, 'message' => "Te uniste al equipo {$equipo['nombre']}"]);
@@ -209,7 +204,7 @@ switch ($action) {
     // SALIR DE UN EQUIPO
     // =============================
     case 'salir':
-        $stmt = $pdo->prepare("SELECT id FROM equipo_miembros WHERE usuario_id = ? AND estado = 'activo'");
+        $stmt = $pdo->prepare("SELECT id FROM equipo_miembros WHERE jugador_id = ? AND estado = 'activo'");
         $stmt->execute([$usuario['id']]);
         $membresia = $stmt->fetch();
 
@@ -232,25 +227,15 @@ switch ($action) {
         break;
 
     // =============================
-    // ELIMINAR MIEMBRO (solo líder)
+    // ELIMINAR MIEMBRO (solo capitán)
     // =============================
     case 'eliminar_miembro':
-        if (!es_lider() && !es_admin()) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'Sin permisos']);
-            exit;
-        }
-
+        $equipoId = (int)($_POST['equipo_id'] ?? 0);
         $miembroId = (int)($_POST['miembro_id'] ?? 0);
 
-        // Obtener el equipo del líder
-        $stmt = $pdo->prepare("SELECT id FROM equipos WHERE lider_id = ? AND activo = 1");
-        $stmt->execute([$usuario['id']]);
-        $equipo = $stmt->fetch();
-
-        if (!$equipo) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'No tienes un equipo']);
+        if (!esCapitanDe($pdo, $usuario['id'], $equipoId)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Sin permisos']);
             exit;
         }
 
@@ -262,8 +247,8 @@ switch ($action) {
         }
 
         try {
-            $stmt = $pdo->prepare("UPDATE equipo_miembros SET estado = 'inactivo' WHERE equipo_id = ? AND usuario_id = ?");
-            $stmt->execute([$equipo['id'], $miembroId]);
+            $stmt = $pdo->prepare("UPDATE equipo_miembros SET estado = 'inactivo' WHERE equipo_id = ? AND jugador_id = ?");
+            $stmt->execute([$equipoId, $miembroId]);
 
             echo json_encode(['success' => true, 'message' => 'Miembro eliminado del equipo']);
         } catch (PDOException $e) {
@@ -278,11 +263,11 @@ switch ($action) {
     // =============================
     case 'mi_equipo':
         $stmt = $pdo->prepare("
-            SELECT e.*, 
+            SELECT e.*,
                    (SELECT COUNT(*) FROM equipo_miembros em WHERE em.equipo_id = e.id AND em.estado = 'activo') AS total_miembros
             FROM equipo_miembros em
             JOIN equipos e ON e.id = em.equipo_id
-            WHERE em.usuario_id = ? AND em.estado = 'activo' AND e.activo = 1
+            WHERE em.jugador_id = ? AND em.estado = 'activo' AND e.estado = 'activo'
         ");
         $stmt->execute([$usuario['id']]);
         $miEquipo = $stmt->fetch();

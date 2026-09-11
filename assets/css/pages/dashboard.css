@@ -3181,6 +3181,187 @@ a {
     border-color: var(--purple);
 }
 
+
+/* =========================================================
+   SUBIDA DE LOGO
+   ========================================================= */
+
+.logo-upload {
+
+    margin-bottom: 20px;
+}
+
+.logo-drop {
+
+    border: 2px dashed var(--border);
+
+    border-radius: 10px;
+
+    padding: 26px 16px;
+
+    text-align: center;
+
+    cursor: pointer;
+
+    color: var(--text-light);
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.logo-drop:hover,
+.logo-drop.drag-over {
+
+    border-color: var(--purple);
+
+    background: rgba(75, 35, 133, 0.05);
+}
+
+.logo-drop i {
+
+    display: block;
+
+    font-size: 26px;
+
+    color: var(--purple);
+
+    margin-bottom: 8px;
+}
+
+.logo-drop p {
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+    color: var(--text-light);
+
+    margin: 0;
+}
+
+.logo-preview {
+
+    display: none;
+
+    width: 120px;
+
+    height: 120px;
+
+    margin: 0 auto;
+
+    border: 3px solid var(--purple);
+
+    border-radius: 12px;
+
+    overflow: hidden;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: var(--surface);
+}
+
+.logo-preview img {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.logo-hint {
+
+    margin-top: 10px;
+
+    text-align: center;
+
+    font-size: 12px;
+
+    color: #999;
+}
+
+
+/* =========================================================
+   POSTULACIÓN AL TORNEO
+   ========================================================= */
+
+.postular-form {
+
+    display: inline;
+}
+
+.btn-postular {
+
+    margin-top: 10px;
+
+    background: var(--orange);
+
+    color: var(--white);
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 10px 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    font-size: 13px;
+}
+
+.btn-postular:hover {
+
+    background: var(--orange-dark);
+}
+
+.postulacion-badge {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    margin-top: 10px;
+
+    padding: 8px 12px;
+
+    border-radius: 8px;
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+.postulacion-badge.pendiente {
+
+    background: #fff6e5;
+
+    color: #a05b00;
+
+}
+
+.postulacion-badge.aprobado {
+
+    background: #e8f7ee;
+
+    color: #1a7f3a;
+
+}
+
+.postulacion-badge.rechazado {
+
+    background: #fdeeee;
+
+    color: #b3261e;
+
+}
+
 .modal-buttons {
 
     display: flex;

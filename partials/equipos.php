@@ -34,9 +34,9 @@ try {
         INNER JOIN equipos e
             ON e.id = em.equipo_id
 
-        WHERE em.usuario_id = ?
+        WHERE em.jugador_id = ?
         AND em.estado = 'activo'
-        AND e.activo = 1
+        AND e.estado = 'activo'
 
         LIMIT 1
     ");
@@ -80,7 +80,7 @@ try {
 
         FROM equipos e
 
-        WHERE e.activo = 1
+        WHERE e.estado = 'activo'
 
         ORDER BY e.fecha_creacion DESC
     ");
@@ -95,6 +95,52 @@ try {
     );
 
     $equipos = [];
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| POSTULACIÓN AL TORNEO
+|--------------------------------------------------------------------------
+*/
+
+$torneoActivo = null;
+$postulacion  = null;
+
+try {
+
+    $stmt = $pdo->prepare("
+        SELECT id, nombre, estado
+        FROM torneos
+        WHERE estado IN ('programado', 'en_curso')
+        ORDER BY id DESC
+        LIMIT 1
+    ");
+    $stmt->execute();
+    $torneoActivo = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($torneoActivo && $miEquipo) {
+
+        $stmt = $pdo->prepare("
+            SELECT estado
+            FROM torneo_equipos
+            WHERE torneo_id = ? AND equipo_id = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$torneoActivo['id'], $miEquipo['id']]);
+        $estadoPost = $stmt->fetchColumn();
+
+        if ($estadoPost !== false) {
+            $postulacion = $estadoPost;
+        }
+    }
+
+} catch (PDOException $e) {
+
+    error_log(
+        "PASSBALL - Error obteniendo postulación: " .
+        $e->getMessage()
+    );
 }
 
 
@@ -233,6 +279,59 @@ unset(
                 <i class="fa-solid fa-arrow-right"></i>
 
             </a>
+
+            <?php if (es_capitan((int) $miEquipo['id']) && $torneoActivo && !$postulacion): ?>
+
+                <form
+                    action="controllers/postularEquipo.php"
+                    method="POST"
+                    class="postular-form"
+                >
+
+                    <button
+                        type="submit"
+                        class="btn-purple btn-postular"
+                    >
+
+                        <i class="fa-solid fa-trophy"></i>
+
+                        Postular al torneo
+
+                    </button>
+
+                </form>
+
+            <?php elseif ($postulacion === 'pendiente'): ?>
+
+                <span class="postulacion-badge pendiente">
+
+                    <i class="fa-solid fa-clock"></i>
+
+                    Postulación en revisión
+
+                </span>
+
+            <?php elseif ($postulacion === 'aprobado'): ?>
+
+                <span class="postulacion-badge aprobado">
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                    Confirmado en el torneo
+
+                </span>
+
+            <?php elseif ($postulacion === 'rechazado'): ?>
+
+                <span class="postulacion-badge rechazado">
+
+                    <i class="fa-solid fa-circle-xmark"></i>
+
+                    Postulación rechazada
+
+                </span>
+
+            <?php endif; ?>
 
         </div>
 

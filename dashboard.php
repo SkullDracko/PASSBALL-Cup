@@ -579,6 +579,7 @@ try {
         <form
             action="controllers/registrarEquipo.php"
             method="POST"
+            enctype="multipart/form-data"
         >
 
 
@@ -622,35 +623,47 @@ try {
             </div>
 
 
-            <label for="color_equipo">
-                Color del equipo
-                <span>(opcional)</span>
+            <label for="logo_equipo">
+                Logo del equipo
+                <span>*</span>
             </label>
 
-            <div class="modal-input">
+            <div class="logo-upload">
 
-                <i class="fa-solid fa-palette"></i>
-
-                <input
-                    type="text"
-                    id="color_equipo"
-                    name="color_equipo"
-                    placeholder="Ej. #4b2780"
+                <div
+                    class="logo-drop"
+                    id="logoDrop"
                 >
 
+                    <i class="fa-solid fa-image"></i>
+
+                    <p>
+                        <strong>Sube el logo</strong>
+                        <br>
+                        o arrastra la imagen aquí
+                    </p>
+
+                </div>
+
+                <input
+                    type="file"
+                    id="logo_equipo"
+                    name="logo_equipo"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    hidden
+                >
+
+                <div
+                    class="logo-preview"
+                    id="logoPreview"
+                ></div>
+
+                <p class="logo-hint">
+                    JPG, PNG, WEBP o GIF · Máx 5 MB ·
+                    no podrás cambiarlo después
+                </p>
+
             </div>
-
-
-            <label for="descripcion_equipo">
-                Descripción
-                <span>(opcional)</span>
-            </label>
-
-            <textarea
-                id="descripcion_equipo"
-                name="descripcion_equipo"
-                placeholder="Cuéntanos sobre tu equipo..."
-            ></textarea>
 
 
             <div class="modal-buttons">
@@ -681,6 +694,8 @@ try {
 
 
 <script src="assets/js/dashboard.js"></script>
+
+<script src="assets/js/equipos.js"></script>
 
 <script src="assets/js/partidos.js"></script>
 
