@@ -749,6 +749,264 @@
     display: none;
 }
 
+
+/* ---------- FORMULARIOS ---------- */
+
+.admin-form {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    align-items: flex-end;
+
+    background: #fff;
+
+    border-radius: 14px;
+
+    padding: 18px;
+
+    box-shadow: 0 2px 12px rgba(47, 30, 80, 0.07);
+
+    margin-bottom: 22px;
+}
+
+.admin-form .field {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+
+    min-width: 150px;
+
+    flex: 1;
+}
+
+.admin-form .field label {
+
+    font-size: 11.5px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.4px;
+
+    color: #6a5a8c;
+}
+
+.admin-form input[type="text"],
+.admin-form input[type="number"],
+.admin-form input[type="datetime-local"],
+.admin-form select {
+
+    padding: 10px 12px;
+
+    border: 1.5px solid #e0d8ec;
+
+    border-radius: 8px;
+
+    font-size: 13.5px;
+
+    font-family: inherit;
+
+    outline: none;
+
+    background: #fff;
+
+    color: #3c3150;
+}
+
+.admin-form input:focus,
+.admin-form select:focus {
+
+    border-color: var(--admin-purple);
+}
+
+.admin-btn {
+
+    background: linear-gradient(135deg, var(--admin-purple-dark), var(--admin-purple));
+
+    color: #fff;
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 11px 18px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+}
+
+.admin-btn:hover {
+
+    filter: brightness(1.06);
+}
+
+.admin-btn.ghost {
+
+    background: #efe7f9;
+
+    color: var(--admin-purple-dark);
+}
+
+
+/* ---------- RONDAS / BRACKET ---------- */
+
+.bracket {
+
+    display: flex;
+
+    gap: 18px;
+
+    overflow-x: auto;
+
+    padding-bottom: 12px;
+}
+
+.round-col {
+
+    min-width: 300px;
+
+    flex: 1;
+
+    background: #fff;
+
+    border-radius: 14px;
+
+    box-shadow: 0 2px 12px rgba(47, 30, 80, 0.07);
+
+    padding: 16px;
+
+    border-top: 4px solid var(--admin-purple);
+}
+
+.round-col h3 {
+
+    font-size: 14px;
+
+    font-weight: 800;
+
+    color: var(--admin-purple-deep);
+
+    margin: 0 0 4px;
+}
+
+.round-col .round-order {
+
+    font-size: 11px;
+
+    color: #998caf;
+
+    margin-bottom: 12px;
+}
+
+.match-card {
+
+    border: 1px solid #eee6f5;
+
+    border-radius: 10px;
+
+    padding: 12px;
+
+    margin-bottom: 12px;
+
+    font-size: 13px;
+}
+
+.match-card .vs {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 8px;
+
+    font-weight: 700;
+}
+
+.match-card .vs .teamx {
+
+    flex: 1;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+.match-card .score {
+
+    font-weight: 800;
+
+    color: var(--admin-purple-dark);
+}
+
+.match-card .meta {
+
+    margin-top: 8px;
+
+    font-size: 11.5px;
+
+    color: #998caf;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    flex-wrap: wrap;
+
+    gap: 6px;
+}
+
+.chip {
+
+    display: inline-block;
+
+    padding: 2px 9px;
+
+    border-radius: 20px;
+
+    font-size: 11px;
+
+    font-weight: 700;
+}
+
+.chip.programado   { background: #efe7f9; color: #5b3d91; }
+.chip.en_curso     { background: #fff6e5; color: #a05b00; }
+.chip.finalizado   { background: #e8f7ee; color: #1a7f3a; }
+.chip.cancelado    { background: #fdeeee; color: #b3261e; }
+
+.round-add-form .field-input {
+
+    width: 100%;
+
+    padding: 10px 12px;
+
+    border: 1.5px dashed #cbb8e2;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+
+    margin-bottom: 8px;
+
+    background: #fbf8ff;
+}
+
 @media (max-width: 860px) {
 
     .admin-topbar .burger {
