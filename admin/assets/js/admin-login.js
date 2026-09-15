@@ -192,13 +192,13 @@ document.addEventListener("DOMContentLoaded", () => {
     ======================================================== */
 
     const card =
-        document.querySelector(".login-card");
+        document.querySelector(".admin-card");
 
     const logos =
         document.querySelector(".institutional-logos");
 
     const brand =
-        document.querySelector(".passball-brand");
+        document.querySelector(".passball-logo");
 
 
     if (logos) {
