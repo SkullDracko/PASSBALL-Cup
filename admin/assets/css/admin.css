@@ -451,6 +451,38 @@
     background: rgba(255, 255, 255, 0.18);
 }
 
+.admin-sidebar-footer .portal-link {
+
+    display: block;
+
+    text-align: center;
+
+    color: #cfc3ee;
+
+    font-size: 12.5px;
+
+    font-weight: 600;
+
+    text-decoration: none;
+
+    padding: 8px;
+
+    border-radius: 8px;
+
+    background: transparent;
+
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+
+    margin-top: 8px;
+}
+
+.admin-sidebar-footer .portal-link:hover {
+
+    background: rgba(255, 255, 255, 0.10);
+
+    color: #fff;
+}
+
 
 /* ---------- MAIN ---------- */
 
@@ -651,7 +683,9 @@
 
     box-shadow: 0 2px 12px rgba(47, 30, 80, 0.07);
 
-    overflow: hidden;
+    overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
 
     margin-bottom: 24px;
 }
@@ -1014,6 +1048,34 @@
         display: inline-block;
     }
 
+    .admin-shell::after {
+
+        content: "";
+
+        position: fixed;
+
+        inset: 0;
+
+        z-index: 30;
+
+        background: rgba(10, 5, 25, 0.45);
+
+        opacity: 0;
+
+        visibility: hidden;
+
+        transition:
+            opacity 0.25s ease,
+            visibility 0.25s ease;
+    }
+
+    .admin-shell.sidebar-open::after {
+
+        opacity: 1;
+
+        visibility: visible;
+    }
+
     .admin-sidebar {
 
         position: fixed;
@@ -1041,6 +1103,36 @@
     .admin-views {
 
         padding: 18px;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .admin-topbar {
+
+        padding: 12px 14px;
+    }
+
+    .admin-topbar .admin-meta {
+
+        display: none;
+    }
+
+    .admin-views {
+
+        padding: 14px;
+    }
+
+    .admin-table th,
+    .admin-table td {
+
+        padding: 10px 12px;
+    }
+
+    .admin-form .field {
+
+        min-width: 100%;
     }
 
 }

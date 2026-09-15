@@ -21,7 +21,7 @@ try {
     $stmt = $pdo->query("
         SELECT COUNT(*) AS total
         FROM equipos
-        WHERE activo = 1
+        WHERE estado = 'activo'
     ");
 
     $totalEquipos = (int) $stmt->fetch()['total'];
@@ -30,8 +30,8 @@ try {
     // Total de participantes activos
     $stmt = $pdo->query("
         SELECT COUNT(*) AS total
-        FROM usuarios_passball
-        WHERE activo = 1
+        FROM usuarios
+        WHERE estado = 'activo'
     ");
 
     $totalInscritos = (int) $stmt->fetch()['total'];
@@ -43,10 +43,10 @@ try {
             p.*,
 
             el.nombre AS local_nombre,
-            el.color_equipo AS local_color,
-
             ev.nombre AS visita_nombre,
-            ev.color_equipo AS visita_color
+
+            tr.orden AS ronda_orden,
+            tr.nombre AS ronda_nombre
 
         FROM partidos p
 
@@ -54,13 +54,15 @@ try {
             ON el.id = p.equipo_local_id
 
         JOIN equipos ev
-            ON ev.id = p.equipo_visita_id
+            ON ev.id = p.equipo_visitante_id
+
+        JOIN torneo_rondas tr
+            ON tr.id = p.ronda_id
 
         WHERE p.estado = 'programado'
 
         ORDER BY
-            p.fecha ASC,
-            p.hora ASC
+            p.fecha_hora ASC
 
         LIMIT 1
     ");
@@ -78,6 +80,27 @@ try {
     $totalFinalizados = (int) $stmt->fetch()['total'];
 
 
+    // ¿El usuario es capitán de algún equipo (líder)?
+    $lider = es_capitan();
+
+    $equipoLider = '';
+
+    if ($lider) {
+
+        $stmt = $pdo->prepare("
+            SELECT nombre
+            FROM equipos
+            WHERE capitan_id = ?
+                AND estado = 'activo'
+            LIMIT 1
+        ");
+
+        $stmt->execute([$usuario['id']]);
+
+        $equipoLider = (string) $stmt->fetchColumn();
+    }
+
+
 } catch (PDOException $e) {
 
     error_log("Dashboard error: " . $e->getMessage());
@@ -86,10 +109,9 @@ try {
     $totalInscritos = 0;
     $proximoPartido = null;
     $totalFinalizados = 0;
+    $lider = false;
+    $equipoLider = '';
 }
-
-// Datos de liderazgo (pendiente de definir en BD)
-$lider = false;
 ?>
 
 
@@ -207,7 +229,7 @@ $lider = false;
 
             <small>
                 <?= $lider
-                    ? 'Tu equipo es líder'
+                    ? 'Líder de ' . htmlspecialchars($equipoLider ?: 'tu equipo')
                     : '¡Tú puedes serlo!' ?>
             </small>
 
@@ -234,6 +256,8 @@ $lider = false;
 
 
     <?php if ($proximoPartido): ?>
+
+        <?php $fechaHora = strtotime($proximoPartido['fecha_hora'] ?? ''); ?>
 
 
         <!-- PARTIDO -->
@@ -265,7 +289,7 @@ $lider = false;
             <div class="match-center">
 
                 <span class="match-round">
-                    JORNADA 1
+                    JORNADA <?= (int) ($proximoPartido['ronda_orden'] ?? 1) ?>
                 </span>
 
                 <strong class="match-vs-large">
@@ -277,16 +301,18 @@ $lider = false;
                     <div>
                         <i class="fa-regular fa-calendar"></i>
                         <span>
-                            <?= date('d/m/Y', strtotime($proximoPartido['fecha'])) ?>
+                            <?= $fechaHora
+                                ? date('d/m/Y', $fechaHora)
+                                : 'Por definir' ?>
                         </span>
                     </div>
 
-                    <?php if (!empty($proximoPartido['hora'])): ?>
+                    <?php if ($fechaHora): ?>
 
                         <div>
                             <i class="fa-regular fa-clock"></i>
                             <span>
-                                <?= date('H:i', strtotime($proximoPartido['hora'])) ?>
+                                <?= date('H:i', $fechaHora) ?>
                                 hrs
                             </span>
                         </div>

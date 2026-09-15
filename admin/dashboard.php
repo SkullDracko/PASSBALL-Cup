@@ -116,6 +116,15 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
                 <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
             </a>
 
+            <a
+                class="portal-link"
+                href="../dashboard.php"
+                target="_blank"
+                rel="noopener"
+            >
+                <i class="fa-solid fa-globe"></i> Ver portal
+            </a>
+
         </div>
 
     </aside>
