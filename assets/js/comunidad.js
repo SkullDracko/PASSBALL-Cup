@@ -31,6 +31,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const postSort =
         comunidad.querySelector("#postSort");
 
+    const tipodef = {
+        "like":        "fa-thumbs-up",
+        "me_encanta":  "fa-heart",
+        "me_asombra":  "fa-face-surprise"
+    };
+
 
     /* ========================================================
        MENSAJES
@@ -52,6 +58,107 @@ document.addEventListener("DOMContentLoaded", function () {
             postMessage.classList.remove("show");
 
         }, 3000);
+    }
+
+
+    /* ========================================================
+       REACCIONES (fetch a controllers/reaccionar.php)
+       ======================================================== */
+
+    function enviarReaccion(postId, tipo) {
+
+        const body =
+            "post_id=" + encodeURIComponent(postId) +
+            "&tipo=" + encodeURIComponent(tipo);
+
+        fetch(
+            "controllers/reaccionar.php",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "application/x-www-form-urlencoded"
+                },
+                body: body
+            }
+        )
+            .then(function (resp) {
+                return resp.json();
+            })
+            .then(function (data) {
+
+                if (!data.success) {
+                    return;
+                }
+
+                const post = document.querySelector(
+                    ".community-post[data-post-id=\"" +
+                    postId + "\"]"
+                );
+
+                if (!post) {
+                    return;
+                }
+
+                const botones = post.querySelectorAll(
+                    ".react-button"
+                );
+
+                botones.forEach(function (btn) {
+
+                    const tipoBtn =
+                        btn.getAttribute("data-tipo");
+
+                    const icon = btn.querySelector("i");
+                    const nombre = tipodef[tipoBtn] ||
+                        "fa-thumbs-up";
+
+                    if (btn.getAttribute("data-tipo") ===
+                            tipo &&
+                        !data.eliminada) {
+
+                        btn.classList.add("liked");
+                        icon.className =
+                            "fa-solid " + nombre;
+
+                    } else {
+
+                        btn.classList.remove("liked");
+                        icon.className =
+                            "fa-regular " + nombre;
+
+                    }
+
+                });
+
+                const contador = post.querySelector(
+                    "[data-likes-count]"
+                );
+
+                if (contador) {
+
+                    contador.textContent =
+                        data.total;
+
+                }
+
+                if (data.eliminada) {
+                    return;
+                }
+
+                showMessage(
+                    "Reacción guardada.",
+                    "success"
+                );
+
+            })
+            .catch(function () {
+                showMessage(
+                    "No se pudo reaccionar.",
+                    "error"
+                );
+            });
+
     }
 
 
@@ -331,49 +438,41 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         /* ====================================================
-           ME GUSTA
+           REACCIONES (like / me encanta / me asombra)
            ==================================================== */
 
-        const likeButton =
-            post.querySelector(".like-button");
+        const reactButtons =
+            post.querySelectorAll(".react-button");
 
-        if (likeButton) {
+        reactButtons.forEach(function (btn) {
 
-            likeButton.addEventListener(
+            btn.addEventListener(
                 "click",
                 function () {
 
-                    const icon =
-                        this.querySelector("i");
-
-                    const liked =
-                        this.classList.toggle("liked");
-
-
-                    if (liked) {
-
-                        icon.className =
-                            "fa-solid fa-thumbs-up";
-
-                        this.querySelector("span")
-                            .textContent =
-                            "Te gusta";
-
-                    } else {
-
-                        icon.className =
-                            "fa-regular fa-thumbs-up";
-
-                        this.querySelector("span")
-                            .textContent =
-                            "Me gusta";
-
+                    if (this.disabled) {
+                        return;
                     }
+
+                    this.disabled = true;
+
+                    const postId =
+                        this.getAttribute("data-post-id");
+
+                    const tipo =
+                        this.getAttribute("data-tipo");
+
+                    if (!postId || !tipo) {
+                        this.disabled = false;
+                        return;
+                    }
+
+                    enviarReaccion(postId, tipo);
 
                 }
             );
 
-        }
+        });
 
 
         /* ====================================================

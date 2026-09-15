@@ -3,143 +3,184 @@
  * ============================================================
  * PASSBALL Cup - Comunidad
  * ============================================================
- * Vista Comunidad dentro del dashboard.
+ * Vista Comunidad dentro del dashboard del participante.
+ * Solo el admin publica; el participante reacciona.
  * ============================================================
  */
 
-/* ============================================================
-   DATOS TEMPORALES
-   ============================================================ */
+
+/*
+|--------------------------------------------------------------------------
+| ESTADÍSTICAS
+|--------------------------------------------------------------------------
+*/
+
+$totalMiembros = (int) $pdo->query("SELECT COUNT(*) FROM usuarios WHERE estado = 'activo'")->fetchColumn();
+$totalPosts    = (int) $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
+$totalLikes    = (int) $pdo->query("SELECT COALESCE(SUM(likes), 0) FROM posts")->fetchColumn();
+$totalReacc    = (int) $pdo->query("SELECT COUNT(*) FROM post_reacciones")->fetchColumn();
 
 $comunidadStats = [
     [
-        'valor' => 128,
+        'valor' => $totalMiembros,
         'titulo' => 'Miembros',
         'descripcion' => 'En la comunidad',
         'icono' => 'fa-solid fa-users',
-        'color' => 'purple'
+        'color' => 'purple',
     ],
     [
-        'valor' => 34,
+        'valor' => $totalPosts,
         'titulo' => 'Publicaciones',
-        'descripcion' => 'Este mes',
+        'descripcion' => 'Del comité',
         'icono' => 'fa-solid fa-comment',
-        'color' => 'orange'
+        'color' => 'orange',
     ],
     [
-        'valor' => 256,
+        'valor' => $totalLikes,
         'titulo' => 'Me gusta',
-        'descripcion' => 'Este mes',
+        'descripcion' => 'En total',
         'icono' => 'fa-solid fa-thumbs-up',
-        'color' => 'purple'
+        'color' => 'purple',
     ],
     [
-        'valor' => 89,
-        'titulo' => 'Comentarios',
-        'descripcion' => 'Este mes',
-        'icono' => 'fa-solid fa-comments',
-        'color' => 'orange'
-    ]
+        'valor' => $totalReacc,
+        'titulo' => 'Reacciones',
+        'descripcion' => 'En total',
+        'icono' => 'fa-solid fa-heart',
+        'color' => 'orange',
+    ],
 ];
 
-$publicaciones = [
-    [
-        'id' => 1,
-        'equipo' => 'Águilas FC',
-        'autor' => 'Águilas FC',
-        'tiempo' => 'Hace 2 horas',
-        'avatar' => '🦅',
-        'texto' => '¡Gran victoria el día de hoy! 💪⚽',
-        'descripcion' => 'Partido muy intenso y el equipo demostró entrega durante los 15 minutos.',
-        'hashtags' => '#VamosÁguilas 🦅💜',
-        'likes' => 31,
-        'comentarios' => 8,
-        'imagenes' => [
-            'https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=700&q=80',
-            'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=700&q=80',
-            'https://images.unsplash.com/photo-1526232761682-d26e03ac148e?auto=format&fit=crop&w=700&q=80',
-            'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?auto=format&fit=crop&w=700&q=80'
-        ]
-    ],
-    [
-        'id' => 2,
-        'equipo' => 'Tigres FC',
-        'autor' => 'Tigres FC',
-        'tiempo' => 'Hace 5 horas',
-        'avatar' => '🐯',
-        'texto' => 'Buen empate en un partido muy disputado.',
-        'descripcion' => 'Seguimos trabajando y preparándonos para nuestro próximo encuentro. 🧡🐯',
-        'hashtags' => '#VamosTigres',
-        'likes' => 18,
-        'comentarios' => 5,
-        'imagenes' => [
-            'https://images.unsplash.com/photo-1552318965-6e6be7484ada?auto=format&fit=crop&w=700&q=80',
-            'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=700&q=80'
-        ]
-    ]
-];
 
-$eventos = [
-    [
-        'dia' => '25',
-        'mes' => 'MAY',
-        'titulo' => 'Reunión de capitanes',
-        'hora' => '10:00 AM',
-        'lugar' => 'Sala de reuniones'
-    ],
-    [
-        'dia' => '28',
-        'mes' => 'MAY',
-        'titulo' => 'Torneo amistoso',
-        'hora' => '09:00 AM',
-        'lugar' => 'Cancha Principal'
-    ],
-    [
-        'dia' => '01',
-        'mes' => 'JUN',
-        'titulo' => 'Fiesta de clausura',
-        'hora' => '06:00 PM',
-        'lugar' => 'Área social'
-    ]
-];
+/*
+|--------------------------------------------------------------------------
+| PUBLICACIONES (solo admin publica)
+|--------------------------------------------------------------------------
+*/
 
-$miembros = [
-    [
-        'nombre' => 'Carlos Mendoza',
-        'equipo' => 'Administrador',
-        'rol' => 'Admin',
-        'tipo' => 'admin',
-        'avatar' => '👨🏻'
-    ],
-    [
-        'nombre' => 'María González',
-        'equipo' => 'Águilas FC',
-        'rol' => 'Capitán',
-        'tipo' => 'capitan',
-        'avatar' => '👩🏻'
-    ],
-    [
-        'nombre' => 'Juan Pérez',
-        'equipo' => 'Tigres FC',
-        'rol' => 'Capitán',
-        'tipo' => 'capitan',
-        'avatar' => '👨🏻'
-    ],
-    [
-        'nombre' => 'Luis Ramírez',
-        'equipo' => 'Lobos FC',
-        'rol' => 'Miembro',
-        'tipo' => 'miembro',
-        'avatar' => '👨🏻'
-    ],
-    [
-        'nombre' => 'Ana Torres',
-        'equipo' => 'Real Passball',
-        'rol' => 'Miembro',
-        'tipo' => 'miembro',
-        'avatar' => '👩🏻'
-    ]
-];
+$publicaciones = [];
+$stmt = $pdo->query("
+    SELECT p.id, p.titulo, p.contenido, p.imagen_url, p.likes, p.fijado, p.fecha,
+           u.nombre AS autor, u.avatar
+    FROM posts p
+    JOIN usuarios u ON u.id = p.usuario_id
+    ORDER BY p.fijado DESC, p.fecha DESC
+    LIMIT 50
+");
+
+foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $post) {
+    $publicaciones[] = [
+        'id'       => (int) $post['id'],
+        'titulo'   => $post['titulo'],
+        'texto'    => $post['contenido'],
+        'imagen'   => $post['imagen_url'],
+        'likes'    => (int) $post['likes'],
+        'fijado'   => (int) $post['fijado'],
+        'autor'    => $post['autor'] ?? 'Comité PASSBALL',
+        'avatar'   => $post['avatar'],
+        'tiempo'   => timeAgo($post['fecha']),
+        'reacciones' => [],  // counts per tipo
+    ];
+}
+
+function timeAgo(string $fecha): string
+{
+    $ts   = strtotime($fecha);
+    $diff = time() - $ts;
+
+    if ($diff < 60)       return 'Hace un momento';
+    if ($diff < 3600)     return 'Hace ' . floor($diff / 60) . ' min';
+    if ($diff < 86400)    return 'Hace ' . floor($diff / 3600) . ' h';
+    if ($diff < 604800)   return 'Hace ' . floor($diff / 86400) . ' d';
+    return date('d M Y', $ts);
+}
+
+// Reacciones del post para el participante actual
+$usuarioId = $_SESSION['usuario']['id'] ?? 0;
+$reaccionesUsuario = [];
+
+if ($usuarioId > 0 && !empty($publicaciones)) {
+    $ids = array_map('intval', array_column($publicaciones, 'id'));
+    $in  = implode(',', $ids);
+    $stmt = $pdo->query("
+        SELECT post_id, tipo FROM post_reacciones
+        WHERE usuario_id = $usuarioId AND post_id IN ($in)
+    ");
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+        $reaccionesUsuario[(int) $r['post_id']] = $r['tipo'];
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| PRÓXIMOS PARTIDOS (eventos)
+|--------------------------------------------------------------------------
+*/
+
+$eventos = [];
+$stmt = $pdo->query("
+    SELECT p.fecha_hora, p.cancha, p.goles_local, p.goles_visitante,
+           l.nombre AS local, v.nombre AS visitante
+    FROM partidos p
+    JOIN torneo_rondas r ON r.id = p.ronda_id
+    LEFT JOIN equipos l ON l.id = p.equipo_local_id
+    LEFT JOIN equipos v ON v.id = p.equipo_visitante_id
+    WHERE p.estado = 'programado'
+    ORDER BY p.fecha_hora ASC
+    LIMIT 5
+");
+
+foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $partido) {
+    if (!empty($partido['fecha_hora'])) {
+        $ts = strtotime($partido['fecha_hora']);
+        $eventos[] = [
+            'dia'   => date('d', $ts),
+            'mes'   => strtoupper(date('M', $ts)),
+            'titulo' => trim(($partido['local'] ?? '—') . ' vs ' . ($partido['visitante'] ?? '—')),
+            'hora'  => date('g:i A', $ts),
+            'lugar' => $partido['cancha'] ?: 'Por definir',
+        ];
+    }
+}
+
+if (empty($eventos)) {
+    $eventos[] = [
+        'dia'   => date('d'),
+        'mes'   => strtoupper(date('M')),
+        'titulo' => 'Sin partidos programados',
+        'hora'  => '—',
+        'lugar' => 'Vuelve pronto',
+    ];
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MIEMBROS DESTACADOS (capitanes)
+|--------------------------------------------------------------------------
+*/
+
+$miembros = [];
+$stmt = $pdo->query("
+    SELECT u.nombre, e.nombre AS equipo, u.id AS usuario_id
+    FROM equipos e
+    JOIN usuarios u ON u.id = e.capitan_id
+    WHERE e.estado = 'activo'
+    ORDER BY e.nombre
+    LIMIT 6
+");
+
+foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $m) {
+    $miembros[] = [
+        'nombre'  => $m['nombre'],
+        'equipo'  => $m['equipo'],
+        'rol'     => 'Capitán',
+        'tipo'    => 'capitan',
+        'avatar'  => '<i class="fa-solid fa-user"></i>',
+        'usuario_id' => (int) $m['usuario_id'],
+    ];
+}
 
 ?>
 
@@ -234,96 +275,6 @@ $miembros = [
 
 
             <!-- ==================================================
-                 CREAR PUBLICACIÓN
-                 ================================================== -->
-
-            <article class="create-post-card">
-
-                <div class="create-post-top">
-
-                    <div class="current-user-avatar">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-
-                    <div class="create-post-content">
-
-                        <strong>
-                            ¿Qué quieres compartir?
-                        </strong>
-
-                        <textarea
-                            id="postContent"
-                            placeholder="Comparte algo con la comunidad de PASSBALL Cup..."
-                            maxlength="500"
-                        ></textarea>
-
-                    </div>
-
-                </div>
-
-
-                <div class="create-post-bottom">
-
-                    <div class="post-actions">
-
-                        <button
-                            type="button"
-                            class="post-type-button image"
-                            data-type="imagen"
-                        >
-                            <i class="fa-solid fa-image"></i>
-                            Imagen
-                        </button>
-
-                        <button
-                            type="button"
-                            class="post-type-button video"
-                            data-type="video"
-                        >
-                            <i class="fa-solid fa-play"></i>
-                            Video
-                        </button>
-
-                        <button
-                            type="button"
-                            class="post-type-button poll"
-                            data-type="encuesta"
-                        >
-                            <i class="fa-solid fa-square-poll-vertical"></i>
-                            Encuesta
-                        </button>
-
-                        <button
-                            type="button"
-                            class="post-type-button event"
-                            data-type="evento"
-                        >
-                            <i class="fa-regular fa-calendar"></i>
-                            Evento
-                        </button>
-
-                    </div>
-
-                    <button
-                        type="button"
-                        class="publish-button"
-                        id="publishPost"
-                    >
-                        Publicar
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-
-                </div>
-
-                <div
-                    class="post-message"
-                    id="postMessage"
-                ></div>
-
-            </article>
-
-
-            <!-- ==================================================
                  PUBLICACIONES
                  ================================================== -->
 
@@ -336,25 +287,10 @@ $miembros = [
                         <i class="fa-regular fa-newspaper"></i>
 
                         <h2>
-                            Publicaciones recientes
+                            Publicaciones del comité
                         </h2>
 
                     </div>
-
-                    <select
-                        id="postSort"
-                        class="post-sort"
-                    >
-
-                        <option value="recent">
-                            Más recientes
-                        </option>
-
-                        <option value="popular">
-                            Más populares
-                        </option>
-
-                    </select>
 
                 </div>
 
@@ -364,10 +300,27 @@ $miembros = [
                     id="postsList"
                 >
 
+                    <?php if (empty($publicaciones)): ?>
+
+                        <article class="community-post">
+
+                            <div class="post-body">
+
+                                <p class="post-description">
+                                    Aún no hay publicaciones. Vuelve pronto.
+                                </p>
+
+                            </div>
+
+                        </article>
+
+                    <?php endif; ?>
+
                     <?php foreach ($publicaciones as $publicacion): ?>
 
                         <article
                             class="community-post"
+                            data-post-id="<?= $publicacion['id'] ?>"
                             data-likes="<?= $publicacion['likes'] ?>"
                         >
 
@@ -377,7 +330,9 @@ $miembros = [
 
                                 <div class="post-user-avatar">
 
-                                    <?= $publicacion['avatar'] ?>
+                                    <?= $publicacion['avatar']
+                                        ? '<img src="' . htmlspecialchars($publicacion['avatar'], ENT_QUOTES, 'UTF-8') . '" alt="" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">'
+                                        : '<i class="fa-solid fa-user-shield"></i>' ?>
 
                                 </div>
 
@@ -392,24 +347,22 @@ $miembros = [
                                     </strong>
 
                                     <span>
-                                        <?= htmlspecialchars(
-                                            $publicacion['tiempo'],
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ) ?>
-
+                                        Comité organizador · <?= htmlspecialchars($publicacion['tiempo'], ENT_QUOTES, 'UTF-8') ?>
                                         <i class="fa-solid fa-earth-americas"></i>
                                     </span>
 
                                 </div>
 
-                                <button
-                                    type="button"
-                                    class="post-menu"
-                                    title="Más opciones"
-                                >
-                                    <i class="fa-solid fa-ellipsis"></i>
-                                </button>
+                                <?php if ($publicacion['fijado']): ?>
+                                    <button
+                                        type="button"
+                                        class="post-menu"
+                                        title="Publicación fijada"
+                                        style="cursor:default;"
+                                    >
+                                        <i class="fa-solid fa-thumbtack"></i>
+                                    </button>
+                                <?php endif; ?>
 
                             </div>
 
@@ -418,72 +371,46 @@ $miembros = [
 
                             <div class="post-body">
 
-                                <p class="post-main-text">
-                                    <?= htmlspecialchars(
+                                <?php if ($publicacion['titulo'] !== ''): ?>
+                                    <p class="post-main-text">
+                                        <?= htmlspecialchars(
+                                            $publicacion['titulo'],
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ) ?>
+                                    </p>
+                                <?php endif; ?>
+
+                                <p class="post-description">
+                                    <?= nl2br(htmlspecialchars(
                                         $publicacion['texto'],
                                         ENT_QUOTES,
                                         'UTF-8'
-                                    ) ?>
-                                </p>
-
-                                <p class="post-description">
-                                    <?= htmlspecialchars(
-                                        $publicacion['descripcion'],
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>
-                                </p>
-
-                                <p class="post-hashtags">
-                                    <?= htmlspecialchars(
-                                        $publicacion['hashtags'],
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>
+                                    )) ?>
                                 </p>
 
                             </div>
 
 
-                            <!-- IMÁGENES -->
+                            <!-- IMAGEN -->
 
-                            <?php if (!empty($publicacion['imagenes'])): ?>
+                            <?php if (!empty($publicacion['imagen'])): ?>
 
-                                <div
-                                    class="post-gallery gallery-<?= count($publicacion['imagenes']) ?>"
-                                >
+                                <div class="post-gallery gallery-1">
 
-                                    <?php foreach (
-                                        $publicacion['imagenes']
-                                        as $index => $imagen
-                                    ): ?>
+                                    <div class="post-image">
 
-                                        <div class="post-image">
+                                        <img
+                                            src="<?= htmlspecialchars(
+                                                $publicacion['imagen'],
+                                                ENT_QUOTES,
+                                                'UTF-8'
+                                            ) ?>"
+                                            alt="Imagen de publicación"
+                                            loading="lazy"
+                                        >
 
-                                            <img
-                                                src="<?= htmlspecialchars(
-                                                    $imagen,
-                                                    ENT_QUOTES,
-                                                    'UTF-8'
-                                                ) ?>"
-                                                alt="Imagen de publicación"
-                                                loading="lazy"
-                                            >
-
-                                            <?php if (
-                                                count($publicacion['imagenes']) > 4 &&
-                                                $index === 3
-                                            ): ?>
-
-                                                <div class="more-images">
-                                                    +<?= count($publicacion['imagenes']) - 4 ?>
-                                                </div>
-
-                                            <?php endif; ?>
-
-                                        </div>
-
-                                    <?php endforeach; ?>
+                                    </div>
 
                                 </div>
 
@@ -496,32 +423,15 @@ $miembros = [
 
                                 <div class="reaction-summary">
 
-                                    <span class="reaction-icons">
-
-                                        <span class="reaction-like">
-                                            <i class="fa-solid fa-thumbs-up"></i>
-                                        </span>
-
-                                        <span class="reaction-heart">
-                                            <i class="fa-solid fa-heart"></i>
-                                        </span>
-
-                                        <span class="reaction-wow">
-                                            <i class="fa-solid fa-face-surprise"></i>
-                                        </span>
-
-                                    </span>
-
                                     <span>
-                                        Tú, Juan Pérez y
-                                        <?= $publicacion['likes'] ?> personas más
+                                        <i class="fa-solid fa-thumbs-up" style="color:#3187e8;"></i>
+                                        <strong data-likes-count><?= $publicacion['likes'] ?></strong> reacciones
                                     </span>
 
                                 </div>
 
                                 <span>
-                                    <?= $publicacion['comentarios'] ?>
-                                    comentarios
+                                    <?= $publicacion['fijado'] ? 'Fijado por el comité' : '' ?>
                                 </span>
 
                             </div>
@@ -531,46 +441,33 @@ $miembros = [
 
                             <div class="post-buttons">
 
-                                <button
-                                    type="button"
-                                    class="post-action like-button"
-                                >
+                                <?php
+                                $miReaccion = $reaccionesUsuario[$publicacion['id']] ?? null;
+                                $tipos = [
+                                    'like'        => ['fa-thumbs-up', 'Me gusta'],
+                                    'me_encanta'  => ['fa-heart', 'Me encanta'],
+                                    'me_asombra'  => ['fa-face-surprise', 'Me asombra'],
+                                ];
+                                foreach ($tipos as $tipoReac => $def):
+                                    $activa = $miReaccion === $tipoReac;
+                                ?>
 
-                                    <i class="fa-regular fa-thumbs-up"></i>
+                                    <button
+                                        type="button"
+                                        class="post-action react-button <?= $activa ? 'liked' : '' ?>"
+                                        data-post-id="<?= $publicacion['id'] ?>"
+                                        data-tipo="<?= $tipoReac ?>"
+                                    >
 
-                                    <span>
-                                        Me gusta
-                                    </span>
+                                        <i class="<?= $activa ? 'fa-solid' : 'fa-regular' ?> <?= $def[0] ?>"></i>
 
-                                </button>
+                                        <span>
+                                            <?= $def[1] ?>
+                                        </span>
 
+                                    </button>
 
-                                <button
-                                    type="button"
-                                    class="post-action comment-button"
-                                >
-
-                                    <i class="fa-regular fa-comment"></i>
-
-                                    <span>
-                                        Comentar
-                                    </span>
-
-                                </button>
-
-
-                                <button
-                                    type="button"
-                                    class="post-action share-button"
-                                >
-
-                                    <i class="fa-solid fa-share"></i>
-
-                                    <span>
-                                        Compartir
-                                    </span>
-
-                                </button>
+                                <?php endforeach; ?>
 
                             </div>
 
@@ -606,7 +503,7 @@ $miembros = [
 
 
             <!-- ==================================================
-                 PRÓXIMOS EVENTOS
+                 PRÓXIMOS PARTIDOS
                  ================================================== -->
 
             <article class="community-card events-card">
@@ -618,7 +515,7 @@ $miembros = [
                         <i class="fa-regular fa-calendar"></i>
 
                         <h3>
-                            Próximos eventos
+                            Próximos partidos
                         </h3>
 
                     </div>
@@ -677,18 +574,6 @@ $miembros = [
 
                 </div>
 
-
-                <button
-                    type="button"
-                    class="community-card-link"
-                >
-
-                    Ver calendario completo
-
-                    <i class="fa-solid fa-arrow-right"></i>
-
-                </button>
-
             </article>
 
 
@@ -705,7 +590,7 @@ $miembros = [
                         <i class="fa-solid fa-users"></i>
 
                         <h3>
-                            Miembros destacados
+                            Capitanes
                         </h3>
 
                     </div>
@@ -714,6 +599,20 @@ $miembros = [
 
 
                 <div class="members-list">
+
+                    <?php if (empty($miembros)): ?>
+
+                        <div class="member-item">
+
+                            <div class="member-info">
+
+                                <strong>Aún no hay equipos</strong>
+
+                            </div>
+
+                        </div>
+
+                    <?php endif; ?>
 
                     <?php foreach ($miembros as $miembro): ?>
 
@@ -765,18 +664,6 @@ $miembros = [
                     <?php endforeach; ?>
 
                 </div>
-
-
-                <button
-                    type="button"
-                    class="community-card-link"
-                >
-
-                    Ver todos los miembros
-
-                    <i class="fa-solid fa-arrow-right"></i>
-
-                </button>
 
             </article>
 
