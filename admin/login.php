@@ -4,12 +4,17 @@
  */
 session_start();
 
+require_once __DIR__ . '/../config/app.php';
+
+/*
+|--------------------------------------------------------------------------
+| Si ya existe una sesión administrativa
+|--------------------------------------------------------------------------
+*/
 if (isset($_SESSION['admin'])) {
-    header("Location: dashboard.php");
+    header('Location: dashboard.php');
     exit;
 }
-
-require_once __DIR__ . '/../config/app.php';
 
 $error = $_GET['error'] ?? '';
 ?>
@@ -21,172 +26,310 @@ $error = $_GET['error'] ?? '';
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-    <title>
-        Acceso Administrativo | <?= TORNEO_NOMBRE ?>
-    </title>
+    <title>Acceso Administrativo | <?= TORNEO_NOMBRE ?></title>
 
-    <link
-        rel="icon"
-        href="../assets/img/passball-cup.png"
-        type="image/png"
-    >
+    <link rel="icon"
+          href="../assets/img/passball-cup.png"
+          type="image/png">
 
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <link
-        rel="stylesheet"
-        href="assets/css/admin-login.css"
-    >
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet"
+          href="assets/css/admin-login.css">
 
 </head>
 
 <body>
 
-<div class="admin-page">
+    <!-- =========================================================
+         FONDO PRINCIPAL
+    ========================================================== -->
 
-    <header class="brand-header">
+    <main class="admin-login">
 
-        <div class="institutional-logos">
+        <!-- Capa oscura -->
+        <div class="background-overlay"></div>
 
-            <img
-                src="../assets/img/facmed.png"
-                alt="FACMED"
-            >
-
-            <span></span>
-
-            <img
-                src="../assets/img/medprev.png"
-                alt="MEDPREV"
-            >
-
-            <span></span>
-
-            <img
-                src="../assets/img/password.png"
-                alt="PASSWORD"
-            >
-
+        <!-- Decoración lateral -->
+        <div class="cup-decoration">
+            <i class="fa-solid fa-trophy"></i>
         </div>
 
-        <img
-            class="passball-logo"
-            src="../assets/img/passball-cup.png"
-            alt="PASSBALL Cup"
-        >
 
-    </header>
+        <!-- =====================================================
+             CONTENIDO
+        ====================================================== -->
 
-    <main class="login-card">
+        <section class="login-wrapper">
 
-        <div class="security-icon">
-            <i class="fa-solid fa-shield-halved"></i>
-        </div>
 
-        <h1>Acceso Administrativo</h1>
+            <!-- =================================================
+                 LOGOS INSTITUCIONALES
+            ================================================== -->
 
-        <p class="subtitle">
-            Panel de gestión <?= TORNEO_NOMBRE ?>
-        </p>
+            <div class="institutional-logos">
 
-        <div class="divider"></div>
+                <!-- FACMED -->
+                <div class="institution-logo facmed-logo">
+                    <img
+                        src="../assets/img/facmed.png"
+                        alt="Facultad de Medicina"
+                    >
+                </div>
 
-        <p class="notice">
-            <i class="fa-solid fa-lock"></i>
-            Acceso exclusivo para el equipo organizador del torneo.
-        </p>
 
-        <?php if ($error): ?>
+                <div class="logo-divider"></div>
 
-            <div class="error">
-                <?= htmlspecialchars($error) ?>
-            </div>
 
-        <?php endif; ?>
+                <!-- MEDPREV -->
+                <div class="institution-logo medprev-logo">
+                    <img
+                        src="../assets/img/medprev.png"
+                        alt="Medicina Preventiva y Salud Pública"
+                    >
+                </div>
 
-        <form
-            class="login-form"
-            id="adminLoginForm"
-        >
 
-            <label for="usuario">Usuario administrador</label>
+                <div class="logo-divider"></div>
 
-            <div class="input-box">
 
-                <i class="fa-solid fa-user"></i>
-
-                <input
-                    type="text"
-                    id="usuario"
-                    name="usuario"
-                    placeholder="Tu usuario"
-                    autocomplete="username"
-                    required
-                    autofocus
-                >
+                <!-- PASSWORD -->
+                <div class="institution-logo password-logo">
+                    <img
+                        src="../assets/img/password.png"
+                        alt="PASSWORD"
+                    >
+                </div>
 
             </div>
 
-            <label for="contrasena">Contraseña</label>
 
-            <div class="input-box">
+            <!-- =================================================
+                 LOGO PASSBALL CUP
+            ================================================== -->
 
-                <i class="fa-solid fa-lock"></i>
+            <div class="passball-brand">
 
-                <input
-                    type="password"
-                    id="contrasena"
-                    name="contrasena"
-                    placeholder="••••••••"
-                    autocomplete="current-password"
-                    required
+                <img
+                    src="../assets/img/passball-cup.png"
+                    alt="PASSBALL Cup"
                 >
 
-                <button
-                    type="button"
-                    id="togglePassword"
-                    aria-label="Mostrar u ocultar contraseña"
-                >
-                    <i class="fa-solid fa-eye"></i>
-                </button>
+                <span>
+                    Torneo de Fútbol Medicina Preventiva
+                </span>
 
             </div>
 
-            <button
-                class="btn-login"
-                type="submit"
-                id="btnAdminLogin"
-            >
-                <i class="fa-solid fa-lock"></i>
-                Entrar al panel
-                <i class="fa-solid fa-arrow-right"></i>
-            </button>
 
-        </form>
+            <!-- =================================================
+                 TARJETA LOGIN
+            ================================================== -->
 
-        <a href="../login.php" class="back">
-            ← Volver al inicio de sesión
-        </a>
+            <div class="login-card">
+
+
+                <!-- Escudo -->
+                <div class="security-icon">
+
+                    <i class="fa-solid fa-shield-halved"></i>
+
+                </div>
+
+
+                <!-- Título -->
+                <h1>
+                    Acceso
+                    <span>Administrativo</span>
+                </h1>
+
+
+                <p class="login-subtitle">
+                    Panel de gestión <?= TORNEO_NOMBRE ?>
+                </p>
+
+
+                <!-- Línea amarilla -->
+                <div class="title-line"></div>
+
+
+                <!-- Mensaje -->
+                <div class="access-message">
+
+                    <i class="fa-solid fa-shield-halved"></i>
+
+                    <span>
+                        Acceso exclusivo para el equipo organizador
+                        del torneo.
+                    </span>
+
+                </div>
+
+
+                <!-- =============================================
+                     FORMULARIO
+                ============================================== -->
+
+                <form
+                    id="adminLoginForm"
+                    autocomplete="off"
+                >
+
+
+                    <!-- USUARIO -->
+
+                    <div class="form-group">
+
+                        <label for="usuario">
+                            <i class="fa-solid fa-user"></i>
+                            Usuario administrador
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-user input-icon"></i>
+
+                            <input
+                                type="text"
+                                id="usuario"
+                                name="usuario"
+                                placeholder="Tu usuario"
+                                required
+                                autocomplete="username"
+                                autofocus
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CONTRASEÑA -->
+
+                    <div class="form-group">
+
+                        <label for="contrasena">
+                            <i class="fa-solid fa-lock"></i>
+                            Contraseña
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-lock input-icon"></i>
+
+                            <input
+                                type="password"
+                                id="contrasena"
+                                name="contrasena"
+                                placeholder="••••••••"
+                                required
+                                autocomplete="current-password"
+                            >
+
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                id="togglePassword"
+                                aria-label="Mostrar contraseña"
+                            >
+
+                                <i class="fa-solid fa-eye"></i>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ERROR -->
+
+                    <?php if (!empty($error)): ?>
+
+                        <div class="login-error">
+
+                            <i class="fa-solid fa-circle-exclamation"></i>
+
+                            <span>
+                                <?= htmlspecialchars($error) ?>
+                            </span>
+
+                        </div>
+
+                    <?php endif; ?>
+
+
+                    <!-- BOTÓN -->
+
+                    <button
+                        type="submit"
+                        class="login-button"
+                        id="loginButton"
+                    >
+
+                        <i class="fa-solid fa-lock"></i>
+
+                        <span>Entrar al panel</span>
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                    </button>
+
+
+                </form>
+
+
+                <!-- VOLVER -->
+
+                <a
+                    href="../login.php"
+                    class="back-link"
+                >
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                    Volver al inicio de sesión
+
+                </a>
+
+
+            </div>
+
+
+            <!-- =================================================
+                 FOOTER
+            ================================================== -->
+
+            <div class="admin-footer">
+
+                <span class="footer-line"></span>
+
+                <span>
+                    PANEL ADMINISTRATIVO · <?= TORNEO_EDICION ?>
+                </span>
+
+                <span class="footer-line"></span>
+
+            </div>
+
+
+        </section>
 
     </main>
 
-    <footer class="admin-login-footer">
-        PANEL ADMINISTRATIVO · <?= TORNEO_EDICION ?>
-    </footer>
 
-</div>
-
-<script src="assets/js/admin-login.js"></script>
-
-<script src="assets/js/login.js"></script>
+    <!-- JS -->
+    <script src="assets/js/admin-login.js"></script>
 
 </body>
 
