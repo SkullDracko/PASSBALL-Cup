@@ -2441,6 +2441,11 @@ a {
     gap: 18px;
 }
 
+.action-buttons:has(.action-card:only-child) {
+
+    grid-template-columns: 1fr;
+}
+
 .action-card {
 
     border: 1px solid var(--border);

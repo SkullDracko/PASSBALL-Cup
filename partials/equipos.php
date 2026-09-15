@@ -191,7 +191,7 @@ unset(
     </h1>
 
     <p>
-        Busca un equipo existente o registra uno nuevo.
+        Registra tu equipo para participar en el torneo.
     </p>
 
 </div>
@@ -351,40 +351,13 @@ unset(
         </h2>
 
         <p>
-            Busca un equipo existente o registra uno nuevo.
+            Registra tu equipo para participar en el torneo.
         </p>
 
     </div>
 
 
     <div class="action-buttons">
-
-
-        <button
-            type="button"
-            class="action-card"
-            id="focusSearch"
-        >
-
-            <div class="action-icon purple">
-                <i class="fa-solid fa-magnifying-glass"></i>
-            </div>
-
-            <div class="action-text">
-
-                <h3>
-                    Buscar equipo
-                </h3>
-
-                <p>
-                    Encuentra un equipo y consulta su información.
-                </p>
-
-            </div>
-
-            <i class="fa-solid fa-arrow-right action-arrow"></i>
-
-        </button>
 
 
         <?php if (!$miEquipo): ?>
@@ -550,41 +523,3 @@ unset(
     </div>
 
 </section>
-
-
-<?php if (!$miEquipo): ?>
-
-    <section class="registration-info">
-
-        <div class="info-icon">
-            <i class="fa-solid fa-circle-info"></i>
-        </div>
-
-        <div class="info-text">
-
-            <h3>
-                ¿No encuentras tu equipo?
-            </h3>
-
-            <p>
-                Puedes registrar uno nuevo y automáticamente
-                serás designado como líder.
-            </p>
-
-        </div>
-
-        <button
-            type="button"
-            class="info-button"
-            id="openRegisterBottom"
-        >
-
-            Registrar equipo
-
-            <i class="fa-solid fa-arrow-right"></i>
-
-        </button>
-
-    </section>
-
-<?php endif; ?>

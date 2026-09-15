@@ -119,11 +119,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================
-       ACERCAR / BUSCAR EQUIPOS
+       BUSCAR EQUIPOS
        ========================================= */
-
-    var focusSearch =
-        document.getElementById('focusSearch');
 
     var teamSearch =
         document.getElementById('teamSearch');
@@ -133,19 +130,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var noResults =
         document.getElementById('noResults');
-
-
-    if (focusSearch && teamSearch) {
-
-        focusSearch.addEventListener(
-            'click',
-            function () {
-                showView('view-equipos');
-                teamSearch.focus();
-            }
-        );
-
-    }
 
 
     if (teamSearch) {
@@ -207,9 +191,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var openRegister =
         document.getElementById('openRegister');
 
-    var openRegisterBottom =
-        document.getElementById('openRegisterBottom');
-
     var closeRegister =
         document.getElementById('closeRegister');
 
@@ -256,10 +237,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (openRegister) {
         openRegister.addEventListener('click', openModal);
-    }
-
-    if (openRegisterBottom) {
-        openRegisterBottom.addEventListener('click', openModal);
     }
 
     if (closeRegister) {
