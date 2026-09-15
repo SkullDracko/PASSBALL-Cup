@@ -17,3 +17,5 @@ config/database_local.php
 .idea/
 *.swp
 *.swo
+
+.agents

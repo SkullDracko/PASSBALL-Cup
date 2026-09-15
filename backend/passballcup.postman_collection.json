@@ -1,0 +1,387 @@
+{
+  "info": {
+    "_postman_id": "083af385-02f8-4859-a343-ebe3bcb25ddf",
+    "name": "passballcup",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "49361712",
+    "_collection_link": "https://go.postman.co/collection/49361712-083af385-02f8-4859-a343-ebe3bcb25ddf?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "usuarios",
+      "item": [
+        {
+          "name": "listar",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"correo\": \"elmo@gmail.com\",\r\n    \"password\": \"Abc123\"\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/usuarios",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "usuario por id",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"correo\": \"elmo@gmail.com\",\r\n    \"password\": \"Abc123\"\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/usuarios/15",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "usuarios",
+                "15"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "cambiar avatar",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"avatar\": \"hoaadlfalfasflasfasflag\"\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/usuarios/14",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "usuarios",
+                "14"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "cambiar estado",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"avatar\": \"omar.jpg\",\r\n\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/usuarios/14/estado",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "usuarios",
+                "14",
+                "estado"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "jugador activo",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"avatar\": \"omar.jpg\",\r\n\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/usuarios/14/jugador-activo",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "usuarios",
+                "14",
+                "jugador-activo"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "admin",
+      "item": [
+        {
+          "name": "crear",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"nombre\": \"Carlos Ramirez\",\r\n    \"usuario\": \"Elmo2\",\r\n    \"contrasena\": \"ola123456\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/administradores",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "administradores"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "admin",
+          "item": [
+            {
+              "name": "login",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"usuario\": \"Elmo2\",\r\n    \"contrasena\": \"ola123456\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost/PASSBALL-Cup/backend/api/admin/login",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "PASSBALL-Cup",
+                    "backend",
+                    "api",
+                    "admin",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "me",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "http://localhost/PASSBALL-Cup/backend/api/admin/me",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "PASSBALL-Cup",
+                    "backend",
+                    "api",
+                    "admin",
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "New Request",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "http://localhost/PASSBALL-Cup/backend/api/admin/logout",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "PASSBALL-Cup",
+                    "backend",
+                    "api",
+                    "admin",
+                    "logout"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "me",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"matricula\": \"1908082\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/auth/me",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"matricula\": \"1908082\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/auth/logout",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "equipos",
+      "item": []
+    },
+    {
+      "name": "torneos",
+      "item": []
+    },
+    {
+      "name": "partidos",
+      "item": []
+    }
+  ]
+}
