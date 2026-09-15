@@ -666,6 +666,70 @@ try {
             </div>
 
 
+            <!-- =============================================
+                 ELEGIR INTEGRANTES
+                 ============================================= -->
+
+            <label for="buscarJugador">
+                Elegir integrantes
+                <span>(máx 12 en total)</span>
+            </label>
+
+            <div class="miembros-buscar">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+                <input
+                    type="text"
+                    id="buscarJugador"
+                    placeholder="Busca por nombre o matrícula..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+            <p class="miembros-buscar-hint">
+                Búscalos por nombre o matrícula. Debes incluir todo tu
+                roster: 7 en cancha y cambios.
+            </p>
+
+            <div
+                class="miembros-resultados"
+                id="miembrosResultados"
+            ></div>
+
+            <div
+                class="miembros-elegidos"
+                id="miembrosElegidos"
+            >
+
+                <span class="miembro-chip miembro-chip-capitan">
+
+                    <span class="miembro-chip-avatar">
+                        <i class="fa-solid fa-crown"></i>
+                    </span>
+
+                    <span class="miembro-chip-nombre">
+                        <?= htmlspecialchars($nombreUsuario) ?>
+                    </span>
+
+                    <em>(tú)</em>
+
+                </span>
+
+            </div>
+
+            <p class="integrantes-total" id="integrantesTotal">
+                1/12 integrantes
+            </p>
+
+
+            <div
+                class="miembros-hidden"
+                id="miembrosHidden"
+            ></div>
+
+
             <div class="modal-buttons">
 
                 <button

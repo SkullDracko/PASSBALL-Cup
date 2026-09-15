@@ -178,13 +178,13 @@ switch ($action) {
             exit;
         }
 
-        // Verificar que no esté lleno (7 max)
+        // Verificar que no esté lleno (12 max)
         $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM equipo_miembros WHERE equipo_id = ? AND estado = 'activo'");
         $stmt->execute([$equipoId]);
         $count = $stmt->fetch()['total'];
-        if ($count >= 7) {
+        if ($count >= 12) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'El equipo ya está lleno (máximo 7 miembros)']);
+            echo json_encode(['success' => false, 'message' => 'El equipo ya está lleno (máximo 12 miembros)']);
             exit;
         }
 

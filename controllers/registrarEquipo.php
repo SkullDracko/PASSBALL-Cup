@@ -18,6 +18,28 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $nombre = trim($_POST['nombre_equipo'] ?? '');
 
 /* -------------------------------------------
+   Integrantes seleccionados (opcional)
+   Máximo 12 por equipo (capitán + 11)
+   ------------------------------------------- */
+
+const MAX_MIEMBROS = 12;
+
+$integrantesRaw = $_POST['integrantes'] ?? [];
+
+$integrantes = array_values(array_unique(array_map('intval', (array) $integrantesRaw)));
+
+$integrantes = array_filter(
+    $integrantes,
+    fn ($id) => $id > 0 && $id !== (int) $usuario['id']
+);
+
+if (count($integrantes) > MAX_MIEMBROS - 1) {
+    $_SESSION['flash_error'] = 'El equipo admite máximo ' . MAX_MIEMBROS . ' integrantes (tú + 11). Reduce la lista.';
+    header("Location: ../dashboard.php#view-equipos");
+    exit;
+}
+
+/* -------------------------------------------
    Validaciones
    ------------------------------------------- */
 
@@ -169,22 +191,69 @@ try {
     ");
     $stmt->execute([$equipoId, $usuario['id']]);
 
+    // 3. Insertar integrantes seleccionados (validados)
+    if ($integrantes !== []) {
+
+        $placeholders = implode(',', array_fill(0, count($integrantes), '?'));
+
+        // 3a. Verificar que todos existan y sean usuarios válidos
+        $stmt = $pdo->prepare("
+            SELECT id, nombre
+            FROM usuarios
+            WHERE id IN ($placeholders)
+              AND rol = 'usuario'
+              AND estado = 'activo'
+        ");
+        $stmt->execute($integrantes);
+
+        $_integrantesValidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (count($_integrantesValidos) !== count($integrantes)) {
+            throw new RuntimeException('Uno de los jugadores seleccionados ya no es válido.');
+        }
+
+        // 3b. Verificar que ninguno pertenezca a un equipo activo
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*)
+            FROM equipo_miembros
+            WHERE jugador_id IN ($placeholders)
+              AND estado = 'activo'
+        ");
+        $stmt->execute($integrantes);
+
+        if ((int) $stmt->fetchColumn() > 0) {
+            throw new RuntimeException('Uno de los jugadores seleccionados ya pertenece a otro equipo.');
+        }
+
+        // 3c. Insertar miembros
+        $stmt = $pdo->prepare("
+            INSERT INTO equipo_miembros (equipo_id, jugador_id, estado)
+            VALUES (?, ?, 'activo')
+        ");
+
+        foreach ($_integrantesValidos as $jugador) {
+            $stmt->execute([$equipoId, $jugador['id']]);
+        }
+    }
+
     $pdo->commit();
 
-    $_SESSION['flash_success'] = "Equipo \"{$nombre}\" registrado exitosamente. ¡Bienvenido, líder!";
+    $totalIntegrantes = 1 + count($integrantes);
+
+    $_SESSION['flash_success'] = "Equipo \"{$nombre}\" registrado con {$totalIntegrantes} integrante(s). ¡Bienvenido, líder!";
     header("Location: ../dashboard.php#view-equipos");
     exit;
 
-} catch (PDOException $e) {
+} catch (Throwable $e) {
     $pdo->rollBack();
 
-    // Limpiar logo ya subido si falló la BD
+    // Limpiar logo ya subido si falló
     if (is_file($destino)) {
         unlink($destino);
     }
 
     error_log("registrarEquipo - crear: " . $e->getMessage());
-    $_SESSION['flash_error'] = 'Error al registrar el equipo. Intenta de nuevo.';
+    $_SESSION['flash_error'] = 'Error al registrar el equipo. ' . ($e instanceof RuntimeException ? $e->getMessage() : 'Intenta de nuevo.');
     header("Location: ../dashboard.php#view-equipos");
     exit;
 }

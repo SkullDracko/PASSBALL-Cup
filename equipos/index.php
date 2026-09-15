@@ -263,7 +263,7 @@ $miEquipo = $stmt->fetch(PDO::FETCH_ASSOC);
                         </div>
 
                         <div class="muted">
-                            👥 <?= (int) $eq['total_miembros'] ?>/7 miembros ·
+                            👥 <?= (int) $eq['total_miembros'] ?>/12 miembros ·
                             📅 <?= date('d/m/Y', strtotime($eq['fecha_creacion'])) ?>
                         </div>
 

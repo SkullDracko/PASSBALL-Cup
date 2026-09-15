@@ -56,7 +56,7 @@ if (!$estoyEnEste) {
     $yaTengoOtro = (bool) $stmt->fetch();
 }
 
-$equipoLleno = (int) $equipo['total_miembros'] >= 7;
+$equipoLleno = (int) $equipo['total_miembros'] >= 12;
 ?>
 
 <!DOCTYPE html>
@@ -283,7 +283,7 @@ $equipoLleno = (int) $equipo['total_miembros'] >= 7;
                                 Líder: <?= htmlspecialchars($equipo['capitan_nombre'] ?? '—') ?>
                             </div>
                             <div class="muted">
-                                👥 <?= (int) $equipo['total_miembros'] ?>/7 miembros ·
+                                👥 <?= (int) $equipo['total_miembros'] ?>/12 miembros ·
                                 📅 Creado <?= date('d/m/Y', strtotime($equipo['fecha_creacion'])) ?>
                             </div>
                         </div>
@@ -294,7 +294,7 @@ $equipoLleno = (int) $equipo['total_miembros'] >= 7;
 
                 <div class="card">
 
-                    <h3>Miembros (<?= (int) $equipo['total_miembros'] ?>/7)</h3>
+                    <h3>Miembros (<?= (int) $equipo['total_miembros'] ?>/12)</h3>
 
                     <?php if (empty($miembros)): ?>
                         <div class="muted">No hay miembros aún.</div>
@@ -361,7 +361,7 @@ $equipoLleno = (int) $equipo['total_miembros'] >= 7;
 
                     <?php elseif ($equipoLleno): ?>
 
-                        <div class="notice">El equipo ya está lleno (máximo 7 miembros).</div>
+                        <div class="notice">El equipo ya está lleno (máximo 12 miembros).</div>
 
                     <?php else: ?>
 

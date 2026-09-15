@@ -223,6 +223,314 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================
+       ELEGIR INTEGRANTES AL CREAR EQUIPO
+       ========================================= */
+
+    var MAX_MIEMBROS = 12;
+
+    var buscarJugador =
+        document.getElementById('buscarJugador');
+
+    var miembrosResultados =
+        document.getElementById('miembrosResultados');
+
+    var miembrosElegidos =
+        document.getElementById('miembrosElegidos');
+
+    var miembrosHidden =
+        document.getElementById('miembrosHidden');
+
+    var integrantesTotal =
+        document.getElementById('integrantesTotal');
+
+    if (buscarJugador && miembrosResultados) {
+
+        var seleccionados = {};
+        var CAPITAN = 1;
+
+        function contarSeleccionados() {
+            return CAPITAN + Object.keys(seleccionados).length;
+        }
+
+        function actualizarTotal() {
+
+            var total = contarSeleccionados();
+
+            if (integrantesTotal) {
+                integrantesTotal.textContent =
+                    total + '/' + MAX_MIEMBROS + ' integrantes';
+            }
+
+            return total;
+        }
+
+        function cerrarResultados() {
+
+            miembrosResultados.innerHTML = '';
+            miembrosResultados.classList.remove('show');
+        }
+
+        function crearAvatar(u) {
+
+            var avatar =
+                document.createElement('span');
+
+            avatar.className = 'miembro-select-avatar';
+
+            if (u.avatar) {
+
+                var img = document.createElement('img');
+                img.src = u.avatar;
+                img.alt = '';
+                avatar.appendChild(img);
+
+            } else {
+
+                avatar.textContent =
+                    (u.nombre || '?').charAt(0).toUpperCase();
+
+            }
+
+            return avatar;
+        }
+
+        function agregarJugador(u) {
+
+            if (seleccionados[u.id]) return;
+
+            if (contarSeleccionados() >= MAX_MIEMBROS) return;
+
+            seleccionados[u.id] = true;
+
+            /* Hidden input dentro del formulario */
+
+            var hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'integrantes[]';
+            hidden.value = u.id;
+            hidden.setAttribute('data-miembro', u.id);
+            miembrosHidden.appendChild(hidden);
+
+            /* Chip visible */
+
+            var chip =
+                document.createElement('span');
+
+            chip.className = 'miembro-chip';
+            chip.setAttribute('data-chip', u.id);
+
+            var avatar =
+                document.createElement('span');
+
+            avatar.className = 'miembro-chip-avatar';
+
+            if (u.avatar) {
+
+                var img = document.createElement('img');
+                img.src = u.avatar;
+                img.alt = '';
+                avatar.appendChild(img);
+
+            } else {
+
+                avatar.textContent =
+                    (u.nombre || '?').charAt(0).toUpperCase();
+
+            }
+
+            var nombre =
+                document.createElement('span');
+
+            nombre.className = 'miembro-chip-nombre';
+            nombre.textContent = u.nombre;
+
+            var remove =
+                document.createElement('button');
+
+            remove.type = 'button';
+            remove.className = 'miembro-chip-remove';
+            remove.title = 'Quitar';
+            remove.setAttribute('aria-label', 'Quitar integrante');
+            remove.innerHTML = '&times;';
+
+            remove.addEventListener('click', function () {
+
+                quitarJugador(u.id);
+
+            });
+
+            chip.appendChild(avatar);
+            chip.appendChild(nombre);
+            chip.appendChild(remove);
+
+            miembrosElegidos.appendChild(chip);
+
+            actualizarTotal();
+            cerrarResultados();
+            buscarJugador.value = '';
+            buscarJugador.focus();
+        }
+
+        function quitarJugador(id) {
+
+            delete seleccionados[id];
+
+            var hidden =
+                miembrosHidden.querySelector(
+                    'input[data-miembro="' + id + '"]'
+                );
+
+            if (hidden) hidden.remove();
+
+            var chip =
+                miembrosElegidos.querySelector(
+                    'span[data-chip="' + id + '"]'
+                );
+
+            if (chip) chip.remove();
+
+            actualizarTotal();
+        }
+
+        function renderResultado(u) {
+
+            var yaSeleccionado =
+                !!seleccionados[u.id];
+
+            var ocupado =
+                parseInt(u.en_equipo, 10) > 0 && !yaSeleccionado;
+
+            var lleno =
+                contarSeleccionados() >= MAX_MIEMBROS && !yaSeleccionado;
+
+            var item =
+                document.createElement('div');
+
+            item.className = 'miembro-select-item';
+
+            if (ocupado || lleno) {
+                item.classList.add('disabled');
+            }
+
+            var avatar = crearAvatar(u);
+
+            var info =
+                document.createElement('div');
+
+            info.className = 'miembro-select-info';
+
+            var nombre =
+                document.createElement('strong');
+
+            nombre.textContent = u.nombre;
+
+            var matricula =
+                document.createElement('span');
+
+            matricula.textContent = 'Mat: ' + u.matricula;
+
+            info.appendChild(nombre);
+            info.appendChild(matricula);
+
+            var estado =
+                document.createElement('span');
+
+            estado.className = 'miembro-select-estado';
+
+            estado.textContent = ocupado
+                ? 'En otro equipo'
+                : (yaSeleccionado ? 'Seleccionado' : 'Agregar');
+
+            item.appendChild(avatar);
+            item.appendChild(info);
+            item.appendChild(estado);
+
+            if (!ocupado && !(lleno)) {
+                item.addEventListener('click', function () {
+                    agregarJugador(u);
+                });
+            }
+
+            miembrosResultados.appendChild(item);
+        }
+
+        function buscar(q) {
+
+            fetch(
+                'controllers/buscarUsuarios.php?q=' +
+                encodeURIComponent(q)
+            )
+            .then(function (r) {
+                return r.json();
+            })
+            .then(function (data) {
+
+                miembrosResultados.innerHTML = '';
+
+                if (!data.success) {
+                    miembrosResultados.innerHTML =
+                        '<p class="miembro-vacio">Error al buscar.</p>';
+                    return;
+                }
+
+                if (!data.usuarios.length) {
+                    miembrosResultados.innerHTML =
+                        '<p class="miembro-vacio">Sin resultados.</p>';
+                    return;
+                }
+
+                data.usuarios.forEach(function (u) {
+                    renderResultado(u);
+                });
+
+                miembrosResultados.classList.add('show');
+
+            })
+            .catch(function () {
+                miembrosResultados.innerHTML =
+                    '<p class="miembro-vacio">Error de conexión.</p>';
+            });
+        }
+
+        var timer = null;
+
+        buscarJugador.addEventListener('input', function () {
+
+            clearTimeout(timer);
+
+            var q = this.value.trim();
+
+            if (q.length < 2) {
+                cerrarResultados();
+                return;
+            }
+
+            timer = setTimeout(function () {
+                buscar(q);
+            }, 250);
+        });
+
+        buscarJugador.addEventListener('keydown', function (e) {
+
+            if (e.key === 'Escape') {
+                cerrarResultados();
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+
+            if (
+                miembrosResultados.classList.contains('show') &&
+                !miembrosResultados.contains(e.target) &&
+                !buscarJugador.contains(e.target)
+            ) {
+                cerrarResultados();
+            }
+        });
+    }
+
+
+    /* =========================================
        CONFIRMAR POSTULACIÓN AL TORNEO
        ========================================= */
 
