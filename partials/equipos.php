@@ -342,6 +342,8 @@ unset(
 
 <!-- ACCIONES -->
 
+<?php if (!$miEquipo): ?>
+
 <section class="team-actions">
 
     <div class="section-title">
@@ -359,40 +361,37 @@ unset(
 
     <div class="action-buttons">
 
+        <button
+            type="button"
+            class="action-card"
+            id="openRegister"
+        >
 
-        <?php if (!$miEquipo): ?>
+            <div class="action-icon orange">
+                <i class="fa-solid fa-plus"></i>
+            </div>
 
-            <button
-                type="button"
-                class="action-card"
-                id="openRegister"
-            >
+            <div class="action-text">
 
-                <div class="action-icon orange">
-                    <i class="fa-solid fa-plus"></i>
-                </div>
+                <h3>
+                    Registrar equipo
+                </h3>
 
-                <div class="action-text">
+                <p>
+                    Crea un nuevo equipo y conviértete en líder.
+                </p>
 
-                    <h3>
-                        Registrar equipo
-                    </h3>
+            </div>
 
-                    <p>
-                        Crea un nuevo equipo y conviértete en líder.
-                    </p>
+            <i class="fa-solid fa-arrow-right action-arrow orange-arrow"></i>
 
-                </div>
-
-                <i class="fa-solid fa-arrow-right action-arrow orange-arrow"></i>
-
-            </button>
-
-        <?php endif; ?>
+        </button>
 
     </div>
 
 </section>
+
+<?php endif; ?>
 
 
 <!-- EQUIPOS DISPONIBLES -->
@@ -409,6 +408,11 @@ unset(
 
             <p>
                 Explora los equipos registrados en el torneo.
+            </p>
+
+            <p>
+                En caso de no contar con equipo, puedes unirte
+                a uno de los que estén disponibles.
             </p>
 
         </div>
