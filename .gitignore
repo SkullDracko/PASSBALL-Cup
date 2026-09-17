@@ -23,3 +23,5 @@ uploads/*
 .idea/
 *.swp
 *.swo
+
+.agents
