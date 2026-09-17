@@ -14,9 +14,8 @@ config/database_local.php
 
 # Uploads de usuarios (se generan en tiempo de ejecución)
 # Solo se trackean los .gitkeep para preservar la estructura
-uploads/*
-!uploads/*/
-!uploads/*/.gitkeep
+uploads/**
+!uploads/**/.gitkeep
 
 # IDE
 .vscode/
