@@ -37,7 +37,7 @@ function requireJugador(): int
 
     if (
         !$usuario
-        || $usuario['rol'] !== 'usuario'
+        || $usuario['rol'] !== 'jugador'
         || $usuario['estado'] !== 'activo'
         || !(bool) $usuario['jugador_activo']
     ) {

@@ -18,7 +18,7 @@ CREATE TABLE usuarios (
   id INT AUTO_INCREMENT PRIMARY KEY,
   matricula VARCHAR(20) NOT NULL UNIQUE,
   afi_usuario_id VARCHAR(50) UNIQUE,
-  rol ENUM('usuario','administrador') NOT NULL DEFAULT 'usuario',
+  rol ENUM('usuario','jugador') NOT NULL DEFAULT 'usuario',
   avatar VARCHAR(255),
   jugador_activo BOOLEAN NOT NULL DEFAULT TRUE, -- Indica si el jugador puede participar en los partidos (al terminar el afiliado, debería de ponerse como 0)
   estado ENUM('activo','inactivo') NOT NULL DEFAULT 'activo', -- Sirve para habilitar o deshabilitar al usuario en el sistema

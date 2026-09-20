@@ -10,7 +10,7 @@ $router->get(
 );
 
 // --- auth / admin-auth ---
-$router->post('/api/auth/login', [AuthController::class, 'login']);
+$router->post('/api/auth/login', [AuthController::class, 'login']); 
 $router->post('/api/auth/logout', [AuthController::class, 'logout']);
 $router->get('/api/auth/me', [AuthController::class, 'me']);
 

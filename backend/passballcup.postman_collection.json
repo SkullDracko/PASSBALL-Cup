@@ -150,7 +150,7 @@
       ]
     },
     {
-      "name": "admin",
+      "name": "administrador",
       "item": [
         {
           "name": "crear",
@@ -181,6 +181,161 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/administradores",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "administradores"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "detalles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/administradores/2",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "administradores",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"nombre\": \"Carlos Ramírez\",\r\n    \"usuario\": \"eLmoPrueba\",\r\n    \"contrasena\": \"ola1234567\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/administradores/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "administradores",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "cambiar activo",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"activo\": \"0\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/administradores/2/activo",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "administradores",
+                "2",
+                "activo"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"matricula\": \"1908082\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/administradores/2",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "administradores",
+                "2"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -197,7 +352,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"usuario\": \"Elmo2\",\r\n    \"contrasena\": \"ola123456\"\r\n}",
+                  "raw": "{\r\n    \"usuario\": \"ELmoPrueba\",\r\n    \"contrasena\": \"ola1234567\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -373,7 +528,229 @@
     },
     {
       "name": "equipos",
-      "item": []
+      "item": [
+        {
+          "name": "listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/equipos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "equipos"
+              ]
+            },
+            "description": "Generated from cURL: curl -X GET \"http://localhost/PASSBALL-Cup/backend/api/equipos\" -H \"Content-Type: application/json\" -d '{}'"
+          },
+          "response": []
+        },
+        {
+          "name": "crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"nombre\": \"Tigres UANL\", \r\n    \"descripcion\": \"nose jaja\", \r\n    \"estado\": \"activo\"\r\n    \r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/equipos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "equipos"
+              ]
+            },
+            "description": "Generated from cURL: curl -X POST \"http://localhost/PASSBALL-Cup/backend/api/equipos\" -H \"Content-Type: application/json\" -d '{\"nombre\": \"\", \"descripcion\": \"\", \"estado\": \"activo\"}'"
+          },
+          "response": []
+        },
+        {
+          "name": "detalle",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/equipos/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "equipos",
+                "1"
+              ]
+            },
+            "description": "Generated from cURL: curl -X GET \"http://localhost/PASSBALL-Cup/backend/api/equipos/:id\" -H \"Content-Type: application/json\" -d '{}'"
+          },
+          "response": []
+        },
+        {
+          "name": "actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"nombre\": \"Rayados del Monterrey\", \r\n    \"descripcion\": \"Equipo de futbol de los rayados\",\r\n    \"logo\": \"equipo/logo/rayados.jpg\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/equipos/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "equipos",
+                "1"
+              ]
+            },
+            "description": "Generated from cURL: curl -X PATCH \"http://localhost/PASSBALL-Cup/backend/api/equipos/:id\" -H \"Content-Type: application/json\" -d '{\"nombre\": \"\", \"descripcion\": \"\"}'"
+          },
+          "response": []
+        },
+        {
+          "name": "cambiarEstado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"estado\": \"inactivo\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/equipos/1/estado",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "equipos",
+                "1",
+                "estado"
+              ]
+            },
+            "description": "Generated from cURL: curl -X PATCH \"http://localhost/PASSBALL-Cup/backend/api/equipos/:id/estado\" -H \"Content-Type: application/json\" -d '{\"estado\": \"activo\"}'"
+          },
+          "response": []
+        },
+        {
+          "name": "eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/equipos/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "equipos",
+                "1"
+              ]
+            },
+            "description": "Generated from cURL: curl -X DELETE \"http://localhost/PASSBALL-Cup/backend/api/equipos/:id\" -H \"Content-Type: application/json\" -d '{}'"
+          },
+          "response": []
+        }
+      ]
     },
     {
       "name": "torneos",
@@ -382,6 +759,206 @@
     {
       "name": "partidos",
       "item": []
+    },
+    {
+      "name": "equipos-miembros",
+      "item": [
+        {
+          "name": "listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/equipos/2/miembros",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "equipos",
+                "2",
+                "miembros"
+              ]
+            },
+            "description": "Generated from cURL: curl -X GET \"http://localhost/PASSBALL-Cup/backend/api/equipos/:equipoId/miembros\" -H \"Content-Type: application/json\""
+          },
+          "response": []
+        },
+        {
+          "name": "agregar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"jugador_id\": \"4\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/equipos/2/miembros",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "equipos",
+                "2",
+                "miembros"
+              ]
+            },
+            "description": "Generated from cURL: curl -X POST \"http://localhost/PASSBALL-Cup/backend/api/equipos/:equipoId/miembros\" -H \"Content-Type: application/json\" -d \"{\\\"jugadorId\\\": \\\"\\\", \\\"fechaIngreso\\\": \\\"\\\"}\""
+          },
+          "response": []
+        },
+        {
+          "name": "marcarSalida",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"fechaSalida\": \"\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/equipos/2/miembros/4/salida",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "equipos",
+                "2",
+                "miembros",
+                "4",
+                "salida"
+              ]
+            },
+            "description": "Generated from cURL: curl -X PATCH \"http://localhost/PASSBALL-Cup/backend/api/equipos/:equipoId/miembros/:jugadorId/salida\" -H \"Content-Type: application/json\" -d \"{\\\"fechaSalida\\\": \\\"\\\"}\""
+          },
+          "response": []
+        },
+        {
+          "name": "eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/equipos/2/miembros/4",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "equipos",
+                "2",
+                "miembros",
+                "4"
+              ]
+            },
+            "description": "Generated from cURL: curl -X DELETE \"http://localhost/PASSBALL-Cup/backend/api/equipos/:equipoId/miembros/:jugadorId\" -H \"Content-Type: application/json\""
+          },
+          "response": []
+        },
+        {
+          "name": "equipoActual",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/jugadores/2/equipo-actual",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "jugadores",
+                "2",
+                "equipo-actual"
+              ]
+            },
+            "description": "Generated from cURL: curl -X GET \"http://localhost/PASSBALL-Cup/backend/api/jugadores/:jugadorId/equipo-actual\" -H \"Content-Type: application/json\" -d \"\""
+          },
+          "response": []
+        },
+        {
+          "name": "historialEquipos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost/PASSBALL-Cup/backend/api/jugadores/2/historial-equipos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "path": [
+                "PASSBALL-Cup",
+                "backend",
+                "api",
+                "jugadores",
+                "2",
+                "historial-equipos"
+              ]
+            },
+            "description": "Generated from cURL: curl -X GET \"http://localhost/PASSBALL-Cup/backend/api/jugadores/:jugadorId/historial-equipos\" -H \"Content-Type: application/json\" -d \"\""
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }
