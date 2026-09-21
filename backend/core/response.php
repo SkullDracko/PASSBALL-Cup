@@ -15,11 +15,12 @@ function jsonResponse(bool $exito, $data = [], array $errores = [], int $code = 
 }
 
 function jsonBody(): array {
-    $input = json_decode(file_get_contents('php://input'), true);
+    $raw = file_get_contents('php://input');
+    $input = json_decode($raw, true);
 
-    if (json_last_error() !== JSON_ERROR_NONE) {
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($input)) {
         jsonResponse(false, [], ['error' => 'JSON mal formado'], 400);
     }
 
-    return $input ?? [];
+    return $input;
 }

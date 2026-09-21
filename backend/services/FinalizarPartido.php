@@ -9,12 +9,41 @@ class FinalizarPartido {
         $pdo->beginTransaction();
 
         try {
-            // TODO: 1) marcar partidos.estado = 'finalizado' para $partidoId
-            // TODO: 2) leer ganador_id del partido
-            // TODO: 3) UPDATE partidos SET equipo_local_id = ganador
-            //          WHERE partido_origen_local_id = $partidoId
-            // TODO: 4) UPDATE partidos SET equipo_visitante_id = ganador
-            //          WHERE partido_origen_visitante_id = $partidoId
+            $stmt = $pdo->prepare('
+                SELECT ganador_id, estado
+                FROM partidos
+                WHERE id = ?
+                FOR UPDATE
+            ');
+            $stmt->execute([$partidoId]);
+            $partido = $stmt->fetch();
+
+            if (!$partido) {
+                throw new RuntimeException('Partido no encontrado');
+            }
+
+            if ($partido['ganador_id'] === null) {
+                throw new RuntimeException('El partido no tiene ganador registrado');
+            }
+
+            if ($partido['estado'] === 'finalizado') {
+                throw new RuntimeException('El partido ya está finalizado');
+            }
+
+            $stmt = $pdo->prepare(
+                'UPDATE partidos SET estado = "finalizado" WHERE id = ?'
+            );
+            $stmt->execute([$partidoId]);
+
+            $stmt = $pdo->prepare(
+                'UPDATE partidos SET equipo_local_id = ? WHERE partido_origen_local_id = ?'
+            );
+            $stmt->execute([$partido['ganador_id'], $partidoId]);
+
+            $stmt = $pdo->prepare(
+                'UPDATE partidos SET equipo_visitante_id = ? WHERE partido_origen_visitante_id = ?'
+            );
+            $stmt->execute([$partido['ganador_id'], $partidoId]);
 
             $pdo->commit();
         } catch (Exception $e) {
