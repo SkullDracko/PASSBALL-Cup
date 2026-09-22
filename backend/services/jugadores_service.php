@@ -3,7 +3,7 @@
 // Consulta el endpoint de AFIHub que verifica si una matrícula está
 // inscrita en la actividad de fútbol (afi_id fijo).
 
-const AFI_ID_FUTBOL = 12; // <-- ajusta si cambia
+const AFI_ID_FUTBOL = 330; // <-- ajusta si cambia
 
 /**
  * Devuelve los datos del estudiante si está inscrito en la AFI de fútbol,
@@ -14,9 +14,12 @@ const AFI_ID_FUTBOL = 12; // <-- ajusta si cambia
  */
 function datosJugadorSiEstaInscrito(string $matricula): ?array
 {
-    // ---- AJUSTA la URL base a tu dominio real de AFIHub ----
-    $baseUrl = 'https://passballcup.encuestapassword2026.com/api/publico_verificar_inscripcion.php';
-    // ----------------------------------------------------------
+    // ---- AJUSTA según el entorno ----
+    $baseUrl = 'http://localhost/AFIhub/controllers/publico_verificar_inscripcion.php';
+
+    // Producción (descomenta al desplegar, comenta la de arriba):
+    // $baseUrl = 'https://passballcup.encuestapassword2026.com/api/publico_verificar_inscripcion.php';
+    // -----------------------------------
 
     $url = $baseUrl . '?' . http_build_query([
         'afi_id'    => AFI_ID_FUTBOL,
@@ -30,9 +33,9 @@ function datosJugadorSiEstaInscrito(string $matricula): ?array
         CURLOPT_TIMEOUT        => 5,
         CURLOPT_FAILONERROR    => false,
         // El endpoint valida el header Origin contra su whitelist.
-        // Como esta llamada es servidor-a-servidor, lo replicamos manualmente.
+        // Debe coincidir con $baseUrl de arriba: local -> local, producción -> producción.
         CURLOPT_HTTPHEADER     => [
-            'Origin: https://passballcup.encuestapassword2026.com',
+            'Origin: http://localhost', // en producción: 'Origin: https://passballcup.encuestapassword2026.com'
         ],
     ]);
 

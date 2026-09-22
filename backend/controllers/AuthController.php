@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../core/db.php';
-require_once __DIR__ . '/../services/jugadores_services.php';
+require_once __DIR__ . '/../services/jugadores_service.php';
 
 class AuthController
 {

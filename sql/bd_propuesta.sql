@@ -18,6 +18,10 @@ CREATE TABLE usuarios (
   id INT AUTO_INCREMENT PRIMARY KEY,
   matricula VARCHAR(20) NOT NULL UNIQUE,
   afi_usuario_id VARCHAR(50) UNIQUE,
+  nombre VARCHAR(100) DEFAULT '',
+  apellidop VARCHAR(100) DEFAULT '',
+  apellidom VARCHAR(100) DEFAULT '',
+  semestre INT DEFAULT NULL,
   rol ENUM('usuario','jugador') NOT NULL DEFAULT 'usuario',
   avatar VARCHAR(255),
   jugador_activo BOOLEAN NOT NULL DEFAULT TRUE, -- Indica si el jugador puede participar en los partidos (al terminar el afiliado, debería de ponerse como 0)
