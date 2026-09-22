@@ -3,15 +3,31 @@
  * ============================================================
  * PASSBALL Cup - Resultados
  * ============================================================
- * Vista de resultados dentro del dashboard.
- * Este archivo funciona como partial incluido en:
- *
- * <div id="view-resultados">
- *
- * Posteriormente los datos pueden sustituirse por consultas
- * reales a MySQL.
+ * Vista de resultados dentro del dashboard del participante.
+ * Datos reales: partidos finalizados y top goleador derivado
+ * de partido_eventos.
  * ============================================================
  */
+
+
+/*
+|--------------------------------------------------------------------------
+| TORNEO ACTIVO
+|--------------------------------------------------------------------------
+*/
+
+$torneoActivo = $pdo
+    ->query("SELECT id, nombre FROM torneos WHERE estado = 'en_curso' ORDER BY id DESC LIMIT 1")
+    ->fetch(PDO::FETCH_ASSOC);
+
+if (!$torneoActivo) {
+    $torneoActivo = $pdo
+        ->query("SELECT id, nombre FROM torneos ORDER BY id DESC LIMIT 1")
+        ->fetch(PDO::FETCH_ASSOC);
+}
+
+$torneoId = (int) ($torneoActivo['id'] ?? 0);
+$torneoNombre = $torneoActivo['nombre'] ?? 'PASSBALL Cup';
 
 
 /*
@@ -20,12 +36,85 @@
 |--------------------------------------------------------------------------
 */
 
-$totalFinalizados = 24;
-$totalGoles       = 78;
-$mejorGoleador    = 'Carlos Mendoza';
-$golesGoleador    = 15;
-$mejorEquipo      = 'Águilas FC';
-$victoriasEquipo  = 6;
+$totalFinalizados  = 0;
+$totalGoles        = 0;
+$mejorGoleador     = '—';
+$golesGoleador     = 0;
+$mejorEquipo       = '—';
+$equipoVictorias   = '—';
+$winsVictorias     = 0;
+
+if ($torneoId > 0) {
+
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*) AS total
+        FROM partidos p
+        JOIN torneo_rondas r ON r.id = p.ronda_id
+        WHERE r.torneo_id = ? AND p.estado = 'finalizado'
+    ");
+    $stmt->execute([$torneoId]);
+    $totalFinalizados = (int) $stmt->fetchColumn();
+
+    $stmt = $pdo->prepare("
+        SELECT COALESCE(SUM(COALESCE(p.goles_local,0) + COALESCE(p.goles_visitante,0)), 0) AS total
+        FROM partidos p
+        JOIN torneo_rondas r ON r.id = p.ronda_id
+        WHERE r.torneo_id = ? AND p.estado = 'finalizado'
+    ");
+    $stmt->execute([$torneoId]);
+    $totalGoles = (int) $stmt->fetchColumn();
+
+    $stmt = $pdo->prepare("
+        SELECT u.nombre AS jugador, e.nombre AS equipo, COUNT(*) AS goles
+        FROM partido_eventos pe
+        JOIN usuarios u ON u.id = pe.jugador_id
+        JOIN equipos e ON e.id = pe.equipo_id
+        JOIN partidos p ON p.id = pe.partido_id
+        JOIN torneo_rondas r ON r.id = p.ronda_id
+        WHERE r.torneo_id = ? AND pe.tipo IN ('gol', 'penal_anotado')
+        GROUP BY pe.jugador_id, e.id
+        ORDER BY goles DESC, u.nombre ASC
+        LIMIT 1
+    ");
+    $stmt->execute([$torneoId]);
+    $goleador = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($goleador) {
+        $mejorGoleador = $goleador['jugador'];
+        $golesGoleador = (int) $goleador['goles'];
+        $mejorEquipo   = $goleador['equipo'];
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT e.nombre AS equipo, COUNT(*) AS wins
+        FROM partidos p
+        JOIN torneo_rondas r ON r.id = p.ronda_id
+        JOIN equipos e ON e.id = p.ganador_id
+        WHERE r.torneo_id = ? AND p.estado = 'finalizado' AND p.ganador_id IS NOT NULL
+        GROUP BY p.ganador_id
+        ORDER BY wins DESC, e.nombre ASC
+        LIMIT 1
+    ");
+    $stmt->execute([$torneoId]);
+    $ganador = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($ganador) {
+        $equipoVictorias = $ganador['equipo'];
+        $winsVictorias   = (int) $ganador['wins'];
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT DISTINCT p.cancha
+        FROM partidos p
+        JOIN torneo_rondas r ON r.id = p.ronda_id
+        WHERE r.torneo_id = ? AND p.cancha IS NOT NULL AND p.cancha <> ''
+        ORDER BY p.cancha
+    ");
+    $stmt->execute([$torneoId]);
+    $canchas = $stmt->fetchAll(PDO::FETCH_COLUMN);
+} else {
+    $canchas = [];
+}
 
 
 /*
@@ -34,122 +123,62 @@ $victoriasEquipo  = 6;
 |--------------------------------------------------------------------------
 */
 
-$resultados = [
+$resultados = [];
 
-    [
-        'id'          => 1,
-        'fecha'       => '24 MAY',
-        'hora'        => '09:00 AM',
-        'local'       => 'Águilas FC',
-        'visitante'   => 'Tigres FC',
-        'local_score' => 3,
-        'visit_score' => 1,
-        'cancha'      => 'Cancha Principal',
-        'estadio'     => 'Estadio Municipal',
-        'local_icon'  => '🦅',
-        'visit_icon'  => '🐯',
-    ],
+if ($torneoId > 0) {
 
-    [
-        'id'          => 2,
-        'fecha'       => '24 MAY',
-        'hora'        => '10:00 AM',
-        'local'       => 'Lobos FC',
-        'visitante'   => 'Real Passball',
-        'local_score' => 2,
-        'visit_score' => 2,
-        'cancha'      => 'Cancha Principal',
-        'estadio'     => 'Estadio Municipal',
-        'local_icon'  => '🐺',
-        'visit_icon'  => '⚽',
-    ],
+    $stmt = $pdo->prepare("
+        SELECT
+            p.id,
+            p.fecha_hora,
+            p.cancha,
+            p.goles_local,
+            p.goles_visitante,
+            l.nombre AS local,
+            l.logo   AS local_logo,
+            v.nombre AS visitante,
+            v.logo   AS visitante_logo,
+            r.nombre AS ronda
+        FROM partidos p
+        JOIN torneo_rondas r ON r.id = p.ronda_id
+        LEFT JOIN equipos l ON l.id = p.equipo_local_id
+        LEFT JOIN equipos v ON v.id = p.equipo_visitante_id
+        WHERE r.torneo_id = ? AND p.estado = 'finalizado'
+        ORDER BY p.fecha_hora DESC, p.id DESC
+    ");
+    $stmt->execute([$torneoId]);
 
-    [
-        'id'          => 3,
-        'fecha'       => '24 MAY',
-        'hora'        => '11:00 AM',
-        'local'       => 'Guerreros FC',
-        'visitante'   => 'Leones FC',
-        'local_score' => 0,
-        'visit_score' => 4,
-        'cancha'      => 'Cancha Secundaria',
-        'estadio'     => 'Estadio Municipal',
-        'local_icon'  => '🛡️',
-        'visit_icon'  => '🦁',
-    ],
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $fila) {
 
-    [
-        'id'          => 4,
-        'fecha'       => '24 MAY',
-        'hora'        => '12:00 PM',
-        'local'       => 'Halcones FC',
-        'visitante'   => 'Panteras FC',
-        'local_score' => 1,
-        'visit_score' => 0,
-        'cancha'      => 'Cancha Secundaria',
-        'estadio'     => 'Estadio Municipal',
-        'local_icon'  => '🦅',
-        'visit_icon'  => '🐈‍⬛',
-    ],
+        $fechaHora = $fila['fecha_hora'] ? strtotime($fila['fecha_hora']) : false;
 
-    [
-        'id'          => 5,
-        'fecha'       => '23 MAY',
-        'hora'        => '05:00 PM',
-        'local'       => 'Águilas FC',
-        'visitante'   => 'Lobos FC',
-        'local_score' => 2,
-        'visit_score' => 0,
-        'cancha'      => 'Cancha Principal',
-        'estadio'     => 'Estadio Municipal',
-        'local_icon'  => '🦅',
-        'visit_icon'  => '🐺',
-    ],
+        $marcadorLocal = $fila['goles_local'] !== null
+            ? (int) $fila['goles_local']
+            : '—';
 
-    [
-        'id'          => 6,
-        'fecha'       => '23 MAY',
-        'hora'        => '06:00 PM',
-        'local'       => 'Tigres FC',
-        'visitante'   => 'Real Passball',
-        'local_score' => 1,
-        'visit_score' => 1,
-        'cancha'      => 'Cancha Principal',
-        'estadio'     => 'Estadio Municipal',
-        'local_icon'  => '🐯',
-        'visit_icon'  => '⚽',
-    ],
+        $marcadorVisit = $fila['goles_visitante'] !== null
+            ? (int) $fila['goles_visitante']
+            : '—';
 
-    [
-        'id'          => 7,
-        'fecha'       => '22 MAY',
-        'hora'        => '09:00 AM',
-        'local'       => 'Leones FC',
-        'visitante'   => 'Halcones FC',
-        'local_score' => 3,
-        'visit_score' => 2,
-        'cancha'      => 'Cancha Secundaria',
-        'estadio'     => 'Estadio Municipal',
-        'local_icon'  => '🦁',
-        'visit_icon'  => '🦅',
-    ],
-
-    [
-        'id'          => 8,
-        'fecha'       => '22 MAY',
-        'hora'        => '10:00 AM',
-        'local'       => 'Panteras FC',
-        'visitante'   => 'Guerreros FC',
-        'local_score' => 0,
-        'visit_score' => 2,
-        'cancha'      => 'Cancha Secundaria',
-        'estadio'     => 'Estadio Municipal',
-        'local_icon'  => '🐈‍⬛',
-        'visit_icon'  => '🛡️',
-    ],
-
-];
-
+        $resultados[] = [
+            'id'          => (int) $fila['id'],
+            'fecha'       => $fechaHora
+                ? strtoupper(date('d M', $fechaHora))
+                : '—',
+            'hora'        => $fechaHora
+                ? date('g:i A', $fechaHora)
+                : '—',
+            'local'       => $fila['local'] ?? '—',
+            'visitante'   => $fila['visitante'] ?? '—',
+            'local_score' => $marcadorLocal,
+            'visit_score' => $marcadorVisit,
+            'local_logo'  => $fila['local_logo'],
+            'visit_logo'  => $fila['visitante_logo'],
+            'cancha'      => $fila['cancha'] ?: 'Por definir',
+            'estadio'     => $fila['ronda'] ?? '',
+        ];
+    }
+}
 
 ?>
 
@@ -166,7 +195,7 @@ $resultados = [
 
     <p>
         Consulta los resultados de los partidos finalizados
-        y las estadísticas del torneo.
+        y las estadísticas de <strong><?= htmlspecialchars($torneoNombre, ENT_QUOTES, 'UTF-8') ?></strong>.
     </p>
 
 </div>
@@ -214,7 +243,9 @@ $resultados = [
             <span>Goles anotados</span>
 
             <small>
-                Promedio 3.25 por partido
+                <?= $totalFinalizados > 0
+                    ? 'Promedio ' . number_format($totalGoles / $totalFinalizados, 2) . ' por partido'
+                    : 'Aún no hay partidos jugados' ?>
             </small>
 
         </div>
@@ -256,12 +287,12 @@ $resultados = [
 
         <div class="stat-info">
 
-            <strong><?= $victoriasEquipo ?></strong>
+            <strong><?= $winsVictorias ?></strong>
 
             <span>Victorias</span>
 
             <small>
-                <?= htmlspecialchars($mejorEquipo, ENT_QUOTES, 'UTF-8') ?>
+                <?= htmlspecialchars($equipoVictorias, ENT_QUOTES, 'UTF-8') ?>
             </small>
 
         </div>
@@ -350,13 +381,13 @@ $resultados = [
                     Todas las canchas
                 </option>
 
-                <option value="Cancha Principal">
-                    Cancha Principal
-                </option>
+                <?php foreach ($canchas as $cancha): ?>
 
-                <option value="Cancha Secundaria">
-                    Cancha Secundaria
-                </option>
+                    <option value="<?= htmlspecialchars($cancha, ENT_QUOTES, 'UTF-8') ?>">
+                        <?= htmlspecialchars($cancha, ENT_QUOTES, 'UTF-8') ?>
+                    </option>
+
+                <?php endforeach; ?>
 
             </select>
 
@@ -478,7 +509,14 @@ $resultados = [
                     <div class="result-team local">
 
                         <div class="result-team-logo purple-logo">
-                            <?= $resultado['local_icon'] ?>
+                            <?php if (!empty($resultado['local_logo'])): ?>
+                                <img
+                                    src="<?= htmlspecialchars($resultado['local_logo'], ENT_QUOTES, 'UTF-8') ?>"
+                                    alt="<?= htmlspecialchars($resultado['local'], ENT_QUOTES, 'UTF-8') ?>"
+                                >
+                            <?php else: ?>
+                                <?= mb_strtoupper(mb_substr($resultado['local'], 0, 1)) ?>
+                            <?php endif; ?>
                         </div>
 
                         <strong>
@@ -497,9 +535,13 @@ $resultados = [
                     <div class="result-score">
 
                         <strong>
-                            <?= $resultado['local_score'] ?>
+                            <?= $resultado['local_score'] == '—'
+                                ? '—'
+                                : $resultado['local_score'] ?>
                             <span>-</span>
-                            <?= $resultado['visit_score'] ?>
+                            <?= $resultado['visit_score'] == '—'
+                                ? '—'
+                                : $resultado['visit_score'] ?>
                         </strong>
 
                     </div>
@@ -510,7 +552,14 @@ $resultados = [
                     <div class="result-team visitor">
 
                         <div class="result-team-logo orange-logo">
-                            <?= $resultado['visit_icon'] ?>
+                            <?php if (!empty($resultado['visit_logo'])): ?>
+                                <img
+                                    src="<?= htmlspecialchars($resultado['visit_logo'], ENT_QUOTES, 'UTF-8') ?>"
+                                    alt="<?= htmlspecialchars($resultado['visitante'], ENT_QUOTES, 'UTF-8') ?>"
+                                >
+                            <?php else: ?>
+                                <?= mb_strtoupper(mb_substr($resultado['visitante'], 0, 1)) ?>
+                            <?php endif; ?>
                         </div>
 
                         <strong>

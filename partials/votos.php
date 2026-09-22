@@ -3,163 +3,205 @@
  * ============================================================
  * PASSBALL Cup - Votos
  * ============================================================
- * Vista de votaciones dentro del dashboard.
+ * Vista de votaciones dentro del dashboard del participante.
+ * Categorías y candidatos reales con voto único por categoría.
  * ============================================================
  */
 
+
 /*
 |--------------------------------------------------------------------------
-| CATEGORÍAS
+| TORNEO ACTIVO
 |--------------------------------------------------------------------------
 */
 
-$categorias = [
+$torneoActivo = $pdo
+    ->query("SELECT id, nombre FROM torneos WHERE estado = 'en_curso' ORDER BY id DESC LIMIT 1")
+    ->fetch(PDO::FETCH_ASSOC);
 
-    [
-        'id'          => 'atajadas',
-        'nombre'      => 'Más atajadas',
-        'descripcion' => 'Mejor portero del torneo',
-        'icono'       => '🖐️',
-        'tipo'        => 'jugador'
-    ],
+if (!$torneoActivo) {
+    $torneoActivo = $pdo
+        ->query("SELECT id, nombre FROM torneos ORDER BY id DESC LIMIT 1")
+        ->fetch(PDO::FETCH_ASSOC);
+}
 
-    [
-        'id'          => 'goleador',
-        'nombre'      => 'Goleador del torneo',
-        'descripcion' => 'Máximo goleador',
-        'icono'       => '⚽',
-        'tipo'        => 'jugador'
-    ],
-
-    [
-        'id'          => 'jugador',
-        'nombre'      => 'Jugador destacado',
-        'descripcion' => 'Mejor rendimiento general',
-        'icono'        => '⭐',
-        'tipo'        => 'jugador'
-    ],
-
-    [
-        'id'          => 'mejor-equipo',
-        'nombre'      => 'Mejor equipo',
-        'descripcion' => 'Equipo más sólido',
-        'icono'        => '👥',
-        'tipo'        => 'equipo'
-    ],
-
-    [
-        'id'          => 'equipo-ganador',
-        'nombre'      => 'Equipo ganador',
-        'descripcion' => 'Campeón del torneo',
-        'icono'        => '👑',
-        'tipo'        => 'equipo'
-    ],
-
-    [
-        'id'          => 'fair-play',
-        'nombre'      => 'Fair Play',
-        'descripcion' => 'Mejor espíritu deportivo',
-        'icono'        => '🤝',
-        'tipo'        => 'equipo'
-    ]
-];
+$torneoId      = (int) ($torneoActivo['id'] ?? 0);
+$usuarioId     = (int) ($_SESSION['usuario']['id'] ?? 0);
 
 
 /*
 |--------------------------------------------------------------------------
-| JUGADORES
+| CATEGORÍAS ABIERTAS
 |--------------------------------------------------------------------------
 */
 
-$jugadores = [
+$categorias = [];
 
-    [
-        'id'     => 1,
-        'nombre' => 'Carlos Mendoza',
-        'equipo' => 'Águilas FC',
-        'avatar' => 'CM'
-    ],
+if ($torneoId > 0) {
+    $stmt = $pdo->prepare("
+        SELECT c.id, c.clave, c.nombre, c.tipo, c.modo_candidatos, c.orden
+        FROM torneo_categorias_voto c
+        WHERE c.torneo_id = ? AND c.estado = 'abierta'
+        ORDER BY c.orden, c.id
+    ");
+    $stmt->execute([$torneoId]);
+    $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
-    [
-        'id'     => 2,
-        'nombre' => 'Andrés López',
-        'equipo' => 'Lobos FC',
-        'avatar' => 'AL'
-    ],
-
-    [
-        'id'     => 3,
-        'nombre' => 'Diego Ramírez',
-        'equipo' => 'Águilas FC',
-        'avatar' => 'DR'
-    ],
-
-    [
-        'id'     => 4,
-        'nombre' => 'Luis Martínez',
-        'equipo' => 'Tigres FC',
-        'avatar' => 'LM'
-    ],
-
-    [
-        'id'     => 5,
-        'nombre' => 'Marco Díaz',
-        'equipo' => 'Real Passball',
-        'avatar' => 'MD'
-    ],
-
-    [
-        'id'     => 6,
-        'nombre' => 'Juan Pérez',
-        'equipo' => 'Lobos FC',
-        'avatar' => 'JP'
-    ]
-];
+$totalCategorias = count($categorias);
 
 
 /*
 |--------------------------------------------------------------------------
-| EQUIPOS
+| GRUPO BASE DE CANDIDATOS
 |--------------------------------------------------------------------------
 */
 
-$equipos = [
+$jugadoresBase = [];
+$equiposBase   = [];
 
-    [
-        'id'           => 1,
-        'nombre'       => 'Águilas FC',
-        'participantes' => 5,
-        'avatar'       => '🦅'
-    ],
+if ($torneoId > 0) {
+    $stmt = $pdo->prepare("
+        SELECT DISTINCT u.id, u.nombre, e.nombre AS equipo, e.id AS equipo_id
+        FROM equipo_miembros em
+        JOIN usuarios u ON u.id = em.jugador_id
+        JOIN equipos e ON e.id = em.equipo_id
+        JOIN torneo_equipos te ON te.equipo_id = e.id
+        WHERE te.torneo_id = ? AND te.estado = 'aprobado' AND em.estado = 'activo'
+        ORDER BY u.nombre
+    ");
+    $stmt->execute([$torneoId]);
+    $jugadoresBase = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    [
-        'id'           => 2,
-        'nombre'       => 'Tigres FC',
-        'participantes' => 7,
-        'avatar'       => '🐯'
-    ],
+    $stmt = $pdo->prepare("
+        SELECT e.id, e.nombre, e.logo
+        FROM equipos e
+        JOIN torneo_equipos te ON te.equipo_id = e.id
+        WHERE te.torneo_id = ? AND te.estado = 'aprobado'
+        ORDER BY e.nombre
+    ");
+    $stmt->execute([$torneoId]);
+    $equiposBase = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
-    [
-        'id'           => 3,
-        'nombre'       => 'Lobos FC',
-        'participantes' => 6,
-        'avatar'       => '🐺'
-    ],
 
-    [
-        'id'           => 4,
-        'nombre'       => 'Real Passball',
-        'participantes' => 4,
-        'avatar'       => '⚽'
-    ],
+/*
+|--------------------------------------------------------------------------
+| AJUSTES DE CANDIDATOS POR CATEGORÍA
+|--------------------------------------------------------------------------
+*/
 
-    [
-        'id'           => 5,
-        'nombre'       => 'Passball FC',
-        'participantes' => 3,
-        'avatar'       => '🏆'
-    ]
-];
+$ajustesPorCat = [];
+
+if (!empty($categorias)) {
+    $ids  = array_map('intval', array_column($categorias, 'id'));
+    $in   = implode(',', $ids);
+    $stmt = $pdo->query("
+        SELECT categoria_id, jugador_id, equipo_id, ajuste
+        FROM torneo_categoria_candidatos
+        WHERE categoria_id IN ($in)
+    ");
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $aj) {
+        $ajustesPorCat[(int) $aj['categoria_id']][] = $aj;
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| VOTOS DEL USUARIO
+|--------------------------------------------------------------------------
+*/
+
+$votoJugadorPorCat = [];
+$votoEquipoPorCat  = [];
+
+if ($usuarioId > 0) {
+    $stmt = $pdo->prepare("
+        SELECT categoria_id, jugador_id, equipo_id
+        FROM torneo_votos
+        WHERE usuario_id = ?
+    ");
+    $stmt->execute([$usuarioId]);
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $v) {
+        $votoJugadorPorCat[(int) $v['categoria_id']] = (int) $v['jugador_id'];
+        $votoEquipoPorCat[(int) $v['categoria_id']]  = (int) $v['equipo_id'];
+    }
+}
+
+$misVotos = 0;
+if ($usuarioId > 0) {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM torneo_votos WHERE usuario_id = ?");
+    $stmt->execute([$usuarioId]);
+    $misVotos = (int) $stmt->fetchColumn();
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| TOTAL DE VOTOS DEL TORNEO
+|--------------------------------------------------------------------------
+*/
+
+$totalVotosTorneo = 0;
+if ($torneoId > 0) {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM torneo_votos WHERE torneo_id = ?");
+    $stmt->execute([$torneoId]);
+    $totalVotosTorneo = (int) $stmt->fetchColumn();
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| RESOLVER CANDIDATOS FINALES DE UNA CATEGORÍA
+|--------------------------------------------------------------------------
+*/
+
+function resolverCandidatos(array $categoria, array $jugadoresBase, array $equiposBase, array $ajustes): array
+{
+    $tipo       = $categoria['tipo'];
+    $modoManual = $categoria['modo_candidatos'] === 'manual';
+
+    if ($tipo === 'jugador') {
+        $base = $jugadoresBase;
+    } else {
+        $base = $equiposBase;
+    }
+
+    $candIds = [];
+    foreach ($base as $c) {
+        $candIds[(int) $c['id']] = $c;
+    }
+
+    foreach ($ajustes as $aj) {
+        $id = $tipo === 'jugador' ? (int) $aj['jugador_id'] : (int) $aj['equipo_id'];
+
+        if (!$id) {
+            continue;
+        }
+
+        if ($aj['ajuste'] === 'incluir') {
+            if (!isset($candIds[$id])) {
+                $candIds[$id] = ['id' => $id];  // se rellena abajo si existe
+            }
+        } else {
+            unset($candIds[$id]);
+        }
+    }
+
+    if ($modoManual) {
+        $incluidos = [];
+        foreach ($ajustes as $aj) {
+            $id = $tipo === 'jugador' ? (int) $aj['jugador_id'] : (int) $aj['equipo_id'];
+            if ($id && $aj['ajuste'] === 'incluir' && isset($candIds[$id])) {
+                $incluidos[$id] = $candIds[$id];
+            }
+        }
+        return array_values($incluidos);
+    }
+
+    return array_values($candIds);
+}
 
 ?>
 
@@ -204,7 +246,7 @@ $equipos = [
             <div>
 
                 <strong>
-                    <?= count($categorias) ?>
+                    <?= $totalCategorias ?>
                 </strong>
 
                 <span>
@@ -231,7 +273,7 @@ $equipos = [
             <div>
 
                 <strong id="votesMade">
-                    0
+                    <?= $misVotos ?>
                 </strong>
 
                 <span>
@@ -247,26 +289,26 @@ $equipos = [
         </div>
 
 
-        <!-- DÍAS -->
+        <!-- EQUIPOS -->
 
         <div class="vote-stat-card">
 
             <div class="stat-icon purple">
-                <i class="fa-regular fa-clock"></i>
+                <i class="fa-regular fa-shield-halved"></i>
             </div>
 
             <div>
 
                 <strong>
-                    5
+                    <?= count($equiposBase) ?>
                 </strong>
 
                 <span>
-                    DÍAS RESTANTES
+                    EQUIPOS EN TORNEO
                 </span>
 
                 <small>
-                    Para seguir votando
+                    Participantes
                 </small>
 
             </div>
@@ -285,7 +327,7 @@ $equipos = [
             <div>
 
                 <strong>
-                    128
+                    <?= $totalVotosTorneo ?>
                 </strong>
 
                 <span>
@@ -302,6 +344,38 @@ $equipos = [
 
     </div>
 
+
+    <?php if ($totalCategorias === 0): ?>
+
+        <div class="section-title">
+
+            <h2>
+                Categorías de votación
+            </h2>
+
+        </div>
+
+        <div class="vote-notice" style="margin-top:0;">
+
+            <div class="notice-icon">
+                <i class="fa-solid fa-info"></i>
+            </div>
+
+            <div>
+
+                <strong>
+                    Aún no hay votaciones abiertas
+                </strong>
+
+                <p>
+                    El comité abrirá las votaciones próximamente.
+                </p>
+
+            </div>
+
+        </div>
+
+    <?php else: ?>
 
     <!-- =====================================================
          CATEGORÍAS
@@ -348,12 +422,10 @@ $equipos = [
             <button
                 type="button"
                 class="category-tab"
-                data-category="<?= htmlspecialchars($categoria['id']) ?>"
+                data-category="<?= (int) $categoria['id'] ?>"
             >
 
-                <i>
-                    <?= htmlspecialchars($categoria['icono']) ?>
-                </i>
+                <i class="fa-solid fa-circle-check"></i>
 
                 <div>
 
@@ -362,7 +434,7 @@ $equipos = [
                     </strong>
 
                     <span>
-                        <?= htmlspecialchars($categoria['descripcion']) ?>
+                        <?= $categoria['tipo'] === 'jugador' ? 'Jugador' : 'Equipo' ?>
                     </span>
 
                 </div>
@@ -409,601 +481,137 @@ $equipos = [
         id="voteCategoryGrid"
     >
 
+        <?php foreach ($categorias as $categoria): ?>
 
-        <!-- =================================================
-             MÁS ATAJADAS
-             ================================================= -->
+            <?php
+            $catId       = (int) $categoria['id'];
+            $esJugador   = $categoria['tipo'] === 'jugador';
+            $candidatos  = resolverCandidatos(
+                $categoria,
+                $jugadoresBase,
+                $equiposBase,
+                $ajustesPorCat[$catId] ?? []
+            );
+            $colorAlt    = $esJugador ? 'purple' : 'orange';
+            $miVoto      = $esJugador
+                ? ($votoJugadorPorCat[$catId] ?? 0)
+                : ($votoEquipoPorCat[$catId] ?? 0);
+            ?>
 
-        <article
-            class="vote-category-card"
-            data-category-card="atajadas"
-        >
+            <article
+                class="vote-category-card"
+                data-category-card="<?= $catId ?>"
+                data-tipo="<?= $categoria['tipo'] ?>"
+            >
 
-            <div class="category-card-header">
+                <div class="category-card-header">
 
-                <div class="category-icon purple-light">
-                    🖐️
-                </div>
+                    <div class="category-icon <?= $colorAlt ?>-light">
+                        <?= $esJugador ? '⚽' : '👥' ?>
+                    </div>
 
-                <div>
+                    <div>
 
-                    <h3>
-                        Más atajadas
-                    </h3>
+                        <h3>
+                            <?= htmlspecialchars($categoria['nombre']) ?>
+                        </h3>
 
-                    <span>
-                        Mejor portero del torneo
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <div class="candidate-search">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                <input
-                    type="text"
-                    class="candidate-input"
-                    placeholder="Buscar portero..."
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-            <div class="candidate-list">
-
-                <?php foreach ($jugadores as $jugador): ?>
-
-                    <div
-                        class="candidate"
-                        data-name="<?= htmlspecialchars(strtolower($jugador['nombre'] . ' ' . $jugador['equipo'])) ?>"
-                    >
-
-                        <div class="candidate-avatar purple-bg">
-                            <?= htmlspecialchars($jugador['avatar']) ?>
-                        </div>
-
-                        <div class="candidate-info">
-
-                            <strong>
-                                <?= htmlspecialchars($jugador['nombre']) ?>
-                            </strong>
-
-                            <span>
-                                <?= htmlspecialchars($jugador['equipo']) ?>
-                            </span>
-
-                        </div>
-
-                        <button
-                            type="button"
-                            class="btn-vote"
-                            data-candidate="<?= $jugador['id'] ?>"
-                            data-category="atajadas"
-                        >
-                            Votar
-                        </button>
+                        <span>
+                            Vota una vez por esta categoría
+                        </span>
 
                     </div>
 
-                <?php endforeach; ?>
-
-            </div>
-
-
-            <button
-                type="button"
-                class="view-all"
-            >
-
-                Ver todos los porteros
-
-                <i class="fa-solid fa-arrow-right"></i>
-
-            </button>
-
-        </article>
-
-
-        <!-- =================================================
-             GOLEADOR
-             ================================================= -->
-
-        <article
-            class="vote-category-card"
-            data-category-card="goleador"
-        >
-
-            <div class="category-card-header">
-
-                <div class="category-icon orange-light">
-                    ⚽
                 </div>
 
-                <div>
 
-                    <h3>
-                        Goleador del torneo
-                    </h3>
+                <div class="candidate-search">
 
-                    <span>
-                        Máximo goleador
-                    </span>
+                    <i class="fa-solid fa-magnifying-glass"></i>
 
-                </div>
-
-            </div>
-
-
-            <div class="candidate-search">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                <input
-                    type="text"
-                    class="candidate-input"
-                    placeholder="Buscar jugador..."
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-            <div class="candidate-list">
-
-                <?php foreach ($jugadores as $jugador): ?>
-
-                    <div
-                        class="candidate"
-                        data-name="<?= htmlspecialchars(strtolower($jugador['nombre'] . ' ' . $jugador['equipo'])) ?>"
+                    <input
+                        type="text"
+                        class="candidate-input"
+                        placeholder="Buscar <?= $esJugador ? 'jugador' : 'equipo' ?>..."
+                        autocomplete="off"
                     >
 
-                        <div class="candidate-avatar orange-bg">
-                            <?= htmlspecialchars($jugador['avatar']) ?>
-                        </div>
+                </div>
 
-                        <div class="candidate-info">
 
-                            <strong>
-                                <?= htmlspecialchars($jugador['nombre']) ?>
-                            </strong>
+                <div class="candidate-list">
 
-                            <span>
-                                <?= htmlspecialchars($jugador['equipo']) ?>
-                            </span>
+                    <?php foreach ($candidatos as $candidato): ?>
 
-                        </div>
+                        <?php
+                        $candId     = (int) $candidato['id'];
+                        $nombre     = $candidato['nombre'] ?? '—';
+                        $subtexto   = $esJugador
+                            ? ($candidato['equipo'] ?? '')
+                            : (isset($candidato['logo']) && $candidato['logo'] ? 'Equipo' : 'Equipo');
+                        $estaVotado = $miVoto === $candId;
+                        $avatarCss  = $esJugador
+                            ? mb_strtoupper(mb_substr($nombre, 0, 2))
+                            : mb_strtoupper(mb_substr($nombre, 0, 1));
+                        ?>
 
-                        <button
-                            type="button"
-                            class="btn-vote orange-button"
-                            data-candidate="<?= $jugador['id'] ?>"
-                            data-category="goleador"
+                        <div
+                            class="candidate <?= $estaVotado ? 'voted' : '' ?>"
+                            data-name="<?= htmlspecialchars(strtolower($nombre . ' ' . $subtexto), ENT_QUOTES, 'UTF-8') ?>"
                         >
-                            Votar
-                        </button>
 
-                    </div>
+                            <div class="candidate-avatar <?= $colorAlt ?>-bg">
+                                <?= $esJugador
+                                    ? htmlspecialchars($avatarCss)
+                                    : htmlspecialchars($avatarCss) ?>
+                            </div>
 
-                <?php endforeach; ?>
+                            <div class="candidate-info">
 
-            </div>
+                                <strong>
+                                    <?= htmlspecialchars($nombre) ?>
+                                </strong>
 
+                                <span>
+                                    <?= htmlspecialchars($subtexto) ?>
+                                </span>
 
-            <button
-                type="button"
-                class="view-all"
-            >
+                            </div>
 
-                Ver todos los jugadores
-
-                <i class="fa-solid fa-arrow-right"></i>
-
-            </button>
-
-        </article>
-
-
-        <!-- =================================================
-             JUGADOR DESTACADO
-             ================================================= -->
-
-        <article
-            class="vote-category-card"
-            data-category-card="jugador"
-        >
-
-            <div class="category-card-header">
-
-                <div class="category-icon purple-light">
-                    ⭐
-                </div>
-
-                <div>
-
-                    <h3>
-                        Jugador destacado
-                    </h3>
-
-                    <span>
-                        Mejor rendimiento general
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <div class="candidate-search">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                <input
-                    type="text"
-                    class="candidate-input"
-                    placeholder="Buscar jugador..."
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-            <div class="candidate-list">
-
-                <?php foreach ($jugadores as $jugador): ?>
-
-                    <div
-                        class="candidate"
-                        data-name="<?= htmlspecialchars(strtolower($jugador['nombre'] . ' ' . $jugador['equipo'])) ?>"
-                    >
-
-                        <div class="candidate-avatar purple-bg">
-                            <?= htmlspecialchars($jugador['avatar']) ?>
-                        </div>
-
-                        <div class="candidate-info">
-
-                            <strong>
-                                <?= htmlspecialchars($jugador['nombre']) ?>
-                            </strong>
-
-                            <span>
-                                <?= htmlspecialchars($jugador['equipo']) ?>
-                            </span>
+                            <button
+                                type="button"
+                                class="btn-vote <?= $colorAlt === 'orange' ? 'orange-button' : '' ?>"
+                                data-category="<?= $catId ?>"
+                                data-candidate="<?= $candId ?>"
+                                <?= $estaVotado ? 'disabled' : '' ?>
+                            >
+                                <?= $estaVotado ? '✓ Votado' : 'Votar' ?>
+                            </button>
 
                         </div>
 
-                        <button
-                            type="button"
-                            class="btn-vote"
-                            data-candidate="<?= $jugador['id'] ?>"
-                            data-category="jugador"
-                        >
-                            Votar
-                        </button>
+                    <?php endforeach; ?>
 
-                    </div>
+                    <?php if (empty($candidatos)): ?>
 
-                <?php endforeach; ?>
+                        <div class="candidate">
+                            <div class="candidate-info">
+                                <strong>Sin candidatos</strong>
+                                <span>Espera la configuración</span>
+                            </div>
+                        </div>
 
-            </div>
-
-
-            <button
-                type="button"
-                class="view-all"
-            >
-
-                Ver todos los jugadores
-
-                <i class="fa-solid fa-arrow-right"></i>
-
-            </button>
-
-        </article>
-
-
-        <!-- =================================================
-             MEJOR EQUIPO
-             ================================================= -->
-
-        <article
-            class="vote-category-card"
-            data-category-card="mejor-equipo"
-        >
-
-            <div class="category-card-header">
-
-                <div class="category-icon orange-light">
-                    👥
-                </div>
-
-                <div>
-
-                    <h3>
-                        Mejor equipo
-                    </h3>
-
-                    <span>
-                        Equipo más sólido
-                    </span>
+                    <?php endif; ?>
 
                 </div>
 
-            </div>
+            </article>
 
-
-            <div class="candidate-search">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                <input
-                    type="text"
-                    class="candidate-input"
-                    placeholder="Buscar equipo..."
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-            <div class="candidate-list">
-
-                <?php foreach ($equipos as $equipo): ?>
-
-                    <div
-                        class="candidate"
-                        data-name="<?= htmlspecialchars(strtolower($equipo['nombre'])) ?>"
-                    >
-
-                        <div class="candidate-avatar orange-bg">
-                            <?= htmlspecialchars($equipo['avatar']) ?>
-                        </div>
-
-                        <div class="candidate-info">
-
-                            <strong>
-                                <?= htmlspecialchars($equipo['nombre']) ?>
-                            </strong>
-
-                            <span>
-                                <?= $equipo['participantes'] ?> participantes
-                            </span>
-
-                        </div>
-
-                        <button
-                            type="button"
-                            class="btn-vote orange-button"
-                            data-candidate="<?= $equipo['id'] ?>"
-                            data-category="mejor-equipo"
-                        >
-                            Votar
-                        </button>
-
-                    </div>
-
-                <?php endforeach; ?>
-
-            </div>
-
-
-            <button
-                type="button"
-                class="view-all"
-            >
-
-                Ver todos los equipos
-
-                <i class="fa-solid fa-arrow-right"></i>
-
-            </button>
-
-        </article>
-
-
-        <!-- =================================================
-             EQUIPO GANADOR
-             ================================================= -->
-
-        <article
-            class="vote-category-card"
-            data-category-card="equipo-ganador"
-        >
-
-            <div class="category-card-header">
-
-                <div class="category-icon purple-light">
-                    👑
-                </div>
-
-                <div>
-
-                    <h3>
-                        Equipo ganador
-                    </h3>
-
-                    <span>
-                        Campeón del torneo
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <div class="candidate-search">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                <input
-                    type="text"
-                    class="candidate-input"
-                    placeholder="Buscar equipo..."
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-            <div class="candidate-list">
-
-                <?php foreach ($equipos as $equipo): ?>
-
-                    <div
-                        class="candidate"
-                        data-name="<?= htmlspecialchars(strtolower($equipo['nombre'])) ?>"
-                    >
-
-                        <div class="candidate-avatar purple-bg">
-                            <?= htmlspecialchars($equipo['avatar']) ?>
-                        </div>
-
-                        <div class="candidate-info">
-
-                            <strong>
-                                <?= htmlspecialchars($equipo['nombre']) ?>
-                            </strong>
-
-                            <span>
-                                <?= $equipo['participantes'] ?> participantes
-                            </span>
-
-                        </div>
-
-                        <button
-                            type="button"
-                            class="btn-vote"
-                            data-candidate="<?= $equipo['id'] ?>"
-                            data-category="equipo-ganador"
-                        >
-                            Votar
-                        </button>
-
-                    </div>
-
-                <?php endforeach; ?>
-
-            </div>
-
-
-            <button
-                type="button"
-                class="view-all"
-            >
-
-                Ver todos los equipos
-
-                <i class="fa-solid fa-arrow-right"></i>
-
-            </button>
-
-        </article>
-
-
-        <!-- =================================================
-             FAIR PLAY
-             ================================================= -->
-
-        <article
-            class="vote-category-card"
-            data-category-card="fair-play"
-        >
-
-            <div class="category-card-header">
-
-                <div class="category-icon orange-light">
-                    🤝
-                </div>
-
-                <div>
-
-                    <h3>
-                        Fair Play
-                    </h3>
-
-                    <span>
-                        Mejor espíritu deportivo
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <div class="candidate-search">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                <input
-                    type="text"
-                    class="candidate-input"
-                    placeholder="Buscar equipo..."
-                    autocomplete="off"
-                >
-
-            </div>
-
-
-            <div class="candidate-list">
-
-                <?php foreach ($equipos as $equipo): ?>
-
-                    <div
-                        class="candidate"
-                        data-name="<?= htmlspecialchars(strtolower($equipo['nombre'])) ?>"
-                    >
-
-                        <div class="candidate-avatar orange-bg">
-                            <?= htmlspecialchars($equipo['avatar']) ?>
-                        </div>
-
-                        <div class="candidate-info">
-
-                            <strong>
-                                <?= htmlspecialchars($equipo['nombre']) ?>
-                            </strong>
-
-                            <span>
-                                <?= $equipo['participantes'] ?> participantes
-                            </span>
-
-                        </div>
-
-                        <button
-                            type="button"
-                            class="btn-vote orange-button"
-                            data-candidate="<?= $equipo['id'] ?>"
-                            data-category="fair-play"
-                        >
-                            Votar
-                        </button>
-
-                    </div>
-
-                <?php endforeach; ?>
-
-            </div>
-
-
-            <button
-                type="button"
-                class="view-all"
-            >
-
-                Ver todos los equipos
-
-                <i class="fa-solid fa-arrow-right"></i>
-
-            </button>
-
-        </article>
+        <?php endforeach; ?>
 
     </div>
+
+    <?php endif; ?>
 
 
     <!-- =====================================================
@@ -1026,21 +634,10 @@ $equipos = [
 
             <p>
                 Puedes votar una vez por cada categoría.
-                Una vez registrado, tu voto no podrá modificarse.
+                Registrarás tu voto de forma definitiva al dar clic.
             </p>
 
         </div>
-
-        <button
-            type="button"
-            id="myVotesButton"
-        >
-
-            Ver mis votos
-
-            <i class="fa-solid fa-arrow-right"></i>
-
-        </button>
 
     </div>
 

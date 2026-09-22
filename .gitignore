@@ -12,6 +12,11 @@ config/database_local.php
 *.tmp
 *.log
 
+# Uploads de usuarios (se generan en tiempo de ejecución)
+# Solo se trackean los .gitkeep para preservar la estructura
+uploads/**
+!uploads/**/.gitkeep
+
 # IDE
 .vscode/
 .idea/

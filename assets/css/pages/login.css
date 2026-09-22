@@ -523,6 +523,36 @@
 
 
 /* ============================================
+   ENLACE ADMINISTRADOR
+   ============================================ */
+
+.login-admin-link {
+    display: block;
+
+    margin-top: 26px;
+
+    text-align: center;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color: var(--passball-purple);
+
+    text-decoration: none;
+
+    transition: opacity 0.2s ease;
+}
+
+
+.login-admin-link:hover {
+    opacity: 0.75;
+
+    text-decoration: underline;
+}
+
+
+/* ============================================
    SPINNER
    ============================================ */
 

@@ -28,10 +28,10 @@ document.addEventListener('DOMContentLoaded', function () {
            VALIDAR MATRÍCULA
            ====================================== */
 
-        if (!/^\d{7}$/.test(matricula)) {
+        if (!/^[A-Za-z0-9]{3,20}$/.test(matricula)) {
 
             alert(
-                'La matrícula debe tener exactamente 7 dígitos'
+                'La matrícula debe tener entre 3 y 20 caracteres alfanuméricos'
             );
 
             matriculaInput.focus();
