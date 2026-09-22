@@ -34,9 +34,9 @@ try {
         INNER JOIN equipos e
             ON e.id = em.equipo_id
 
-        WHERE em.usuario_id = ?
+        WHERE em.jugador_id = ?
         AND em.estado = 'activo'
-        AND e.activo = 1
+        AND e.estado = 'activo'
 
         LIMIT 1
     ");
@@ -80,7 +80,7 @@ try {
 
         FROM equipos e
 
-        WHERE e.activo = 1
+        WHERE e.estado = 'activo'
 
         ORDER BY e.fecha_creacion DESC
     ");
@@ -95,6 +95,52 @@ try {
     );
 
     $equipos = [];
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| POSTULACIÓN AL TORNEO
+|--------------------------------------------------------------------------
+*/
+
+$torneoActivo = null;
+$postulacion  = null;
+
+try {
+
+    $stmt = $pdo->prepare("
+        SELECT id, nombre, estado
+        FROM torneos
+        WHERE estado IN ('programado', 'en_curso')
+        ORDER BY id DESC
+        LIMIT 1
+    ");
+    $stmt->execute();
+    $torneoActivo = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($torneoActivo && $miEquipo) {
+
+        $stmt = $pdo->prepare("
+            SELECT estado
+            FROM torneo_equipos
+            WHERE torneo_id = ? AND equipo_id = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$torneoActivo['id'], $miEquipo['id']]);
+        $estadoPost = $stmt->fetchColumn();
+
+        if ($estadoPost !== false) {
+            $postulacion = $estadoPost;
+        }
+    }
+
+} catch (PDOException $e) {
+
+    error_log(
+        "PASSBALL - Error obteniendo postulación: " .
+        $e->getMessage()
+    );
 }
 
 
@@ -145,7 +191,7 @@ unset(
     </h1>
 
     <p>
-        Busca un equipo existente o registra uno nuevo.
+        Registra tu equipo para participar en el torneo.
     </p>
 
 </div>
@@ -210,7 +256,7 @@ unset(
             <p class="team-role">
                 <i class="fa-solid fa-star"></i>
 
-                <?php if ($rolUsuario === 'lider'): ?>
+                <?php if (es_capitan((int) $miEquipo['id'])): ?>
                     Líder del equipo
                 <?php else: ?>
                     Miembro del equipo
@@ -234,6 +280,59 @@ unset(
 
             </a>
 
+            <?php if (es_capitan((int) $miEquipo['id']) && $torneoActivo && !$postulacion): ?>
+
+                <form
+                    action="controllers/postularEquipo.php"
+                    method="POST"
+                    class="postular-form"
+                >
+
+                    <button
+                        type="submit"
+                        class="btn-purple btn-postular"
+                    >
+
+                        <i class="fa-solid fa-trophy"></i>
+
+                        Postular al torneo
+
+                    </button>
+
+                </form>
+
+            <?php elseif ($postulacion === 'pendiente'): ?>
+
+                <span class="postulacion-badge pendiente">
+
+                    <i class="fa-solid fa-clock"></i>
+
+                    Postulación en revisión
+
+                </span>
+
+            <?php elseif ($postulacion === 'aprobado'): ?>
+
+                <span class="postulacion-badge aprobado">
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                    Confirmado en el torneo
+
+                </span>
+
+            <?php elseif ($postulacion === 'rechazado'): ?>
+
+                <span class="postulacion-badge rechazado">
+
+                    <i class="fa-solid fa-circle-xmark"></i>
+
+                    Postulación rechazada
+
+                </span>
+
+            <?php endif; ?>
+
         </div>
 
     </section>
@@ -242,6 +341,8 @@ unset(
 
 
 <!-- ACCIONES -->
+
+<?php if (!$miEquipo): ?>
 
 <section class="team-actions">
 
@@ -252,7 +353,7 @@ unset(
         </h2>
 
         <p>
-            Busca un equipo existente o registra uno nuevo.
+            Registra tu equipo para participar en el torneo.
         </p>
 
     </div>
@@ -260,67 +361,37 @@ unset(
 
     <div class="action-buttons">
 
-
         <button
             type="button"
             class="action-card"
-            id="focusSearch"
+            id="openRegister"
         >
 
-            <div class="action-icon purple">
-                <i class="fa-solid fa-magnifying-glass"></i>
+            <div class="action-icon orange">
+                <i class="fa-solid fa-plus"></i>
             </div>
 
             <div class="action-text">
 
                 <h3>
-                    Buscar equipo
+                    Registrar equipo
                 </h3>
 
                 <p>
-                    Encuentra un equipo y consulta su información.
+                    Crea un nuevo equipo y conviértete en líder.
                 </p>
 
             </div>
 
-            <i class="fa-solid fa-arrow-right action-arrow"></i>
+            <i class="fa-solid fa-arrow-right action-arrow orange-arrow"></i>
 
         </button>
-
-
-        <?php if (!$miEquipo): ?>
-
-            <button
-                type="button"
-                class="action-card"
-                id="openRegister"
-            >
-
-                <div class="action-icon orange">
-                    <i class="fa-solid fa-plus"></i>
-                </div>
-
-                <div class="action-text">
-
-                    <h3>
-                        Registrar equipo
-                    </h3>
-
-                    <p>
-                        Crea un nuevo equipo y conviértete en líder.
-                    </p>
-
-                </div>
-
-                <i class="fa-solid fa-arrow-right action-arrow orange-arrow"></i>
-
-            </button>
-
-        <?php endif; ?>
 
     </div>
 
 </section>
+
+<?php endif; ?>
 
 
 <!-- EQUIPOS DISPONIBLES -->
@@ -337,6 +408,11 @@ unset(
 
             <p>
                 Explora los equipos registrados en el torneo.
+            </p>
+
+            <p>
+                En caso de no contar con equipo, puedes unirte
+                a uno de los que estén disponibles.
             </p>
 
         </div>
@@ -451,41 +527,3 @@ unset(
     </div>
 
 </section>
-
-
-<?php if (!$miEquipo): ?>
-
-    <section class="registration-info">
-
-        <div class="info-icon">
-            <i class="fa-solid fa-circle-info"></i>
-        </div>
-
-        <div class="info-text">
-
-            <h3>
-                ¿No encuentras tu equipo?
-            </h3>
-
-            <p>
-                Puedes registrar uno nuevo y automáticamente
-                serás designado como líder.
-            </p>
-
-        </div>
-
-        <button
-            type="button"
-            class="info-button"
-            id="openRegisterBottom"
-        >
-
-            Registrar equipo
-
-            <i class="fa-solid fa-arrow-right"></i>
-
-        </button>
-
-    </section>
-
-<?php endif; ?>

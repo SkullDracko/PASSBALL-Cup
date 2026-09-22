@@ -1,0 +1,977 @@
+/* =========================================================
+   PASSBALL CUP - LOGIN ADMINISTRADOR
+========================================================= */
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    font-family: "Inter", sans-serif;
+    background: #09001d;
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   CONTENEDOR PRINCIPAL
+========================================================= */
+
+.admin-login {
+    position: relative;
+
+    width: 100%;
+    min-height: 100vh;
+
+    overflow: hidden;
+
+    background-image: url("../../../assets/img/fondo-passball.png");
+
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+
+    display: flex;
+    justify-content: center;
+}
+
+
+/* =========================================================
+   CAPA OSCURA
+========================================================= */
+
+.background-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(8, 0, 32, 0.10) 0%,
+            rgba(8, 0, 32, 0.18) 45%,
+            rgba(8, 0, 32, 0.35) 100%
+        );
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   CONTENIDO
+========================================================= */
+
+.login-content {
+    position: relative;
+    z-index: 2;
+
+    width: min(100%, 1100px);
+
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 30px 25px 25px;
+}
+
+
+/* =========================================================
+   LOGOS INSTITUCIONALES
+========================================================= */
+
+.institutional-logos {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 22px;
+
+    min-height: 65px;
+
+    margin-bottom: 20px;
+
+    filter:
+        drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
+}
+
+
+/* FACMED */
+
+.logo-facmed {
+    width: 150px;
+    height: auto;
+
+    max-height: 55px;
+
+    object-fit: contain;
+}
+
+
+/* MEDPREV */
+
+.logo-medprev {
+    width: 105px;
+    height: auto;
+
+    max-height: 58px;
+
+    object-fit: contain;
+}
+
+
+/* PASSWORD */
+
+.logo-password {
+    width: 205px;
+    height: auto;
+
+    max-height: 58px;
+
+    object-fit: contain;
+}
+
+
+/* Separadores */
+
+.logo-divider {
+
+    width: 1px;
+
+    height: 38px;
+
+    background: rgba(255, 255, 255, 0.45);
+}
+
+
+/* =========================================================
+   LOGO PASSBALL CUP
+========================================================= */
+
+.passball-logo {
+    position: relative;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    margin-bottom: 26px;
+
+    filter:
+        drop-shadow(0 5px 15px rgba(0, 0, 0, 0.45));
+}
+
+
+.passball-logo img {
+
+    width: 390px;
+
+    max-width: 75vw;
+
+    height: auto;
+
+    object-fit: contain;
+
+    filter: brightness(0) invert(1);
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.admin-card {
+
+    width: 540px;
+
+    max-width: 100%;
+
+    padding: 28px 48px 30px;
+
+    background:
+        rgba(8, 0, 30, 0.84);
+
+    border: 1px solid rgba(137, 44, 255, 0.85);
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 0 0 1px rgba(122, 39, 255, 0.08),
+        0 20px 70px rgba(0, 0, 0, 0.45),
+        inset 0 0 40px rgba(86, 24, 170, 0.08);
+
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+}
+
+
+/* =========================================================
+   ICONO SEGURIDAD
+========================================================= */
+
+.security-icon {
+
+    width: 62px;
+    height: 62px;
+
+    margin: 0 auto 15px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 15px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #6420e8,
+            #8f32ff
+        );
+
+    box-shadow:
+        0 10px 30px rgba(117, 33, 255, 0.35);
+}
+
+
+.security-icon i {
+
+    color: white;
+
+    font-size: 29px;
+}
+
+
+/* =========================================================
+   ENCABEZADO
+========================================================= */
+
+.card-heading {
+
+    text-align: center;
+
+    margin-bottom: 22px;
+}
+
+
+.card-heading h1 {
+
+    font-size: 28px;
+
+    line-height: 1.2;
+
+    font-weight: 800;
+
+    color: #ffffff;
+}
+
+
+.card-heading h1 span {
+
+    color: #9234ff;
+}
+
+
+.card-heading p {
+
+    margin-top: 6px;
+
+    font-size: 14px;
+
+    color: #d7c6ed;
+}
+
+
+.heading-line {
+
+    width: 65px;
+    height: 3px;
+
+    margin: 15px auto 0;
+
+    border-radius: 5px;
+
+    background: #ffc400;
+
+    box-shadow:
+        0 0 12px rgba(255, 196, 0, 0.35);
+}
+
+
+/* =========================================================
+   AVISO
+========================================================= */
+
+.admin-notice {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    margin-bottom: 21px;
+
+    color: #eeeeee;
+
+    font-size: 12px;
+
+    text-align: center;
+}
+
+
+.admin-notice i {
+
+    color: #ffffff;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.login-error {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 11px 13px;
+
+    margin-bottom: 15px;
+
+    border-radius: 8px;
+
+    background: rgba(255, 50, 80, 0.12);
+
+    border: 1px solid rgba(255, 70, 100, 0.4);
+
+    color: #ffb7c0;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   FORMULARIO
+========================================================= */
+
+.admin-form {
+
+    width: 100%;
+}
+
+
+/* Grupo */
+
+.form-group {
+
+    margin-bottom: 15px;
+}
+
+
+/* Label */
+
+.form-group label {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    margin-bottom: 7px;
+
+    color: #ffffff;
+
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+
+.form-group label i {
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+.input-wrapper {
+
+    position: relative;
+
+    width: 100%;
+}
+
+
+.input-wrapper .input-icon {
+
+    position: absolute;
+
+    left: 15px;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    color: #6426a9;
+
+    font-size: 14px;
+
+    z-index: 2;
+}
+
+
+.input-wrapper input {
+
+    width: 100%;
+
+    height: 50px;
+
+    padding:
+        0 48px
+        0 45px;
+
+    border: none;
+
+    outline: none;
+
+    border-radius: 9px;
+
+    background: #eef3ff;
+
+    color: #25133d;
+
+    font-family: "Inter", sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+    transition: 0.25s ease;
+}
+
+
+.input-wrapper input::placeholder {
+
+    color: #9296a5;
+}
+
+
+.input-wrapper input:focus {
+
+    background: #ffffff;
+
+    box-shadow:
+        0 0 0 2px rgba(143, 50, 255, 0.55),
+        0 5px 20px rgba(91, 20, 180, 0.15);
+}
+
+
+/* =========================================================
+   BOTÓN MOSTRAR PASSWORD
+========================================================= */
+
+.toggle-password {
+
+    position: absolute;
+
+    right: 13px;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    width: 30px;
+    height: 30px;
+
+    border: none;
+
+    background: transparent;
+
+    color: #6426a9;
+
+    cursor: pointer;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   BOTÓN LOGIN
+========================================================= */
+
+.login-button {
+
+    width: 100%;
+
+    height: 50px;
+
+    margin-top: 6px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 9px;
+
+    color: white;
+
+    font-family: "Inter", sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    background:
+        linear-gradient(
+            100deg,
+            #6521e8,
+            #9432ff
+        );
+
+    box-shadow:
+        0 9px 25px rgba(111, 29, 235, 0.35);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
+}
+
+
+.login-button i:last-child {
+
+    font-size: 14px;
+
+    margin-left: 1px;
+}
+
+
+.login-button:hover {
+
+    transform: translateY(-2px);
+
+    filter: brightness(1.08);
+
+    box-shadow:
+        0 13px 32px rgba(125, 38, 255, 0.45);
+}
+
+
+.login-button:active {
+
+    transform: translateY(0);
+}
+
+
+.login-button:disabled {
+
+    cursor: not-allowed;
+
+    opacity: 0.75;
+
+    transform: none;
+}
+
+
+/* =========================================================
+   VOLVER
+========================================================= */
+
+.back-login {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    margin-top: 19px;
+
+    color: #d7c3f3;
+
+    text-decoration: none;
+
+    font-size: 12px;
+
+    transition: 0.2s ease;
+}
+
+
+.back-login:hover {
+
+    color: #ffffff;
+
+    transform: translateX(-2px);
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.admin-footer {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 12px;
+
+    margin-top: 27px;
+
+    color: #d4c7e7;
+}
+
+
+.admin-footer p {
+
+    font-size: 10px;
+
+    font-weight: 500;
+
+    letter-spacing: 0.2px;
+}
+
+
+.admin-footer span {
+
+    width: 28px;
+
+    height: 2px;
+
+    background: #ffc400;
+
+    box-shadow:
+        0 0 8px rgba(255, 196, 0, 0.3);
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .login-content {
+
+        padding:
+            25px
+            20px
+            20px;
+    }
+
+
+    .institutional-logos {
+
+        gap: 15px;
+    }
+
+
+    .logo-facmed {
+
+        width: 125px;
+    }
+
+
+    .logo-medprev {
+
+        width: 90px;
+    }
+
+
+    .logo-password {
+
+        width: 175px;
+    }
+
+
+    .passball-logo img {
+
+        width: 330px;
+    }
+
+
+    .admin-card {
+
+        width: 500px;
+
+        padding:
+            27px
+            40px
+            28px;
+    }
+}
+
+
+/* =========================================================
+   MÓVIL
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .admin-login {
+
+        min-height: 100svh;
+
+        background-position:
+            center center;
+    }
+
+
+    .login-content {
+
+        min-height: 100svh;
+
+        padding:
+            20px
+            15px
+            18px;
+    }
+
+
+    /* Logos */
+
+    .institutional-logos {
+
+        width: 100%;
+
+        gap: 8px;
+
+        margin-bottom: 13px;
+    }
+
+
+    .logo-facmed {
+
+        width: 90px;
+    }
+
+
+    .logo-medprev {
+
+        width: 65px;
+    }
+
+
+    .logo-password {
+
+        width: 115px;
+    }
+
+
+    .logo-divider {
+
+        height: 27px;
+    }
+
+
+    /* PASSBALL */
+
+    .passball-logo {
+
+        margin-bottom: 18px;
+    }
+
+
+    .passball-logo img {
+
+        width: 250px;
+
+        max-width: 85vw;
+    }
+
+
+    /* Card */
+
+    .admin-card {
+
+        width: 100%;
+
+        padding:
+            24px
+            20px
+            25px;
+
+        border-radius: 17px;
+    }
+
+
+    .security-icon {
+
+        width: 54px;
+        height: 54px;
+
+        margin-bottom: 13px;
+    }
+
+
+    .security-icon i {
+
+        font-size: 25px;
+    }
+
+
+    .card-heading h1 {
+
+        font-size: 23px;
+    }
+
+
+    .card-heading p {
+
+        font-size: 12px;
+    }
+
+
+    .admin-notice {
+
+        font-size: 10px;
+
+        line-height: 1.4;
+    }
+
+
+    .form-group label {
+
+        font-size: 11px;
+    }
+
+
+    .input-wrapper input {
+
+        height: 47px;
+
+        font-size: 12px;
+    }
+
+
+    .login-button {
+
+        height: 48px;
+
+        font-size: 12px;
+    }
+
+
+    .back-login {
+
+        font-size: 11px;
+    }
+
+
+    .admin-footer {
+
+        margin-top: 18px;
+    }
+
+
+    .admin-footer p {
+
+        font-size: 8px;
+    }
+
+
+    .admin-footer span {
+
+        width: 20px;
+    }
+}
+
+
+/* =========================================================
+   MÓVIL PEQUEÑO
+========================================================= */
+
+@media (max-width: 380px) {
+
+    .login-content {
+
+        padding:
+            15px
+            12px
+            15px;
+    }
+
+
+    .institutional-logos {
+
+        gap: 5px;
+    }
+
+
+    .logo-facmed {
+
+        width: 75px;
+    }
+
+
+    .logo-medprev {
+
+        width: 55px;
+    }
+
+
+    .logo-password {
+
+        width: 95px;
+    }
+
+
+    .passball-logo img {
+
+        width: 220px;
+    }
+
+
+    .admin-card {
+
+        padding:
+            20px
+            16px
+            21px;
+    }
+
+
+    .card-heading h1 {
+
+        font-size: 21px;
+    }
+}

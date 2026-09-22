@@ -18,27 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =====================================================
-       STORAGE
-       ===================================================== */
-
-    var STORAGE_KEY = 'passballVotes';
-
-    var votes = {};
-
-    try {
-
-        votes = JSON.parse(
-            localStorage.getItem(STORAGE_KEY) || '{}'
-        );
-
-    } catch (e) {
-
-        votes = {};
-
-    }
-
-
-    /* =====================================================
        ELEMENTOS
        ===================================================== */
 
@@ -54,21 +33,17 @@ document.addEventListener('DOMContentLoaded', function () {
     var votesMade =
         document.getElementById('votesMade');
 
-    var myVotesButton =
-        document.getElementById('myVotesButton');
-
 
     /* =====================================================
        CONTADOR DE VOTOS
        ===================================================== */
 
-    function updateVotesMade() {
-
-        var count = Object.keys(votes).length;
+    function updateVotesMade(count) {
 
         if (votesMade) {
 
-            votesMade.textContent = String(count);
+            votesMade.textContent =
+                String(count || '0');
 
         }
 
@@ -316,6 +291,10 @@ document.addEventListener('DOMContentLoaded', function () {
             'click',
             function () {
 
+                if (this.disabled) {
+                    return;
+                }
+
                 var categoryId =
                     this.getAttribute(
                         'data-category'
@@ -328,26 +307,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     );
 
 
-                if (
-                    !categoryId ||
-                    !candidateId
-                ) {
+                if (!categoryId || !candidateId) {
                     return;
-                }
-
-
-                /* -----------------------------------------
-                   YA VOTÓ
-                   ----------------------------------------- */
-
-                if (votes[categoryId]) {
-
-                    alert(
-                        'Ya realizaste tu voto en esta categoría.'
-                    );
-
-                    return;
-
                 }
 
 
@@ -368,17 +329,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         .trim();
 
 
-                /* -----------------------------------------
-                   CONFIRMACIÓN
-                   ----------------------------------------- */
-
-                var confirmMessage =
+                if (!confirm(
                     '¿Confirmar tu voto por "' +
                     candidateName +
-                    '" en esta categoría?';
-
-
-                if (!confirm(confirmMessage)) {
+                    '" en esta categoría?'
+                )) {
 
                     return;
 
@@ -386,45 +341,83 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
                 /* -----------------------------------------
-                   GUARDAR
+                   ENVIAR AL SERVIDOR
                    ----------------------------------------- */
 
-                votes[categoryId] =
-                    candidateId;
-
-
-                try {
-
-                    localStorage.setItem(
-                        STORAGE_KEY,
-                        JSON.stringify(votes)
+                var catCard =
+                    this.closest(
+                        '.vote-category-card'
                     );
 
-                } catch (e) {
-
-                    console.warn(
-                        'No fue posible guardar el voto.'
-                    );
-
-                }
+                var esJugador =
+                    (catCard.getAttribute(
+                        'data-tipo'
+                    ) || 'jugador') === 'jugador';
 
 
-                /* -----------------------------------------
-                   ACTUALIZAR INTERFAZ
-                   ----------------------------------------- */
-
-                markAsVoted(
-                    categoryId,
-                    candidateId
-                );
-
-
-                updateVotesMade();
+                var body =
+                    'categoria_id=' +
+                    encodeURIComponent(categoryId) +
+                    '&' + (esJugador
+                        ? 'jugador_id'
+                        : 'equipo_id') +
+                    '=' + encodeURIComponent(candidateId);
 
 
-                alert(
-                    '✓ Voto registrado correctamente'
-                );
+                this.disabled = true;
+
+
+                fetch(
+                    'controllers/votar.php',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type':
+                                'application/x-www-form-urlencoded'
+                        },
+                        body: body
+                    }
+                )
+                    .then(function (resp) {
+                        return resp.json();
+                    })
+                    .then(function (data) {
+
+                        if (!data.success) {
+
+                            alert(
+                                data.message ||
+                                'No se pudo registrar tu voto.'
+                            );
+
+                            return;
+
+                        }
+
+
+                        markAsVoted(
+                            categoryId,
+                            candidateId
+                        );
+
+
+                        updateVotesMade(
+                            data.total_votos
+                        );
+
+
+                        alert(
+                            '✓ Voto registrado correctamente'
+                        );
+
+                    })
+                    .catch(function () {
+
+                        alert(
+                            'Error de conexión. Intenta de nuevo.'
+                        );
+
+                    });
 
             }
         );
@@ -523,130 +516,5 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
     }
-
-
-    /* =====================================================
-       RESTAURAR VOTOS
-       ===================================================== */
-
-    function restoreVotes() {
-
-        Object.keys(votes).forEach(
-            function (categoryId) {
-
-                var candidateId =
-                    votes[categoryId];
-
-
-                var button =
-                    scope.querySelector(
-                        '.btn-vote[data-category="' +
-                        categoryId +
-                        '"][data-candidate="' +
-                        String(candidateId) +
-                        '"]'
-                    );
-
-
-                if (button) {
-
-                    markAsVoted(
-                        categoryId,
-                        candidateId
-                    );
-
-                }
-
-            }
-        );
-
-    }
-
-
-    /* =====================================================
-       VER MIS VOTOS
-       ===================================================== */
-
-    if (myVotesButton) {
-
-        myVotesButton.addEventListener(
-            'click',
-            function () {
-
-                var names = [];
-
-
-                Object.keys(votes).forEach(
-                    function (categoryId) {
-
-                        var candidateId =
-                            votes[categoryId];
-
-
-                        var button =
-                            scope.querySelector(
-                                '.btn-vote[data-category="' +
-                                categoryId +
-                                '"][data-candidate="' +
-                                String(candidateId) +
-                                '"]'
-                            );
-
-
-                        if (!button) {
-                            return;
-                        }
-
-
-                        var candidate =
-                            button.closest(
-                                '.candidate'
-                            );
-
-
-                        var name =
-                            candidate
-                                .querySelector(
-                                    '.candidate-info strong'
-                                )
-                                .textContent
-                                .trim();
-
-
-                        names.push(name);
-
-                    }
-                );
-
-
-                if (names.length === 0) {
-
-                    alert(
-                        'Aún no has realizado votos.'
-                    );
-
-                    return;
-
-                }
-
-
-                alert(
-                    'Tus votos:\n\n• ' +
-                    names.join('\n• ')
-                );
-
-            }
-        );
-
-    }
-
-
-    /* =====================================================
-       INICIALIZAR
-       ===================================================== */
-
-    restoreVotes();
-
-    updateVotesMade();
 
 });

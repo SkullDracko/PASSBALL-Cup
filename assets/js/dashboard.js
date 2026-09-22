@@ -119,11 +119,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================
-       ACERCAR / BUSCAR EQUIPOS
+       BUSCAR EQUIPOS
        ========================================= */
-
-    var focusSearch =
-        document.getElementById('focusSearch');
 
     var teamSearch =
         document.getElementById('teamSearch');
@@ -133,19 +130,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var noResults =
         document.getElementById('noResults');
-
-
-    if (focusSearch && teamSearch) {
-
-        focusSearch.addEventListener(
-            'click',
-            function () {
-                showView('view-equipos');
-                teamSearch.focus();
-            }
-        );
-
-    }
 
 
     if (teamSearch) {
@@ -207,9 +191,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var openRegister =
         document.getElementById('openRegister');
 
-    var openRegisterBottom =
-        document.getElementById('openRegisterBottom');
-
     var closeRegister =
         document.getElementById('closeRegister');
 
@@ -256,10 +237,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (openRegister) {
         openRegister.addEventListener('click', openModal);
-    }
-
-    if (openRegisterBottom) {
-        openRegisterBottom.addEventListener('click', openModal);
     }
 
     if (closeRegister) {
@@ -382,6 +359,74 @@ document.addEventListener('DOMContentLoaded', function () {
         checkWidth();
 
         window.addEventListener('resize', checkWidth);
+
+    }
+
+
+    /* =========================================
+       MENÚ MÓVIL (BOTÓN HAMBURGUESA)
+       ========================================= */
+
+    var menuButton =
+        document.getElementById('menuButton');
+
+    var topbarNav =
+        document.querySelector('.topbar-nav');
+
+    if (menuButton && topbarNav) {
+
+        function closeMobileNav() {
+
+            topbarNav.classList.remove('mobile-open');
+            menuButton.innerHTML =
+                '<i class="fa-solid fa-bars"></i>';
+
+        }
+
+        menuButton.addEventListener('click', function (e) {
+
+            e.stopPropagation();
+
+            var isOpen =
+                topbarNav.classList.toggle('mobile-open');
+
+            menuButton.innerHTML = isOpen
+                ? '<i class="fa-solid fa-xmark"></i>'
+                : '<i class="fa-solid fa-bars"></i>';
+
+        });
+
+        /* Cerrar al elegir una opción */
+
+        topbarNav.querySelectorAll('.nav-tab')
+            .forEach(function (link) {
+                link.addEventListener('click', closeMobileNav);
+            });
+
+        /* Cerrar al hacer click afuera */
+
+        document.addEventListener('click', function (e) {
+
+            if (
+                topbarNav.classList.contains('mobile-open') &&
+                !topbarNav.contains(e.target) &&
+                e.target !== menuButton &&
+                !menuButton.contains(e.target)
+            ) {
+                closeMobileNav();
+            }
+
+        });
+
+        /* Cerrar al regresar a desktop */
+
+        window.addEventListener('resize', function () {
+
+            if (window.innerWidth > 1024) {
+                closeMobileNav();
+            }
+
+        });
 
     }
 

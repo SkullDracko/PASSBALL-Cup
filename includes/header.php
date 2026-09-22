@@ -41,9 +41,6 @@ $pagina_actual = basename($_SERVER['PHP_SELF'], '.php');
             <li><a href="apuestas/index.php" class="<?= strpos($_SERVER['PHP_SELF'], 'apuestas') !== false ? 'active' : '' ?>">Apuestas</a></li>
             <li><a href="resultados/ganadores.php" class="<?= strpos($_SERVER['PHP_SELF'], 'resultados') !== false ? 'active' : '' ?>">Resultados</a></li>
             <li><a href="comunidad/index.php" class="<?= strpos($_SERVER['PHP_SELF'], 'comunidad') !== false ? 'active' : '' ?>">Comunidad</a></li>
-            <?php if (es_admin()): ?>
-            <li><a href="admin/index.php" class="nav-admin <?= strpos($_SERVER['PHP_SELF'], 'admin') !== false ? 'active' : '' ?>">Admin</a></li>
-            <?php endif; ?>
         </ul>
 
         <div class="nav-user">

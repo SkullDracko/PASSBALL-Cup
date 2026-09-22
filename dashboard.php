@@ -30,23 +30,20 @@ $rolUsuario = strtolower(
     $usuario['rol'] ?? 'participante'
 );
 
-
 /*
 |--------------------------------------------------------------------------
 | TEXTO DEL ROL
 |--------------------------------------------------------------------------
 */
 
-if ($rolUsuario === 'admin') {
+// Rol por defecto: participante. Si es capitán de un equipo, se muestra "Líder".
+$textoRol = 'Participante';
 
-    $textoRol = 'Administrador';
-
-} elseif ($rolUsuario === 'lider') {
-
-    $textoRol = 'Líder';
-
-} else {
-
+try {
+    if (es_capitan()) {
+        $textoRol = 'Líder';
+    }
+} catch (Exception $e) {
     $textoRol = 'Participante';
 }
 ?>
@@ -115,6 +112,13 @@ if ($rolUsuario === 'admin') {
     <link
         rel="stylesheet"
         href="assets/css/pages/dashboard.css"
+    >
+
+    <!-- CSS DE INICIO -->
+
+    <link
+        rel="stylesheet"
+        href="assets/css/pages/inicio.css"
     >
 
     <!-- CSS DE PARTIDOS -->
@@ -335,7 +339,26 @@ if ($rolUsuario === 'admin') {
                 ⌄
             </span>
 
+            <a href="controllers/logout.php" class="topbar-logout">
+                <svg viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+                </svg>
+                <span>Salir</span>
+            </a>
+
         </div>
+
+
+        <!-- BOTÓN MENÚ MÓVIL -->
+
+        <button
+            type="button"
+            class="menu-button"
+            id="menuButton"
+            aria-label="Abrir menú"
+        >
+            <i class="fa-solid fa-bars"></i>
+        </button>
 
     </header>
 
@@ -556,6 +579,7 @@ if ($rolUsuario === 'admin') {
         <form
             action="controllers/registrarEquipo.php"
             method="POST"
+            enctype="multipart/form-data"
         >
 
 
@@ -599,35 +623,111 @@ if ($rolUsuario === 'admin') {
             </div>
 
 
-            <label for="color_equipo">
-                Color del equipo
-                <span>(opcional)</span>
+            <label for="logo_equipo">
+                Logo del equipo
+                <span>*</span>
             </label>
 
-            <div class="modal-input">
+            <div class="logo-upload">
 
-                <i class="fa-solid fa-palette"></i>
+                <div
+                    class="logo-drop"
+                    id="logoDrop"
+                >
+
+                    <i class="fa-solid fa-image"></i>
+
+                    <p>
+                        <strong>Sube el logo</strong>
+                        <br>
+                        o arrastra la imagen aquí
+                    </p>
+
+                </div>
 
                 <input
-                    type="text"
-                    id="color_equipo"
-                    name="color_equipo"
-                    placeholder="Ej. #4b2780"
+                    type="file"
+                    id="logo_equipo"
+                    name="logo_equipo"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    hidden
                 >
+
+                <div
+                    class="logo-preview"
+                    id="logoPreview"
+                ></div>
+
+                <p class="logo-hint">
+                    JPG, PNG, WEBP o GIF · Máx 5 MB ·
+                    no podrás cambiarlo después
+                </p>
 
             </div>
 
 
-            <label for="descripcion_equipo">
-                Descripción
-                <span>(opcional)</span>
+            <!-- =============================================
+                 ELEGIR INTEGRANTES
+                 ============================================= -->
+
+            <label for="buscarJugador">
+                Elegir integrantes
+                <span>(máx 12 en total)</span>
             </label>
 
-            <textarea
-                id="descripcion_equipo"
-                name="descripcion_equipo"
-                placeholder="Cuéntanos sobre tu equipo..."
-            ></textarea>
+            <div class="miembros-buscar">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+                <input
+                    type="text"
+                    id="buscarJugador"
+                    placeholder="Busca por nombre o matrícula..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+            <p class="miembros-buscar-hint">
+                Búscalos por nombre o matrícula. Debes incluir todo tu
+                roster: 7 en cancha y cambios.
+            </p>
+
+            <div
+                class="miembros-resultados"
+                id="miembrosResultados"
+            ></div>
+
+            <div
+                class="miembros-elegidos"
+                id="miembrosElegidos"
+            >
+
+                <span class="miembro-chip miembro-chip-capitan">
+
+                    <span class="miembro-chip-avatar">
+                        <i class="fa-solid fa-crown"></i>
+                    </span>
+
+                    <span class="miembro-chip-nombre">
+                        <?= htmlspecialchars($nombreUsuario) ?>
+                    </span>
+
+                    <em>(tú)</em>
+
+                </span>
+
+            </div>
+
+            <p class="integrantes-total" id="integrantesTotal">
+                1/12 integrantes
+            </p>
+
+
+            <div
+                class="miembros-hidden"
+                id="miembrosHidden"
+            ></div>
 
 
             <div class="modal-buttons">
@@ -658,6 +758,8 @@ if ($rolUsuario === 'admin') {
 
 
 <script src="assets/js/dashboard.js"></script>
+
+<script src="assets/js/equipos.js"></script>
 
 <script src="assets/js/partidos.js"></script>
 
