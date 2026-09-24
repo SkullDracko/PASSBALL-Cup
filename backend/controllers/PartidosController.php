@@ -3,9 +3,13 @@ require_once __DIR__ . '/../core/db.php';
 require_once __DIR__ . '/../security/authorization.php';
 require_once __DIR__ . '/../services/FinalizarPartido.php';
 
-class PartidosController {
+class PartidosController
+{
     private PDO $pdo;
-    public function __construct() { $this->pdo = conectarDB(); }
+    public function __construct()
+    {
+        $this->pdo = conectarDB();
+    }
 
     public function listar(array $params): void
     {
@@ -113,17 +117,20 @@ class PartidosController {
             if ($body['fecha_hora'] !== null && !is_string($body['fecha_hora'])) {
                 jsonResponse(false, [], ['error' => 'fecha_hora debe ser una fecha válida o null'], 422);
             }
-            $campos[] = 'fecha_hora = ?'; $values[] = $body['fecha_hora'];
+            $campos[] = 'fecha_hora = ?';
+            $values[] = $body['fecha_hora'];
         }
         if (array_key_exists('cancha', $body)) {
             if ($body['cancha'] !== null && (!is_string($body['cancha']) || mb_strlen($body['cancha']) > 100)) {
                 jsonResponse(false, [], ['error' => 'cancha debe tener máximo 100 caracteres'], 422);
             }
-            $campos[] = 'cancha = ?'; $values[] = $body['cancha'];
+            $campos[] = 'cancha = ?';
+            $values[] = $body['cancha'];
         }
         if (array_key_exists('estado', $body)) {
             requerirEnum((string) $body['estado'], ['programado', 'en_curso', 'finalizado', 'cancelado'], 'estado');
-            $campos[] = 'estado = ?'; $values[] = $body['estado'];
+            $campos[] = 'estado = ?';
+            $values[] = $body['estado'];
         }
         if (!$campos) jsonResponse(false, [], ['error' => 'No hay campos válidos para actualizar'], 400);
         $values[] = $id;
@@ -175,7 +182,8 @@ class PartidosController {
         jsonResponse(true, ['mensaje' => 'Partido eliminado correctamente']);
     }
 
-    public function finalizar(array $params): void {
+    public function finalizar(array $params): void
+    {
         // PATCH /api/partidos/{id}/finalizar
         requireAdminAPI();
         $id = $this->obtenerId($params, 'id');
@@ -200,7 +208,10 @@ class PartidosController {
         if ($valor === null) return null;
         return $this->obtenerId([$campo => $valor], $campo);
     }
-    private function obtenerPositivo($valor, string $campo): int { return $this->obtenerNoNegativo($valor, $campo, true); }
+    private function obtenerPositivo($valor, string $campo): int
+    {
+        return $this->obtenerNoNegativo($valor, $campo, true);
+    }
     private function obtenerNoNegativo($valor, string $campo, bool $estricto = false): int
     {
         if (!filter_var($valor, FILTER_VALIDATE_INT) || (int) $valor < ($estricto ? 1 : 0)) {
@@ -210,12 +221,14 @@ class PartidosController {
     }
     private function verificarRonda(int $rondaId): void
     {
-        $stmt = $this->pdo->prepare('SELECT id FROM torneo_rondas WHERE id = ? LIMIT 1'); $stmt->execute([$rondaId]);
+        $stmt = $this->pdo->prepare('SELECT id FROM torneo_rondas WHERE id = ? LIMIT 1');
+        $stmt->execute([$rondaId]);
         if (!$stmt->fetch()) jsonResponse(false, [], ['error' => 'Ronda no encontrada'], 404);
     }
     private function verificarPartido(int $id): void
     {
-        $stmt = $this->pdo->prepare('SELECT id FROM partidos WHERE id = ? LIMIT 1'); $stmt->execute([$id]);
+        $stmt = $this->pdo->prepare('SELECT id FROM partidos WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
         if (!$stmt->fetch()) $this->noEncontrado();
     }
     private function verificarPartidoOrigen(int $origenId, int $rondaId): void
@@ -227,12 +240,18 @@ class PartidosController {
             INNER JOIN torneo_rondas destino ON destino.id = ?
             WHERE p.id = ?
         ');
-        $stmt->execute([$rondaId, $origenId]); $fila = $stmt->fetch();
-        if (!$fila
+        $stmt->execute([$rondaId, $origenId]);
+        $fila = $stmt->fetch();
+        if (
+            !$fila
             || (int) $fila['origen_torneo_id'] !== (int) $fila['destino_torneo_id']
-            || (int) $fila['origen_orden'] >= (int) $fila['destino_orden']) {
+            || (int) $fila['origen_orden'] >= (int) $fila['destino_orden']
+        ) {
             jsonResponse(false, [], ['error' => 'El partido origen debe pertenecer a una ronda anterior'], 422);
         }
     }
-    private function noEncontrado(): void { jsonResponse(false, [], ['error' => 'Partido no encontrado'], 404); }
+    private function noEncontrado(): void
+    {
+        jsonResponse(false, [], ['error' => 'Partido no encontrado'], 404);
+    }
 }
