@@ -28,11 +28,9 @@ document.addEventListener('DOMContentLoaded', function () {
            VALIDAR MATRÍCULA
            ====================================== */
 
-        if (!/^[A-Za-z0-9]{3,20}$/.test(matricula)) {
+        if (!/^[0-9]{7}$/.test(matricula)) {
 
-            alert(
-                'La matrícula debe tener entre 3 y 20 caracteres alfanuméricos'
-            );
+            showAlert('La matrícula debe tener exactamente 7 números', 'error');
 
             matriculaInput.focus();
 
@@ -44,38 +42,19 @@ document.addEventListener('DOMContentLoaded', function () {
            ESTADO DE CARGA
            ====================================== */
 
-        btn.dataset.originalText = btn.innerHTML;
-
-        btn.innerHTML =
-            '<span class="spinner"></span>';
-
-        btn.disabled = true;
+        setLoading(btn, true);
 
 
         try {
 
             /* ==================================
-               FORM DATA
-               ================================== */
-
-            const formData = new FormData();
-
-            formData.append(
-                'matricula',
-                matricula
-            );
-
-
-            /* ==================================
                PETICIÓN
                ================================== */
 
-            const res = await fetch(
-                'controllers/login.php',
-                {
-                    method: 'POST',
-                    body: formData
-                }
+            const data = await apiRequest(
+                'backend/api/auth/login',
+                'POST',
+                { matricula: matricula }
             );
 
 
@@ -83,14 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
                RESPUESTA
                ================================== */
 
-            const data = await res.json();
-
-
-            /* ==================================
-               LOGIN CORRECTO
-               ================================== */
-
-            if (data.success) {
+            if (data.exito) {
 
                 window.location.href =
                     'dashboard.php';
@@ -103,16 +75,13 @@ document.addEventListener('DOMContentLoaded', function () {
                LOGIN INCORRECTO
                ================================== */
 
-            alert(
-                data.message ||
-                'Error al iniciar sesión'
+            showAlert(
+                (data.errores || {}).error
+                    || 'Error al iniciar sesión',
+                'error'
             );
 
-
-            btn.innerHTML =
-                btn.dataset.originalText;
-
-            btn.disabled = false;
+            setLoading(btn, false);
 
 
         } catch (err) {
@@ -123,15 +92,9 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
 
-            alert(
-                'Error de conexión. Intenta de nuevo.'
-            );
+            showAlert('Error de conexión. Intenta de nuevo.', 'error');
 
-
-            btn.innerHTML =
-                btn.dataset.originalText;
-
-            btn.disabled = false;
+            setLoading(btn, false);
 
         }
 
