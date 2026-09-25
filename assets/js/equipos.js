@@ -38,10 +38,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (noResults) {
 
-                if (visible === 0) {
+                /* Con el campo vacio no se filtra: se muestran todas las tarjetas */
+
+                if (visible === 0 && value !== '') {
+
                     noResults.classList.add('show');
+
                 } else {
+
                     noResults.classList.remove('show');
+
                 }
 
             }
@@ -52,50 +58,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================
-       CERRAR MODAL
-       ========================================= */
-
-    var modals = document.querySelectorAll('.modal');
-
-    modals.forEach(function (modal) {
-
-        var overlay = modal.querySelector('.modal-overlay');
-
-        if (overlay) {
-
-            overlay.addEventListener('click', function () {
-
-                modal.classList.remove('show');
-
-            });
-
-        }
-
-    });
-
-
-    /* =========================================
-       CERRAR FLASH DESPUÉS DE 4 SEGUNDOS
-       ========================================= */
-
-    var flashes = document.querySelectorAll('.flash');
-
-    flashes.forEach(function (flash) {
-
-        setTimeout(function () {
-
-            flash.style.transition = 'opacity 0.4s ease';
-            flash.style.opacity = '0';
-
-            setTimeout(function () {
-
-                flash.remove();
-
-            }, 400);
-
-        }, 4000);
-
-    });
+       NOTA
+       =========================================
+       El cierre del modal (.modal-overlay) y el retiro
+       automatico de .flash estan en dashboard.js, que
+       es quien abre el modal. Estaban duplicados aqui. */
 
 
     /* =========================================
@@ -457,8 +424,9 @@ document.addEventListener('DOMContentLoaded', function () {
         function buscar(q) {
 
             fetch(
-                'controllers/buscarUsuarios.php?q=' +
-                encodeURIComponent(q)
+                'backend/api/usuarios/buscar?q=' +
+                encodeURIComponent(q),
+                { credentials: 'same-origin' }
             )
             .then(function (r) {
                 return r.json();
@@ -467,19 +435,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 miembrosResultados.innerHTML = '';
 
-                if (!data.success) {
+                if (!data.exito) {
                     miembrosResultados.innerHTML =
                         '<p class="miembro-vacio">Error al buscar.</p>';
                     return;
                 }
 
-                if (!data.usuarios.length) {
+                var usuarios = data.data.usuarios;
+
+                if (!usuarios.length) {
                     miembrosResultados.innerHTML =
                         '<p class="miembro-vacio">Sin resultados.</p>';
                     return;
                 }
 
-                data.usuarios.forEach(function (u) {
+                usuarios.forEach(function (u) {
                     renderResultado(u);
                 });
 
@@ -527,6 +497,113 @@ document.addEventListener('DOMContentLoaded', function () {
                 cerrarResultados();
             }
         });
+    }
+
+
+    /* =========================================
+       REGISTRAR EQUIPO (API)
+       =========================================
+       El <form> sigue apuntando a controllers/registrarEquipo.php como
+       red de seguridad para cuando no hay JS, pero si el script carga
+       se intercepta el submit y se va por POST /api/equipos.
+
+       No se usa apiRequest() a propósito: esa helper fuerza
+       Content-Type: application/json y hace JSON.stringify(), y un
+       archivo binario no sobrevive a ninguna de las dos cosas. Con
+       FormData el navegador pone el multipart boundary solo y no hay
+       que tocar el header. */
+
+    var registerForm = document.getElementById('registerForm');
+
+    if (registerForm) {
+
+        var registerError = document.getElementById('registerError');
+        var registerSubmit = registerForm.querySelector('.submit-button');
+
+        registerForm.addEventListener('submit', function (e) {
+
+            e.preventDefault();
+
+            var nombre = document.getElementById('nombre_equipo').value.trim();
+            var archivo = document.getElementById('logo_equipo').files[0];
+
+            if (nombre.length < 3) {
+                mostrarErrorRegister('El nombre debe tener al menos 3 caracteres.');
+                return;
+            }
+
+            if (!archivo) {
+                mostrarErrorRegister('El logo del equipo es obligatorio.');
+                return;
+            }
+
+            var fd = new FormData();
+
+            fd.append('nombre', nombre);
+            fd.append('logo', archivo);
+
+            miembrosHidden.querySelectorAll('input[name="integrantes[]"]')
+                .forEach(function (input) {
+                    fd.append('integrantes[]', input.value);
+                });
+
+            if (registerSubmit) setLoading(registerSubmit, true);
+            if (registerError) registerError.innerHTML = '';
+
+            fetch('backend/api/equipos', {
+                method: 'POST',
+                body: fd,
+                credentials: 'same-origin'
+            })
+                .then(function (r) {
+                    return r.json().then(function (data) {
+                        return { status: r.status, data: data };
+                    });
+                })
+                .then(function (res) {
+
+                    if (!res.data.exito) {
+
+                        mostrarErrorRegister(
+                            (res.data.errores && res.data.errores.error)
+                                ? res.data.errores.error
+                                : 'No se pudo registrar el equipo.'
+                        );
+
+                        if (registerSubmit) setLoading(registerSubmit, false);
+                        return;
+                    }
+
+                    /* El servidor ya guardó el equipo: recargar muestra la
+                       tarjeta de "mi equipo" y la postulación al torneo. */
+
+                    window.location.reload();
+
+                })
+                .catch(function () {
+
+                    mostrarErrorRegister('Error de conexión. Intenta de nuevo.');
+
+                    if (registerSubmit) setLoading(registerSubmit, false);
+
+                });
+
+        });
+
+        function mostrarErrorRegister(mensaje) {
+
+            if (!registerError) {
+
+                alert(mensaje);
+                return;
+
+            }
+
+            registerError.textContent = mensaje;
+            registerError.classList.add('show');
+
+        }
+
     }
 
 

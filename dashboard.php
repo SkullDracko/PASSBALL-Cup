@@ -577,6 +577,7 @@ try {
 
 
         <form
+            id="registerForm"
             action="controllers/registrarEquipo.php"
             method="POST"
             enctype="multipart/form-data"
@@ -730,8 +731,14 @@ try {
             ></div>
 
 
-            <div class="modal-buttons">
+            <p
+                class="register-error"
+                id="registerError"
+                role="alert"
+            ></p>
 
+
+            <div class="modal-buttons">
                 <button
                     type="button"
                     class="cancel-button"
@@ -756,6 +763,8 @@ try {
 
 </div>
 
+
+<script src="assets/js/app.js"></script>
 
 <script src="assets/js/dashboard.js"></script>
 

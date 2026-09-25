@@ -3299,7 +3299,7 @@ a {
 
     justify-content: center;
 
-    background: var(--surface);
+    background: var(--white);
 }
 
 .logo-preview img {
@@ -3872,6 +3872,36 @@ a {
     color: #c0392b;
 
     border: 1px solid #f5c6c6;
+}
+
+/* Error del registro de equipo vía API: reutiliza la paleta de .flash-error
+   para que se lea como parte del mismo sistema. Oculto por defecto y lo
+   muestra equipos.js con .show, igual que .no-results. */
+
+.register-error {
+
+    display: none;
+
+    background: #fef0f0;
+
+    color: #c0392b;
+
+    border: 1px solid #f5c6c6;
+
+    border-radius: 10px;
+
+    padding: 12px 16px;
+
+    margin-bottom: 18px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+.register-error.show {
+
+    display: block;
 }
 
 

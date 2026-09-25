@@ -320,13 +320,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     this.closest('.candidate');
 
 
-                var candidateName =
+                var candidateInfo =
                     candidate
-                        .querySelector(
+                        ? candidate.querySelector(
                             '.candidate-info strong'
                         )
-                        .textContent
-                        .trim();
+                        : null;
+
+                var candidateName =
+                    candidateInfo
+                        ? candidateInfo.textContent.trim()
+                        : 'este candidato';
 
 
                 if (!confirm(
@@ -364,7 +368,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     '=' + encodeURIComponent(candidateId);
 
 
-                this.disabled = true;
+                var button = this;
+
+                button.disabled = true;
 
 
                 fetch(
@@ -384,6 +390,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     .then(function (data) {
 
                         if (!data.success) {
+
+                            /* Sin esto el boton quedaba
+                               inutilizable para siempre */
+
+                            button.disabled = false;
 
                             alert(
                                 data.message ||
@@ -412,6 +423,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     })
                     .catch(function () {
+
+                        button.disabled = false;
 
                         alert(
                             'Error de conexión. Intenta de nuevo.'

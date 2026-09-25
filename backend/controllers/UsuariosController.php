@@ -74,6 +74,56 @@ class UsuariosController
         ]);
     }
 
+    public function buscar(array $params): void
+    {
+        // GET /api/usuarios/buscar?q=ana
+        // Alimenta el buscador de integrantes del modal de registro de
+        // equipo. Replica el contrato de controllers/buscarUsuarios.php para
+        // que equipos.js pueda cambiar la URL sin tocar el render de
+        // resultados: mismo filtro (rol 'usuario', activo, excluyéndose) y
+        // mismo campo en_equipo que el JS usa para deshabilitar la opción.
+
+        requireAuthAPI();
+
+        $stmt = $this->pdo->prepare('SELECT id FROM usuarios WHERE id = ? LIMIT 1');
+        $stmt->execute([$_SESSION['user_id']]);
+        $yo = $stmt->fetchColumn();
+
+        $q = trim((string) ($_GET['q'] ?? ''));
+
+        if ($q === '') {
+            jsonResponse(true, ['usuarios' => []]);
+        }
+
+        $stmt = $this->pdo->prepare("
+            SELECT
+                u.id,
+                u.nombre,
+                u.matricula,
+                u.avatar,
+                (
+                    SELECT COUNT(*)
+                    FROM equipo_miembros em
+                    WHERE em.jugador_id = u.id
+                      AND em.estado = 'activo'
+                ) AS en_equipo
+            FROM usuarios u
+            WHERE u.rol = 'usuario'
+              AND u.estado = 'activo'
+              AND u.id <> ?
+              AND (u.nombre LIKE ? OR u.matricula LIKE ?)
+            ORDER BY u.nombre ASC
+            LIMIT 20
+        ");
+
+        $like = '%' . $q . '%';
+        $stmt->execute([$yo, $like, $like]);
+
+        jsonResponse(true, [
+            'usuarios' => $stmt->fetchAll(PDO::FETCH_ASSOC)
+        ]);
+    }
+
     public function detalle(array $params): void
     {
         // GET /api/usuarios/{id}

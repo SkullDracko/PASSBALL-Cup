@@ -120,66 +120,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* =========================================
        BUSCAR EQUIPOS
-       ========================================= */
-
-    var teamSearch =
-        document.getElementById('teamSearch');
-
-    var teamCards =
-        document.querySelectorAll('.team-card');
-
-    var noResults =
-        document.getElementById('noResults');
-
-
-    if (teamSearch) {
-
-        teamSearch.addEventListener(
-            'input',
-            function () {
-
-                var value =
-                    this.value.toLowerCase().trim();
-
-                var visible = 0;
-
-                teamCards.forEach(function (card) {
-
-                    var name =
-                        card.getAttribute('data-team-name') || '';
-
-                    if (name.indexOf(value) !== -1) {
-
-                        card.style.display = '';
-                        visible++;
-
-                    } else {
-
-                        card.style.display = 'none';
-
-                    }
-
-                });
-
-                if (noResults) {
-
-                    if (visible === 0 && value !== '') {
-
-                        noResults.classList.add('show');
-
-                    } else {
-
-                        noResults.classList.remove('show');
-
-                    }
-
-                }
-
-            }
-        );
-
-    }
-
+       =========================================
+       El buscador pertenece a la vista Equipos y se
+       resuelve en assets/js/equipos.js. Antes estaba
+       duplicado aqui, y como este script se carga primero
+       su version perdia contra la de equipos.js: al borrar
+       la busqueda quedaba el aviso "No encontramos ese
+       equipo" con el campo vacio. */
 
     /* =========================================
        MODAL REGISTRAR EQUIPO
