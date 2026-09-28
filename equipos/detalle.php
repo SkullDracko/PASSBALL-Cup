@@ -31,7 +31,7 @@ if (!$equipo) {
 }
 
 // Miembros con posición real (equipo_miembros.posicion usa códigos)
-$stmt = $pdo->prepare("
+/* $stmt = $pdo->prepare("
     SELECT em.id AS miembro_id, em.posicion, em.fecha_union,
            u.id AS jugador_id, u.matricula, u.nombre, u.avatar
     FROM equipo_miembros em
@@ -55,13 +55,13 @@ $numeros = [
     'MED' => 8,
     'DEL' => 10,
 ];
-
+ */
 $esCapitan   = es_capitan($equipoId);
 $estoyEnEste = false;
 $yaTengoOtro = false;
 $jugadores   = [];
 
-foreach ($miembros as $m) {
+/* foreach ($miembros as $m) {
     if ((int) $m['jugador_id'] === (int) $usuario['id']) {
         $estoyEnEste = true;
     }
@@ -79,7 +79,7 @@ foreach ($miembros as $m) {
         'numero'       => $numeros[$posCode] ?? 0,
         'lider'        => (int) $m['jugador_id'] === (int) $equipo['capitan_id'],
     ];
-}
+} */
 
 if (!$estoyEnEste) {
     $stmt = $pdo->prepare("SELECT id FROM equipo_miembros WHERE jugador_id = ? AND estado = 'activo' LIMIT 1");
