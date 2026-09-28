@@ -30,73 +30,46 @@ try {
     error_log("Admin Participantes: " . $e->getMessage());
 }
 ?>
-
+<div class="admin-view-head">
+<span class="admin-view-head-ico"><i class="fa-solid fa-people-group"></i></span>
+<div>
 <h2 class="admin-section-title">Participantes</h2>
 <p class="admin-section-sub"><?= count($participantes) ?> jugadores registrados en la plataforma.</p>
-
+</div>
+</div>
 <div class="admin-table-wrap">
-
-    <table class="admin-table">
-
-        <thead>
-
-            <tr>
-                <th>#</th>
-                <th>Nombre</th>
-                <th>Matrícula</th>
-                <th>Equipo</th>
-                <th>Estado</th>
-                <th>Activo</th>
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            <?php if (empty($participantes)): ?>
-
-                <tr>
-                    <td colspan="6" style="text-align:center; color:#998caf;">Sin participantes aún.</td>
-                </tr>
-
-            <?php else: ?>
-
-                <?php foreach ($participantes as $p): ?>
-
-                    <tr>
-
-                        <td><?= (int) $p['id'] ?></td>
-
-                        <td><strong><?= htmlspecialchars($p['nombre']) ?></strong></td>
-
-                        <td><?= htmlspecialchars($p['matricula']) ?></td>
-
-                        <td><?= htmlspecialchars($p['equipo'] ?? '—') ?></td>
-
-                        <td>
-                            <span
-                                style="
-                                    display:inline-block;
-                                    padding:3px 10px;
-                                    border-radius:20px;
-                                    font-size:11.5px;
-                                    font-weight:700;
-                                    background:<?= $p['estado'] === 'activo' ? '#e8f7ee' : '#fdeeee' ?>;
-                                    color:<?= $p['estado'] === 'activo' ? '#1a7f3a' : '#b3261e' ?>;
-                                "
-                            ><?= htmlspecialchars($p['estado']) ?></span>
-                        </td>
-
-                        <td><?= $p['jugador_activo'] ? 'Sí' : 'No' ?></td>
-
-                    </tr>
-
-                <?php endforeach; ?>
-
-            <?php endif; ?>
-
-        </tbody>
-
-    </table>
-
+<table class="admin-table">
+<thead>
+<tr>
+<th>#</th>
+<th>Nombre</th>
+<th>Matrícula</th>
+<th>Equipo</th>
+<th>Estado</th>
+<th>Activo</th>
+</tr>
+</thead>
+<tbody>
+<?php if (empty($participantes)): ?>
+<tr>
+<td colspan="6" class="admin-note">Sin participantes aún.</td>
+</tr>
+<?php else: ?>
+<?php foreach ($participantes as $p): ?>
+<tr>
+<td><?= (int) $p['id'] ?></td>
+<td><strong><?= htmlspecialchars($p['nombre']) ?></strong></td>
+<td><?= htmlspecialchars($p['matricula']) ?></td>
+<td><?= htmlspecialchars($p['equipo'] ?? '—') ?></td>
+<td>
+<span class="chip <?= $p['estado'] === 'activo' ? 'activo' : 'inactivo' ?>">
+<?= $p['estado'] === 'activo' ? 'Activo' : 'Inactivo' ?>
+</span>
+</td>
+<td><?= $p['jugador_activo'] ? 'Sí' : 'No' ?></td>
+</tr>
+<?php endforeach; ?>
+<?php endif; ?>
+</tbody>
+</table>
 </div>

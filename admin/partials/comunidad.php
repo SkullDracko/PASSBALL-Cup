@@ -28,100 +28,118 @@ function timeAgoAdmin(string $fecha): string
     return date('d M Y', $ts);
 }
 ?>
-
 <?php if ($flashSuccess): ?>
-    <div class="admin-stub" style="padding:14px 18px; background:#e8f7ee; color:#1a7f3a; margin-bottom:18px;">
-        <strong><?= htmlspecialchars($flashSuccess) ?></strong>
-    </div>
+<div class="admin-alert is-ok">
+<strong><?= htmlspecialchars($flashSuccess) ?></strong>
+</div>
 <?php endif; ?>
-
 <?php if ($flashError): ?>
-    <div class="admin-stub" style="padding:14px 18px; background:#fdeeee; color:#b3261e; margin-bottom:18px;">
-        <strong><?= htmlspecialchars($flashError) ?></strong>
-    </div>
+<div class="admin-alert is-error">
+<strong><?= htmlspecialchars($flashError) ?></strong>
+</div>
 <?php endif; ?>
-
+<div class="admin-view-head">
+<span class="admin-view-head-ico"><i class="fa-solid fa-comment-dots"></i></span>
+<div>
 <h2 class="admin-section-title">Comunidad</h2>
 <p class="admin-section-sub">Publica novedades y administra las publicaciones del torneo.</p>
-
-<!-- Formulario crear post -->
-<div style="background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(47,30,80,0.07); padding:18px; margin-bottom:22px;">
-    <h3 style="margin:0 0 14px; font-size:15px; font-weight:800;">Nueva publicación</h3>
-    <form class="admin-form" method="POST" action="controllers/comunidad.php">
-        <input type="hidden" name="action" value="crear_post">
-
-        <div class="field" style="margin-bottom:10px;">
-            <label>Título</label>
-            <input type="text" name="titulo" placeholder="Ej. Horarios de la jornada" required style="width:100%;">
-        </div>
-
-        <div class="field" style="margin-bottom:10px;">
-            <label>Contenido</label>
-            <textarea name="contenido" rows="4" placeholder="Escribe el contenido de la publicación..." required style="width:100%; resize:vertical;"></textarea>
-        </div>
-
-        <div class="field" style="margin-bottom:10px;">
-            <label>URL de imagen (opcional)</label>
-            <input type="url" name="imagen_url" placeholder="https://..." style="width:100%;">
-        </div>
-
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-            <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
-                <input type="checkbox" name="fijado" value="1"> Fijar publicación
-            </label>
-            <button type="submit" class="admin-btn">Publicar</button>
-        </div>
-    </form>
 </div>
+</div>
+<!-- Formulario crear post -->
+<div class="comunidad-layout">
 
-<!-- Listado de posts -->
-<div style="background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(47,30,80,0.07); padding:14px;">
-    <h3 style="margin:0 0 12px; font-size:14px; font-weight:800;">Publicaciones (<?= count($posts) ?>)</h3>
-
-    <?php if (empty($posts)): ?>
-        <div class="admin-stub" style="padding:20px;">
-            <p>No hay publicaciones aún.</p>
+    <section class="admin-card composer">
+        <div class="composer-head">
+            <span class="composer-head-ico"><i class="fa-solid fa-pen-to-square"></i></span>
+            <div>
+                <h3>Nueva publicación</h3>
+                <p>Comparte una novedad con los participantes</p>
+            </div>
         </div>
-    <?php else: ?>
+
+        <form class="admin-form" method="POST" action="controllers/comunidad.php">
+            <input type="hidden" name="action" value="crear_post">
+            <div class="field">
+                <label>Título</label>
+                <input type="text" name="titulo" placeholder="Ej. Horarios de la jornada" required>
+            </div>
+            <div class="field">
+                <label>Contenido</label>
+                <textarea name="contenido" rows="6" placeholder="Escribe el contenido de la publicación..." required></textarea>
+            </div>
+            <div class="field">
+                <label>URL de imagen <em>(opcional)</em></label>
+                <input type="url" name="imagen_url" placeholder="https://...">
+            </div>
+            <div class="composer-foot">
+                <label class="admin-check">
+                    <input type="checkbox" name="fijado" value="1"> Fijar publicación
+                </label>
+                <button type="submit" class="admin-btn">
+                    <i class="fa-solid fa-paper-plane"></i> Publicar
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <!-- Listado de posts -->
+    <section class="admin-card">
+        <div class="feed-head">
+            <h3>Publicaciones</h3>
+            <span class="feed-count"><?= count($posts) ?></span>
+        </div>
+
+        <?php if (empty($posts)): ?>
+        <div class="admin-stub compact">
+            <h3>No hay publicaciones aún</h3>
+            <p>Usa el formulario para publicar la primera novedad.</p>
+        </div>
+        <?php else: ?>
+        <div class="feed">
         <?php foreach ($posts as $post): ?>
-            <div style="border:1px solid #f0edf4; border-radius:10px; padding:14px; margin-bottom:10px;">
-                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
-                    <div style="min-width:0; flex:1;">
-                        <div style="font-size:11px; color:#888; margin-bottom:4px;">
-                            <?= htmlspecialchars($post['autor'] ?? '—') ?>
-                            · <?= timeAgoAdmin($post['fecha']) ?>
-                            <?php if ($post['fijado']): ?>
-                                <span style="background:var(--admin-purple); color:#fff; padding:2px 8px; border-radius:10px; font-size:9px; font-weight:700; margin-left:6px;">FIJADO</span>
-                            <?php endif; ?>
-                        </div>
-                        <strong style="font-size:13px; display:block; margin-bottom:4px;"><?= htmlspecialchars($post['titulo']) ?></strong>
-                        <p style="margin:0; font-size:12px; color:#555; line-height:1.5;"><?= nl2br(htmlspecialchars($post['contenido'])) ?></p>
-                        <?php if ($post['imagen_url']): ?>
-                            <div style="margin-top:8px;">
-                                <img src="<?= htmlspecialchars($post['imagen_url']) ?>" alt="Imagen" style="max-width:280px; border-radius:8px;">
-                            </div>
+            <article class="post<?= $post['fijado'] ? ' pinned' : '' ?>">
+                <span class="post-avatar"><?= htmlspecialchars(mb_strtoupper(mb_substr(trim($post['autor'] ?? 'P'), 0, 1))) ?></span>
+                <div class="post-body">
+                    <div class="post-meta">
+                        <strong><?= htmlspecialchars($post['autor'] ?? '—') ?></strong>
+                        <span class="dot">&bull;</span>
+                        <span class="post-time"><?= timeAgoAdmin($post['fecha']) ?></span>
+                        <?php if ($post['fijado']): ?>
+                        <span class="post-pin"><i class="fa-solid fa-thumbtack"></i> FIJADO</span>
                         <?php endif; ?>
                     </div>
-
-                    <div style="display:flex; flex-direction:column; gap:6px; flex-shrink:0;">
-                        <form method="POST" action="controllers/comunidad.php" style="margin:0;">
-                            <input type="hidden" name="action" value="toggle_fijado">
-                            <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
-                            <button type="submit" class="admin-btn ghost" style="font-size:10px; padding:4px 10px;">
-                                <?= $post['fijado'] ? 'Desfijar' : 'Fijar' ?>
-                            </button>
-                        </form>
-                        <form method="POST" action="controllers/comunidad.php" style="margin:0;" onsubmit="return confirm('Eliminar esta publicación?');">
-                            <input type="hidden" name="action" value="eliminar_post">
-                            <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
-                            <button type="submit" class="admin-btn ghost" style="font-size:10px; padding:4px 10px; color:#b3261e;">Eliminar</button>
-                        </form>
+                    <h4 class="post-title"><?= htmlspecialchars($post['titulo']) ?></h4>
+                    <p class="post-text"><?= nl2br(htmlspecialchars($post['contenido'])) ?></p>
+                    <?php if ($post['imagen_url']): ?>
+                    <div class="post-media">
+                        <img src="<?= htmlspecialchars($post['imagen_url']) ?>" alt="Imagen de la publicación">
+                    </div>
+                    <?php endif; ?>
+                    <div class="post-foot">
+                        <span class="post-likes">
+                            <i class="fa-solid fa-thumbs-up"></i> <?= (int) $post['likes'] ?>
+                        </span>
+                        <div class="post-acts">
+                            <form method="POST" action="controllers/comunidad.php" class="admin-form nostyle">
+                                <input type="hidden" name="action" value="toggle_fijado">
+                                <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
+                                <button type="submit" class="admin-btn ghost mini">
+                                    <i class="fa-solid fa-thumbtack"></i>
+                                    <?= $post['fijado'] ? 'Desfijar' : 'Fijar' ?>
+                                </button>
+                            </form>
+                            <form method="POST" action="controllers/comunidad.php" class="admin-form nostyle" onsubmit="return confirm('Eliminar esta publicación?');">
+                                <input type="hidden" name="action" value="eliminar_post">
+                                <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
+                                <button type="submit" class="admin-btn ghost mini danger">Eliminar</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-                <div style="font-size:10px; color:#888; margin-top:6px;">
-                    <?= $post['likes'] ?> likes
-                </div>
-            </div>
+            </article>
         <?php endforeach; ?>
-    <?php endif; ?>
+        </div>
+        <?php endif; ?>
+    </section>
+
 </div>
