@@ -246,15 +246,130 @@ switch ($action) {
             exit;
         }
 
+        // Verificar que el miembro exista en este equipo
+        $stmt = $pdo->prepare("SELECT id FROM equipo_miembros WHERE id = ? AND equipo_id = ? AND estado = 'activo'");
+        $stmt->execute([$miembroId, $equipoId]);
+        if (!$stmt->fetch()) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Miembro no encontrado en este equipo']);
+            exit;
+        }
+
         try {
-            $stmt = $pdo->prepare("UPDATE equipo_miembros SET estado = 'inactivo' WHERE equipo_id = ? AND jugador_id = ?");
-            $stmt->execute([$equipoId, $miembroId]);
+            $stmt = $pdo->prepare("UPDATE equipo_miembros SET estado = 'inactivo' WHERE id = ? AND equipo_id = ?");
+            $stmt->execute([$miembroId, $equipoId]);
 
             echo json_encode(['success' => true, 'message' => 'Miembro eliminado del equipo']);
         } catch (PDOException $e) {
             error_log("Eliminar miembro: " . $e->getMessage());
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Error al eliminar miembro']);
+        }
+        break;
+
+    // =============================
+    // CAMBIAR POSICIÓN (solo capitán)
+    // =============================
+    case 'cambiar_posicion':
+        $equipoId  = (int)($_POST['equipo_id'] ?? 0);
+        $miembroId = (int)($_POST['miembro_id'] ?? 0);
+        $posicion  = strtoupper(trim($_POST['posicion'] ?? ''));
+
+        if (!esCapitanDe($pdo, $usuario['id'], $equipoId)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Sin permisos']);
+            exit;
+        }
+
+        if (!in_array($posicion, ['POR', 'DEF', 'MED', 'DEL'], true)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Posición no válida']);
+            exit;
+        }
+
+        $stmt = $pdo->prepare("SELECT id, jugador_id, equipo_id FROM equipo_miembros WHERE id = ? AND estado = 'activo'");
+        $stmt->execute([$miembroId]);
+        $miembro = $stmt->fetch();
+
+        if (!$miembro || (int) $miembro['equipo_id'] !== $equipoId) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Miembro no encontrado en este equipo']);
+            exit;
+        }
+
+        try {
+            $stmt = $pdo->prepare("UPDATE equipo_miembros SET posicion = ? WHERE id = ?");
+            $stmt->execute([$posicion, $miembroId]);
+
+            echo json_encode(['success' => true, 'message' => 'Posición actualizada']);
+        } catch (PDOException $e) {
+            error_log("Cambiar posición: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar la posición']);
+        }
+        break;
+
+    // =============================
+    // INVITAR JUGADOR POR MATRÍCULA (solo capitán)
+    // =============================
+    case 'invitar':
+        $equipoId  = (int)($_POST['equipo_id'] ?? 0);
+        $matricula = trim($_POST['matricula'] ?? '');
+
+        if (!esCapitanDe($pdo, $usuario['id'], $equipoId)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Sin permisos']);
+            exit;
+        }
+
+        if ($matricula === '') {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Ingresa la matrícula del jugador']);
+            exit;
+        }
+
+        // Equipo no lleno (máximo 12)
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM equipo_miembros WHERE equipo_id = ? AND estado = 'activo'");
+        $stmt->execute([$equipoId]);
+        if ((int) $stmt->fetchColumn() >= 12) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'El equipo ya está lleno (máximo 12 miembros)']);
+            exit;
+        }
+
+        $stmt = $pdo->prepare("SELECT id, nombre FROM usuarios WHERE matricula = ? AND estado = 'activo'");
+        $stmt->execute([$matricula]);
+        $jugador = $stmt->fetch();
+
+        if (!$jugador) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'No se encontró un jugador activo con esa matrícula']);
+            exit;
+        }
+
+        $stmt = $pdo->prepare("SELECT id, equipo_id FROM equipo_miembros WHERE jugador_id = ? AND estado = 'activo'");
+        $stmt->execute([$jugador['id']]);
+        $membresia = $stmt->fetch();
+
+        if ($membresia) {
+            if ((int) $membresia['equipo_id'] === $equipoId) {
+                echo json_encode(['success' => false, 'message' => 'Ese jugador ya forma parte del equipo']);
+            } else {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Ese jugador ya pertenece a otro equipo']);
+            }
+            exit;
+        }
+
+        try {
+            $stmt = $pdo->prepare("INSERT INTO equipo_miembros (equipo_id, jugador_id, estado) VALUES (?, ?, 'activo')");
+            $stmt->execute([$equipoId, $jugador['id']]);
+
+            echo json_encode(['success' => true, 'message' => "{$jugador['nombre']} se unió al equipo"]);
+        } catch (PDOException $e) {
+            error_log("Invitar jugador: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error al invitar al jugador']);
         }
         break;
 
