@@ -30,10 +30,12 @@ if (!$equipo) {
     exit;
 }
 
-// Miembros con posición real (equipo_miembros.posicion usa códigos)
-/* $stmt = $pdo->prepare("
-    SELECT em.id AS miembro_id, em.posicion, em.fecha_union,
-           u.id AS jugador_id, u.matricula, u.nombre, u.avatar
+// Miembros con posición real (equipo_miembros.posicion usa códigos).
+// Se proyecta em.* porque la columna posicion llega con la migración 001
+// (sql/migraciones/001_equipo_miembros_posicion.sql): si la BD todavía no la
+// tiene, nombrarla en el SELECT rompe la página entera.
+$stmt = $pdo->prepare("
+    SELECT em.*, u.matricula, u.nombre, u.avatar
     FROM equipo_miembros em
     JOIN usuarios u ON u.id = em.jugador_id
     WHERE em.equipo_id = ? AND em.estado = 'activo'
@@ -55,21 +57,21 @@ $numeros = [
     'MED' => 8,
     'DEL' => 10,
 ];
- */
+
 $esCapitan   = es_capitan($equipoId);
 $estoyEnEste = false;
 $yaTengoOtro = false;
 $jugadores   = [];
 
-/* foreach ($miembros as $m) {
+foreach ($miembros as $m) {
     if ((int) $m['jugador_id'] === (int) $usuario['id']) {
         $estoyEnEste = true;
     }
 
-    $posCode = $m['posicion'] ?: 'DEL';
+    $posCode = !empty($m['posicion']) ? $m['posicion'] : 'DEL';
 
     $jugadores[] = [
-        'id'           => (int) $m['miembro_id'],
+        'id'           => (int) $m['id'],
         'jugador_id'   => (int) $m['jugador_id'],
         'nombre'       => $m['nombre'],
         'matricula'    => $m['matricula'],
@@ -79,7 +81,7 @@ $jugadores   = [];
         'numero'       => $numeros[$posCode] ?? 0,
         'lider'        => (int) $m['jugador_id'] === (int) $equipo['capitan_id'],
     ];
-} */
+}
 
 if (!$estoyEnEste) {
     $stmt = $pdo->prepare("SELECT id FROM equipo_miembros WHERE jugador_id = ? AND estado = 'activo' LIMIT 1");
@@ -1061,11 +1063,12 @@ $avatarUsuario = $usuario['avatar'] ?? null;
                                 </span>
 
                                 <h2>
-                                    Invitar jugador
+                                    Agregar jugador
                                 </h2>
 
                                 <p>
-                                    Agrega a un jugador por su matrícula.
+                                    Busca a un jugador por su nombre o matrícula
+                                    y agrégalo al equipo.
                                 </p>
 
                             </div>
@@ -1074,26 +1077,27 @@ $avatarUsuario = $usuario['avatar'] ?? null;
 
                         <div class="lineup-settings">
 
-                            <label>
-                                Matrícula
+                            <label for="agregarBusqueda">
+                                Jugador
                             </label>
 
                             <input
                                 type="text"
-                                id="inviteMatricula"
-                                maxlength="20"
-                                placeholder="Ej. 6767676"
+                                id="agregarBusqueda"
+                                maxlength="60"
+                                autocomplete="off"
+                                placeholder="Ej. PB00027"
                             >
 
-                            <button
-                                type="button"
-                                class="primary-btn"
-                                style="width:100%;justify-content:center;margin-top:15px;"
-                                onclick="invitar(<?= (int) $equipo['id'] ?>)"
-                            >
-                                <i class="fa-solid fa-user-plus"></i>
-                                Invitar al equipo
-                            </button>
+                            <div class="member-search" id="agregarResultados"></div>
+
+                            <div class="lineup-help">
+
+                                <i class="fa-solid fa-circle-info"></i>
+                                Escribe al menos 2 letras. El equipo admite
+                                máximo 12 integrantes.
+
+                            </div>
 
                         </div>
 
@@ -1118,7 +1122,7 @@ $avatarUsuario = $usuario['avatar'] ?? null;
 </div>
 
 <!-- =============================================================
-     (Los modales de invitar/editar viven dentro del tab Gestionar)
+     (El buscador para agregar jugadores vive dentro del tab Gestionar)
 ============================================================= -->
 
 <script>
@@ -1238,6 +1242,210 @@ function salirEquipo() {
         if (d.success) setTimeout(() => location.reload(), 900);
     });
 }
+
+/* =============================================================
+     AGREGAR JUGADOR
+     POST /api/equipos/{equipoId}/miembros  →  { jugador_id }
+     GET  /api/usuarios/buscar?q=…        →  candidatos
+     El tab Gestionar sólo se renderiza para el capitán, y la API
+     vuelve a validarlo con requireCapitanOAdmin().
+   ============================================================= */
+
+<?php if ($es_lider): ?>
+
+const API_BASE = '../backend/api';
+const EQUIPO_ID = <?= (int) $equipo['id'] ?>;
+const EQUIPO_LLENO = <?= $equipoLleno ? 'true' : 'false' ?>;
+
+const inputAgregar = document.getElementById('agregarBusqueda');
+const boxAgregar = document.getElementById('agregarResultados');
+
+function apiRequest(url, options) {
+    return fetch(url, Object.assign({ credentials: 'same-origin' }, options))
+        .then(r => r.json().catch(() => ({})).then(payload => {
+            if (!r.ok || !payload.exito) {
+                throw new Error(
+                    (payload.errores && payload.errores.error)
+                        ? payload.errores.error
+                        : 'No se pudo completar la operación.'
+                );
+            }
+
+            return payload.data || {};
+        }));
+}
+
+if (inputAgregar && boxAgregar) {
+
+    let temporizador = null;
+
+    function cerrarResultados() {
+        boxAgregar.innerHTML = '';
+        boxAgregar.classList.remove('show');
+    }
+
+    function pintarVacio(texto) {
+        const aviso = document.createElement('p');
+        aviso.className = 'member-vacio';
+        aviso.textContent = texto;
+        boxAgregar.appendChild(aviso);
+        boxAgregar.classList.add('show');
+    }
+
+    function crearAvatarResultado(u) {
+
+        const avatar = document.createElement('span');
+        avatar.className = 'member-result-avatar';
+
+        if (u.avatar) {
+
+            const img = document.createElement('img');
+            img.src = u.avatar;
+            img.alt = '';
+            avatar.appendChild(img);
+
+        } else {
+
+            avatar.textContent = (u.nombre || '?').trim().charAt(0).toUpperCase();
+
+        }
+
+        return avatar;
+
+    }
+
+    function pintarResultado(u) {
+
+        const enOtroEquipo = parseInt(u.en_equipo, 10) > 0;
+
+        const item = document.createElement('div');
+        item.className = 'member-result' + (enOtroEquipo ? ' disabled' : '');
+
+        const info = document.createElement('div');
+        info.className = 'member-result-info';
+
+        const nombre = document.createElement('strong');
+        nombre.textContent = u.nombre || 'Jugador';
+
+        const matricula = document.createElement('span');
+        matricula.textContent = 'Mat: ' + u.matricula;
+
+        info.appendChild(nombre);
+        info.appendChild(matricula);
+
+        const estado = document.createElement('span');
+        estado.className = 'member-result-estado';
+        estado.textContent = enOtroEquipo ? 'En otro equipo' : 'Agregar';
+
+        item.appendChild(crearAvatarResultado(u));
+        item.appendChild(info);
+        item.appendChild(estado);
+
+        if (!enOtroEquipo) {
+            item.addEventListener('click', () => agregarJugador(u, item));
+        }
+
+        boxAgregar.appendChild(item);
+
+    }
+
+    function buscarJugadores(q) {
+
+        apiRequest(API_BASE + '/usuarios/buscar?q=' + encodeURIComponent(q))
+            .then(data => {
+
+                boxAgregar.innerHTML = '';
+
+                const usuarios = Array.isArray(data.usuarios) ? data.usuarios : [];
+
+                if (!usuarios.length) {
+
+                    pintarVacio('Sin resultados.');
+
+                    return;
+
+                }
+
+                usuarios.forEach(pintarResultado);
+                boxAgregar.classList.add('show');
+
+            })
+            .catch(error => pintarVacio(error.message));
+
+    }
+
+    function agregarJugador(u, item) {
+
+        if (EQUIPO_LLENO) {
+            msg('El equipo ya está lleno (máximo 12 miembros).', false);
+            return;
+        }
+
+        if (!confirm('¿Agregar a ' + (u.nombre || 'este jugador') + ' al equipo?')) return;
+
+        const estado = item.querySelector('.member-result-estado');
+        estado.textContent = 'Agregando…';
+        item.classList.add('loading');
+
+        apiRequest(API_BASE + '/equipos/' + EQUIPO_ID + '/miembros', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jugador_id: u.id })
+        })
+            .then(data => {
+
+                msg(data.mensaje || 'Jugador agregado al equipo', true);
+
+                /* El contador, la plantilla y las tabs se calculan en PHP */
+                setTimeout(() => location.reload(), 900);
+
+            })
+            .catch(error => {
+
+                msg(error.message, false);
+                estado.textContent = 'Agregar';
+                item.classList.remove('loading');
+
+            });
+
+    }
+
+    inputAgregar.addEventListener('input', function () {
+
+        clearTimeout(temporizador);
+
+        const q = this.value.trim();
+
+        if (q.length < 2) {
+            cerrarResultados();
+            return;
+        }
+
+        temporizador = setTimeout(() => buscarJugadores(q), 250);
+
+    });
+
+    inputAgregar.addEventListener('keydown', function (e) {
+
+        if (e.key === 'Escape') cerrarResultados();
+
+    });
+
+    document.addEventListener('click', function (e) {
+
+        if (
+            boxAgregar.classList.contains('show') &&
+            !boxAgregar.contains(e.target) &&
+            !inputAgregar.contains(e.target)
+        ) {
+            cerrarResultados();
+        }
+
+    });
+
+}
+
+<?php endif; ?>
 
 </script>
 
