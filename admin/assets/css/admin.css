@@ -2316,22 +2316,12 @@ body {
 
 .admin-card {
     padding: 18px;
+    margin-bottom: 20px;
     background: var(--admin-surface);
     border: 1px solid var(--admin-border);
     border-radius: 14px;
     box-shadow: 0 2px 8px rgba(47, 30, 80, 0.10);
 }
-
-/* Franja lateral por estado (tarjeta de partido). El padding se descuenta
-   para que el contenido no se desalinee respecto a las demas tarjetas. */
-.admin-card[data-estado] {
-    border-left: 4px solid var(--admin-muted);
-    padding-left: 15px;
-}
-.admin-card[data-estado="en_curso"]   { border-left-color: #8e3f97; }
-.admin-card[data-estado="programado"] { border-left-color: var(--admin-purple); }
-.admin-card[data-estado="finalizado"] { border-left-color: #2f7d51; }
-.admin-card[data-estado="cancelado"]  { border-left-color: var(--admin-muted); }
 
 /* ---------- BARRA DE FILTROS ---------- */
 

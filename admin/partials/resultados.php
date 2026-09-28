@@ -136,7 +136,7 @@ $nombreTipoEvento = [
 </div>
 <?php else: ?>
 <?php foreach ($partidos as $p): ?>
-<div class="admin-card" data-estado="<?= htmlspecialchars($p['estado'] ?? '') ?>">
+<div class="admin-card">
 <!-- Cabecera -->
 <div class="admin-card-head">
 <div class="admin-scoreline">
