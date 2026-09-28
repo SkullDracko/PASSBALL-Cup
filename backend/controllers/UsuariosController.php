@@ -108,7 +108,7 @@ class UsuariosController
                       AND em.estado = 'activo'
                 ) AS en_equipo
             FROM usuarios u
-            WHERE u.rol = 'usuario'
+            WHERE u.rol = 'jugador'
               AND u.estado = 'activo'
               AND u.id <> ?
               AND (u.nombre LIKE ? OR u.matricula LIKE ?)

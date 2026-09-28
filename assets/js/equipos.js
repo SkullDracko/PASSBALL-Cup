@@ -610,7 +610,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return r.json();
             })
             .then(function (data) {
-
+                console.log("Esta es la info del endpoint buscar:", data);
                 miembrosResultados.innerHTML = '';
 
                 if (!data.exito) {
