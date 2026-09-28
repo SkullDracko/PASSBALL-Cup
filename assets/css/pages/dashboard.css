@@ -2243,6 +2243,10 @@ a {
    EQUIPOS - MI EQUIPO
    ========================================================= */
 
+#view-equipos [hidden] {
+    display: none !important;
+}
+
 .my-team-card {
 
     background: var(--white);

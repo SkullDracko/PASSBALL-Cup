@@ -16,7 +16,7 @@
 | dashboard.php incluye las seis vistas en la misma peticion, asi que una
 | excepcion sin capturar aqui tumbaria tambien Inicio, Equipos, Partidos,
 | Resultados y Comunidad. Se inicializan los defaults y se consulta dentro
-| de un try/catch, igual que en partials/equipos.php.
+| de un try/catch, igual que en partials/equipos.html.
 */
 
 $torneoId          = 0;

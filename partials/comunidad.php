@@ -31,7 +31,7 @@ function timeAgo(string $fecha): string
 | degrada solo Comunidad: aborta el HTML entero y el usuario se queda sin
 | Inicio, Equipos, Partidos, Votos y Resultados tambien. Por eso los
 | defaults se inicializan antes de consultar y todo va en un try/catch,
-| igual que en partials/equipos.php.
+| igual que en partials/equipos.html.
 */
 
 $totalMiembros = 0;

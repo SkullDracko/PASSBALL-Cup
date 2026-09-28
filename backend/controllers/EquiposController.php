@@ -25,11 +25,22 @@ class EquiposController {
             $where[] = 'estado = ?';
             $values[] = $filtros['estado'];
         }
-
-        $sql = '
-            SELECT id, nombre, logo, capitan_id, estado, fecha_creacion
-            FROM equipos
-        ';
+$sql = "
+    SELECT 
+        id,
+        nombre,
+        logo,
+        capitan_id,
+        estado,
+        fecha_creacion,
+        (
+            SELECT COUNT(*)
+            FROM equipo_miembros
+            WHERE equipo_id = equipos.id
+              AND estado = 'activo'
+        ) AS total_miembros
+    FROM equipos
+";
 
         if ($where) {
             $sql .= ' WHERE ' . implode(' AND ', $where);

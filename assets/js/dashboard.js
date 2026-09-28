@@ -135,9 +135,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var registerModal =
         document.getElementById('registerModal');
 
-    var openRegister =
-        document.getElementById('openRegister');
-
     var closeRegister =
         document.getElementById('closeRegister');
 
@@ -182,9 +179,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    if (openRegister) {
-        openRegister.addEventListener('click', openModal);
-    }
+    document.addEventListener('click', function (event) {
+        var trigger = event.target.closest
+            ? event.target.closest('#openRegister')
+            : null;
+
+        if (trigger) {
+            openModal();
+        }
+    });
 
     if (closeRegister) {
         closeRegister.addEventListener('click', closeModal);

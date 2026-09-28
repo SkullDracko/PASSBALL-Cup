@@ -44,7 +44,7 @@ CREATE TABLE equipos (
   nombre VARCHAR(100) NOT NULL,
   logo VARCHAR(255),
   capitan_id INT NOT NULL,
-  estado ENUM('activo','inactivo') NOT NULL DEFAULT 'activo',
+  estado ENUM('activo','inactivo', 'pendiente') NOT NULL DEFAULT 'pendiente',
   fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   CONSTRAINT fk_equipos_capitan

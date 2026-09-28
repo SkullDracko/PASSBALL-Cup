@@ -16,7 +16,7 @@
 |--------------------------------------------------------------------------
 | dashboard.php incluye las seis vistas en la misma peticion, asi que una
 | excepcion sin capturar aqui tumbaria tambien las demas. Defaults primero
-| y consultas dentro de un try/catch, igual que en partials/equipos.php.
+| y consultas dentro de un try/catch, igual que en partials/equipos.html.
 */
 
 $torneoId       = 0;
