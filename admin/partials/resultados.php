@@ -136,7 +136,7 @@ $nombreTipoEvento = [
 </div>
 <?php else: ?>
 <?php foreach ($partidos as $p): ?>
-<div class="admin-card">
+<div class="admin-card" data-estado="<?= htmlspecialchars($p['estado'] ?? '') ?>">
 <!-- Cabecera -->
 <div class="admin-card-head">
 <div class="admin-scoreline">
@@ -151,7 +151,7 @@ $nombreTipoEvento = [
 </span>
 </div>
 <!-- Formulario de resultado -->
-<form class="admin-form" method="POST" action="controllers/resultados.php"  class="mb-sm">
+<form class="admin-form mb-sm" method="POST" action="controllers/resultados.php">
 <input type="hidden" name="action" value="actualizar_partido">
 <input type="hidden" name="partido_id" value="<?= (int) $p['id'] ?>">
 <div class="field admin-field-sm">

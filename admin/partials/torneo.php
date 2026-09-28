@@ -196,7 +196,7 @@ $etiquetaEstadoTorneo = [
 <?php endforeach; ?>
 <?php endif; ?>
 <!-- CREAR PARTIDO -->
-<form class="admin-form round-add-form" method="POST" action="controllers/torneo.php"  class="admin-form tight">
+<form class="admin-form round-add-form tight" method="POST" action="controllers/torneo.php">
 <input type="hidden" name="action" value="crear_partido">
 <input type="hidden" name="ronda_id" value="<?= (int) $r['id'] ?>">
 <select name="equipo_local_id" required>
