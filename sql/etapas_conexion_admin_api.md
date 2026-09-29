@@ -474,7 +474,91 @@ como **"no toca la BD"**. Opciones:
 - [x] El panel entra con la contraseña de `admin_local` vía la API
 - [x] `GET /api/admin/me` responde 200 con la sesión del panel
 - [x] Inicio sin `$pdo->`
-- [ ] 2.4 completo (las seis vistas restantes)
+- [x] 2.4 completo: los siete partials sin `$pdo->`
+
+#### Estado tras 2.1–2.3
+
+Verificado por HTTP contra Apache (`http://localhost/PASSBALL-Cup`), no solo por lectura:
+
+| Comprobación | Resultado |
+|---|---|
+| `POST /api/admin/login` con `admin_local` | 200, devuelve `{id, nombre, usuario, activo}` sin el hash |
+| `GET /api/admin/me` con esa sesión | 200 |
+| Los 7 endpoints que consume `api.js` | 200 |
+| `admin/login.php` ya no llama a `controllers/login.php` | correcto |
+| `admin/dashboard.php` renderiza y cierra `</html>` | 200 |
+| `inicio.php` con `$pdo->` | 0 apariciones |
+
+`admin/controllers/login.php` queda sin referencias desde el HTML y el JS. El archivo
+sigue en disco hasta E3.3, junto con `admin/assets/js/login.js`, que ya estaba huérfano.
+
+#### 2.4 — las cinco vistas restantes
+
+Cada partial pasó a ser un cascarón con sus contenedores `id`; el pintado y las
+escrituras viven en `admin/assets/js/views.js`. Los formularios ya no hacen POST a
+`admin/controllers/*.php`: disparan la API y recargan la vista.
+
+| Vista | Lecturas | Escrituras |
+|---|---|---|
+| Participantes | `admin/usuarios` | — |
+| Postulaciones | `torneos`, `torneos/{t}/equipos`, `administradores` | `.../aprobar`, `.../rechazar` |
+| Votaciones | `admin/torneos/{t}/categorias-voto`, `.../candidatos-voto`, `.../jugadores`, `torneos/{t}/equipos` | crear / abrir / eliminar categoría, incluir / excluir candidato |
+| Torneo | `torneos`, `rondas`, `partidos`, `equipos` | crear ronda, crear partido |
+| Resultados | `rondas`, `partidos`, `partidos/{id}/eventos`, `admin/equipos/{e}/miembros` | `partidos/{id}/resultado`, `partidos/{id}/eventos` |
+
+Las escrituras **ya existían** en la API y todas son `requireAdminAPI`; no hubo que
+crear ninguna. Lo que faltaba eran las lecturas, y todas resultaban ser el mismo
+problema que S7: endpoints de jugador cerrados a admin.
+
+| # | Endpoint nuevo | Por qué hacía falta |
+|---|---|---|
+| 2.5 | `GET /api/admin/usuarios` | `/api/usuarios` pide sesión de jugador (401) |
+| 2.6 | `GET /api/admin/torneos/{id}/categorias-voto` (+ `total_votos`) | `CategoriasVotoController::listar` pide sesión de jugador |
+| 2.7 | `GET /api/admin/torneos/{id}/candidatos-voto` | Ajustes de las seis categorías en una llamada, como el legacy |
+| 2.8 | `GET /api/admin/equipos/{id}/miembros` | `EquipoMiembrosController::listar` pide sesión de jugador |
+| 2.9 | `GET /api/admin/torneos/{id}/jugadores` | Selectores de candidatos de Votaciones |
+| 2.10 | `GET /api/admin/votos-resumen` | La tarjeta Votos de Inicio |
+
+No se relajó ni un guard de jugador. Verificado: los seis dan 401 sin sesión de admin
+y 200 con ella.
+
+**El selector de torneo pasó a ser estado del cliente.** El legacy usaba
+`?torneo_id=` en la URL, lo que obligaba a recargar la página entera. Ahora vive en
+`ESTADO.torneoId`, se comparte entre las cuatro vistas que lo usan y se refleja en el
+hash. La API acepta `orden=asc` en `admin/usuarios` para conservar el orden del legacy.
+
+#### Dos degradaciones conscientes
+
+**La columna «Motivo» de Postulaciones desaparece.** `torneo_equipos` no tiene
+`motivo_rechazo` (F2), y el `PATCH .../rechazar` de la API solo cambia el estado. El
+legacy pedía un motivo con `prompt()` y lo guardaba. Se quitó la columna y el `prompt`
+antes que dejar un formulario que pide un motivo para descartarlo. Con F2 resuelto,
+`TorneoEquiposController::rechazar` necesita un parámetro `motivo`.
+
+**Comunidad sigue sin tabla.** `posts` no existe en el esquema y sigue fuera de las
+vistas de 2.4; el aviso que se añadió en 2.3 es ahora su estado permanente, no
+temporal.
+
+#### Verificación de 2.4
+
+| Comprobación | Resultado |
+|---|---|
+| `php -l` en los 7 partials y `dashboard.php` | sin errores |
+| `node --check` en los 4 JS del panel | sin errores |
+| `$pdo->` en los 7 partials | 0 apariciones |
+| Los 6 endpoints nuevos con sesión de admin | 200 |
+| Los 6 endpoints nuevos sin sesión | 401 |
+| `dashboard.php` renderiza, cierra `</html>` y sin error PHP | 200, 14 776 bytes |
+| Los 9 contenedores que espera el JS | presentes |
+| Escrituras: crear ronda y crear categoría | 201, y borradas después |
+
+`dashboard.php` baja de 46 850 a 14 776 bytes: casi todo el HTML que antes generaba PHP
+ahora lo pinta el navegador.
+
+Dos cosas que la verificación estática no cubre y hay que probar a mano en el panel:
+el render de cada vista (no hay navegador en este entorno) y que los formularios
+escriban lo que se espera en cada campo.
+
 
 #### Estado tras 2.1–2.3
 
@@ -538,6 +622,48 @@ el usuario tenía anotada dejó de servir.
 Se fijó una nueva. `id=1` (hash de 40 caracteres, inválido) y `id=2` (7 caracteres, texto
 plano) siguen rotos como antes; `admin_local` es el único administrador utilizable.
 
+#### Dos fallos que sólo aparecen en un navegador
+
+Ninguno lo detecta `php -l` ni `node --check`, y ambos habrían acumulado errores en
+silencio durante la E2.4.
+
+**La caja de aviso tenía el mismo `id` en los cinco partials.** `views.js` la buscaba con
+`getElementById`, que devuelve sólo la primera del DOM, la de Participantes. Un error al
+aprobar un equipo o al guardar un resultado se escribía en la vista equivocada, que está
+oculta: **el mensaje se perdía sin llegar a verse**. En una escritura eso es lo peor que
+puede pasar, porque aparenta que la operación funcionó. Ahora cada caja se localiza con
+`.vista-aviso` dentro de `.admin-view.active`, el mismo criterio que ya usaba
+`recargarVistaActiva()`, y se limpia al recargar la vista.
+
+**El atributo `hidden` no ocultaba nada.** `admin.css` declara `.admin-alert { display: flex }`,
+y eso gana en especificidad a la regla `[hidden] { display: none }` de la hoja por defecto
+del navegador. Las cinco cajas se pintaban como una barra roja vacía en todas las vistas.
+Se añadió `[hidden] { display: none !important; }` al principio de `admin.css`, que además
+cubre `inicio.php`.
+
+#### El router era sensible a mayúsculas — variante de F7
+
+F7 eliminó la carpeta del proyecto hardcodeada del prefijo. El caso hermano se maintains
+abierto: Apache normaliza `SCRIPT_NAME` al caso real de la carpeta en disco
+(`/PASSBALL-Cup`) pero deja `REQUEST_URI` como lo escribió el usuario
+(`/PASSBALL-cup`). `backend/index.php` comparaba ambos con `str_starts_with`, así que al
+entrar con la capitalización cambiada el prefijo no se recortaba y **las 83 rutas**
+respondían "Ruta no encontrada". Ahora la comparación es con `strncasecmp`.
+
+Conviene distinguir dos 404 que se confunden: el de la API pesa 88 bytes
+(`Ruta no encontrada`) y el de Apache 295. El primero significa ruta no registrada; el
+segundo, que la petición se salió del proyecto.
+
+#### Rutas absolutas y versión de assets
+
+`api.js` usaba `base: "../backend/api"`, que depende de la forma de la URL: entrar en
+`/admin` sin barra final hace que `../` se salga del proyecto. `config/app.php` ahora
+expone `projectPath()` y `apiUrl()`, y el PHP inyecta `window.PASSBALL_API` antes de
+cargar el cliente, de modo que la base no depende de cómo se escriba la URL. Lo mismo con
+`assetUrl()`, que añade `?v=<filemtime>` a los cinco assets del panel: sin eso, editar un
+`.js` no recarga nada y el panel ejecuta la versión anterior. `projectPath()` recorta
+`/admin/...` del `SCRIPT_NAME`, así que **sólo vale para el panel**; el portal público
+sigue con rutas relativas.
 
 ### Etapa 3 — Desconectar el legacy
 *Solo después de que la Etapa 2 esté completa.*

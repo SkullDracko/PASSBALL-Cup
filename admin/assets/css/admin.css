@@ -1,10 +1,20 @@
 /* ============================================
    PASSBALL CUP - PANEL ADMIN
-
+  
    Los valores coinciden con assets/css/variables.css
    (el portal de usuario) para que ambos paneles
    compartan el mismo lenguaje visual.
    ============================================ */
+
+/* El atributo hidden se implementa en el navegador con una regla
+   [hidden] { display: none } que pierde contra cualquier display del
+   autor. .admin-alert declara display: flex, asi que las cajas de
+   aviso salian como una barra roja vacia en las cinco vistas pese a
+   llevar hidden. !important es justo el caso de uso para el que
+   existe: deuda de especificidad que hay que ganar siempre. */
+[hidden] {
+    display: none !important;
+    }
 
 :root {
     --admin-purple:       #7c4293;   /* = --primary        */

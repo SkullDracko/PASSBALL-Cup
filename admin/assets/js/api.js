@@ -13,7 +13,18 @@
 
 const API = {
 
-    base: "../backend/api",
+    /* --------------------------------------------------
+       Ruta base de la API.
+
+       La inyecta el PHP (window.PASSBALL_API) como ruta absoluta desde
+       la raiz del proyecto. Antes era "../backend/api", que dependia de
+       la forma de la URL: entrar en /admin sin barra final hacia que
+       "../" se saliera del proyecto y Apache respondia con su propio
+       404, no con el "Ruta no encontrada" de la API. La relativa queda
+       solo como respaldo por si el JS se carga suelto.
+       -------------------------------------------------- */
+
+    base: window.PASSBALL_API || "../backend/api",
 
     /* --------------------------------------------------
        Peticion base. Desenvuelve el envelope
@@ -83,7 +94,7 @@ const API = {
        que la vista necesita, no el envelope entero.
        -------------------------------------------------- */
 
-    asyncestadisticas() {
+    async estadisticas() {
 
         const [equipos, torneos, partidos, usuarios] = await Promise.all([
 
@@ -169,6 +180,134 @@ const API = {
                                   .localeCompare(String(b.fecha_solicitud || "")))
                 .slice(0, 4)
         };
+    },
+
+
+    /* ==================================================
+       ETAPA 2.4 - lecturas de las vistas restantes
+       ==================================================
+       Las de /api/admin/* son las que la API no dejaba
+       usar a un administrador porque exigian sesion de
+       jugador (401). Las escrituras, en cambio, ya
+       existian y se usan directamente.
+       ================================================== */
+
+    /* ---.Participantes --- */
+
+    participantes() {
+        return this.get("/admin/usuarios?rol=usuario&orden=asc");
+    },
+
+
+    /* --- Postulaciones --- */
+
+    postulaciones(torneoId) {
+        return this.get("/torneos/" + torneoId + "/equipos");
+    },
+
+    aprobarPostulacion(torneoId, equipoId) {
+        return this.patch(
+            "/torneos/" + torneoId + "/equipos/" + equipoId + "/aprobar"
+        );
+    },
+
+    // El motivo NO se puede guardar: torneo_equipos no tiene la columna
+    // motivo_rechazo (defecto F2). La API solo cambia el estado.
+    rechazarPostulacion(torneoId, equipoId) {
+        return this.patch(
+            "/torneos/" + torneoId + "/equipos/" + equipoId + "/rechazar"
+        );
+    },
+
+
+    /* --- Torneo y rondas --- */
+
+    rondas(torneoId) {
+        return this.get("/torneos/" + torneoId + "/rondas");
+    },
+
+    partidosDeTorneo(torneoId) {
+        return this.get("/partidos?torneo_id=" + torneoId);
+    },
+
+    crearRonda(torneoId, datos) {
+        return this.post("/torneos/" + torneoId + "/rondas", datos);
+    },
+
+    crearPartido(datos) {
+        return this.post("/partidos", datos);
+    },
+
+
+    /* --- Votaciones --- */
+
+    categoriasVoto(torneoId) {
+        return this.get("/admin/torneos/" + torneoId + "/categorias-voto");
+    },
+
+    candidatosVoto(torneoId) {
+        return this.get("/admin/torneos/" + torneoId + "/candidatos-voto");
+    },
+
+    jugadoresDelTorneo(torneoId) {
+        return this.get("/admin/torneos/" + torneoId + "/jugadores");
+    },
+
+    crearCategoriaVoto(torneoId, datos) {
+        return this.post("/torneos/" + torneoId + "/categorias-voto", datos);
+    },
+
+    cambiarEstadoCategoria(torneoId, categoriaId) {
+        return this.patch(
+            "/torneos/" + torneoId + "/categorias-voto/" + categoriaId + "/estado"
+        );
+    },
+
+    eliminarCategoria(torneoId, categoriaId) {
+        return this.del(
+            "/torneos/" + torneoId + "/categorias-voto/" + categoriaId
+        );
+    },
+
+    agregarCandidato(torneoId, categoriaId, datos) {
+        return this.post(
+            "/torneos/" + torneoId + "/categorias-voto/" + categoriaId + "/candidatos",
+            datos
+        );
+    },
+
+    excluirCandidato(torneoId, categoriaId, ajusteId) {
+        return this.del(
+            "/torneos/" + torneoId + "/categorias-voto/" + categoriaId +
+            "/candidatos/" + ajusteId
+        );
+    },
+
+
+    /* --- Resultados --- */
+
+    eventosDePartido(partidoId) {
+        return this.get("/partidos/" + partidoId + "/eventos");
+    },
+
+    miembrosDeEquipo(equipoId) {
+        return this.get("/admin/equipos/" + equipoId + "/miembros");
+    },
+
+    guardarResultado(partidoId, datos) {
+        return this.patch("/partidos/" + partidoId + "/resultado", datos);
+    },
+
+    registrarEvento(partidoId, datos) {
+        return this.post("/partidos/" + partidoId + "/eventos", datos);
+    },
+
+
+    /* --- Contadores --- */
+
+    votosResumen(torneoId) {
+        return this.get("/admin/votos-resumen" +
+            (torneoId ? "?torneo_id=" + torneoId : ""));
     }
 };
 

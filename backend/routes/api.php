@@ -28,10 +28,15 @@ $router->patch('/api/usuarios/{id}', [UsuariosController::class, 'actualizarAvat
 $router->patch('/api/usuarios/{id}/estado', [UsuariosController::class, 'cambiarEstado']);
 $router->patch('/api/usuarios/{id}/jugador-activo', [UsuariosController::class, 'cambiarJugadorActivo']);
 
-// El panel admin no puede usar /api/usuarios: exige sesión de jugador
-// (requireAuthAPI) y un admin recibía 401. Este listado es su equivalente
-// con requireAdminAPI.
+// Lecturas que el panel admin necesita y la API no expone para admin.
+// Las de jugador exigian requireAuthAPI (401) y el conteo de votos no
+// existia. Todas con requireAdminAPI.
 $router->get('/api/admin/usuarios', [AdminUsuariosController::class, 'listar']);
+$router->get('/api/admin/votos-resumen', [AdminPanelController::class, 'votosResumen']);
+$router->get('/api/admin/equipos/{equipoId}/miembros', [AdminPanelController::class, 'miembrosEquipo']);
+$router->get('/api/admin/torneos/{torneoId}/categorias-voto', [AdminPanelController::class, 'categoriasVoto']);
+$router->get('/api/admin/torneos/{torneoId}/candidatos-voto', [AdminPanelController::class, 'candidatosVoto']);
+$router->get('/api/admin/torneos/{torneoId}/jugadores', [AdminPanelController::class, 'jugadoresTorneo']);
 
 $router->get('/api/administradores', [AdministradoresController::class, 'listar']);
 $router->post('/api/administradores', [AdministradoresController::class, 'crear']);

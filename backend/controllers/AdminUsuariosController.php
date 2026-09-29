@@ -48,6 +48,7 @@ class AdminUsuariosController {
         }
 
         // Ojo: en el esquema los apellidos van sin guion (apellidop, appellidom).
+        // 'equipo' es el subquery que usaba el legacy para la columna Equipo.
         $sql = "
             SELECT
                 id,
@@ -57,7 +58,15 @@ class AdminUsuariosController {
                 apellidom,
                 rol,
                 estado,
-                jugador_activo
+                jugador_activo,
+                (
+                    SELECT e.nombre
+                    FROM equipo_miembros em
+                    JOIN equipos e ON e.id = em.equipo_id
+                    WHERE em.jugador_id = usuarios.id
+                      AND em.estado = 'activo'
+                    LIMIT 1
+                ) AS equipo
             FROM usuarios
         ";
 
@@ -65,7 +74,11 @@ class AdminUsuariosController {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
 
-        $sql .= ' ORDER BY id DESC';
+        // El legacy ordenaba por id ASC; la API por id DESC como usa el resto
+        // del panel. Se deja configurable.
+        $sql .= (!empty($filtros['orden']) && strtolower($filtros['orden']) === 'asc')
+            ? ' ORDER BY id ASC'
+            : ' ORDER BY id DESC';
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($values);

@@ -53,6 +53,12 @@ document.addEventListener('DOMContentLoaded', function () {
             closeSidebar();
         }
 
+        // Las vistas de la Etapa 2.4 piden sus datos a la API la primera vez
+        // que se abren, no todas al cargar la página.
+        if (typeof cargarVista === 'function') {
+            cargarVista(targetId);
+        }
+
     }
 
 
