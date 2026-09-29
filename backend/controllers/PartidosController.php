@@ -22,9 +22,20 @@ class PartidosController
                 $where[] = $campo === 'ronda_id'
                     ? 'p.ronda_id = ?'
                     : '(p.equipo_local_id = ? OR p.equipo_visitante_id = ?)';
-                $id = $this->obtenerId(['id' => $filtros[$campo]], $campo);
+                // obtenerId() busca la clave $campo, no 'id': se le pasa el
+                // nombre del campo o siempre devolvía null y acababa en 400.
+                $id = $this->obtenerId([$campo => $filtros[$campo]], $campo);
                 $values = $campo === 'ronda_id' ? [...$values, $id] : [...$values, $id, $id];
             }
+        }
+
+        // Filtra por torneo a traves de la ronda. Sin esto no habria forma de
+        // acotar el listado a un torneo, porque no hay columna torneo_id en
+        // partidos (ver 1.2: el torneo vive en torneo_rondas).
+        if (isset($filtros['torneo_id']) && $filtros['torneo_id'] !== '') {
+            $torneoId = $this->obtenerId(['torneo_id' => $filtros['torneo_id']], 'torneo_id');
+            $where[] = 'r.torneo_id = ?';
+            $values[] = $torneoId;
         }
 
         if (!empty($filtros['estado'])) {

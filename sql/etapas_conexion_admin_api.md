@@ -67,39 +67,58 @@ Dos funcionalidades están **rotas hoy, silenciosamente**:
 > Esto resuelve la pregunta de qué hacer con Comunidad: **no hay nada que mover ni que
 > preservar.** La funcionalidad no está "pendiente de migrar", está caída.
 
-### 1.4 Ningún administrador puede iniciar sesión
+### 1.4 Ningún administrador podía iniciar sesión — **resuelto**
+
+> **Actualización:** se creó un tercer administrador (`id=3`, `admin_local`) con hash bcrypt
+> válido. Login verificado por HTTP contra `admin/controllers/login.php` (200 con contraseña
+> correcta, 401 con incorrecta). Verificado también que `password_verify` acepta la nueva
+> contraseña y rechaza otras.
 
 ```
-id | usuario           | activo | hash        | len
- 1 | admin_passballcup |     1 | $2y$10$...  |  40
- 2 | admin1            |     1 | «plano»     |   7
+id | usuario           | activo | hash               | len | login
+ 1 | admin_passballcup |     1 | $2y$10$…example…  |  40 | ✗ 40 chars, bcrypt exige 60
+ 2 | admin1            |     1 | «plano»            |   7 | ✗ texto plano, no es hash
+ 3 | admin_local       |     1 | $2y$10$…          |  60 | ✓ operativo
 ```
 
-Verificado con PHP:
+**Causa raíz de los dos rotos:**
 
-```php
-password_get_info('$2y$10$examplehashexamplehashexamplehash')
-// ['algo' => NULL, 'algoName' => 'unknown']
+- **`id=1`** viene de `sql/inserts.sql:98`, un placeholder literal de 40 caracteres cuyo
+  cuerpo es `examplehashexamplehashexamplehash`. Parece un hash por el prefijo `$2y$10$`,
+  pero no lo es.
+- **`id=2`** se insertó **a mano** — `inserts.sql` solo crea el `id=1`. Alguien puso la
+  contraseña en claro. Es además la matrícula de un jugador existente, así que se coló
+  creyendo que era una credencial de admin.
 
-password_verify($plaintext, $plaintext)   // bool(false) — no es un hash
+`password_verify()` no detecta "esto es una contraseña sin hashear": contra texto plano
+simplemente devuelve `false`. Por eso el panel siempre respondió `"Credenciales inválidas"`
+(401) sin distinguir usuario inexistente, inactivo, hash inválido o contraseña correcta mal
+hasheada. **El síntoma es idéntico al de escribir mal la contraseña.**
+
+`crear_admin.php` no participa: define `elmoa8m` pero solo hace `echo`, nadie lo ejecuta.
+
+> **Pendiente:** decidir el destino de `id=1` (asignarle contraseña, o `activo = 0`) y de
+> `id=2` (contraseña nueva, o desactivar). `admin_local` ya cubre el acceso.
+
+### 1.5 Ningún usuario tiene el rol que la API exige — por un bug, no por datos
+
+```
++----------+------+
+| rol      | n    |
++----------+------+
+| usuario  | 51   |   ← los 51
+| jugador  | 0    |
++----------+------+
 ```
 
-- **`admin_passballcup`** — placeholder de 40 caracteres. bcrypt exige 60. No es un hash.
-- **`admin1`** — contraseña de 7 caracteres guardada **en texto plano** en la columna
-  `contrasena` (valor enmascarado deliberadamente; está en la BD, no debe propagarse).
-
-**El panel de administración está completamente inaccesible.** Nadie pudo entrar, y por eso
-nunca se notó que los endpoints están desconectados.
-
-### 1.5 Ningún usuario tiene el rol que la API exige
-
-```
-+------+------+
-| rol  | n    |
-+------+------+
-| usuario | 51 |   ← los 51
-+------+------+
-```
+> ⚠️ **Corrección de la versión anterior de este documento.** Se afirmaba que esto era
+> "un problema de datos, no de esquema". **Es incorrecto.** La causa es el bug de AFIHub
+> documentado en §1.7, y afecta a **toda instalación en local**, no a una BD concreta.
+> Verificarlo:
+>
+> ```sql
+> SELECT rol, COUNT(*) FROM usuarios GROUP BY rol;  -- jugador = 0, siempre
+> ```
 
 `backend/security/authorization.php:40` exige `$usuario['rol'] !== 'jugador'`. El ENUM sí lo
 permite, pero **ninguna fila lo usa**. Eso deja 6 endpoints en 403 permanente para todos:
@@ -114,11 +133,121 @@ permite, pero **ninguna fila lo usa**. Eso deja 6 endpoints en 403 permanente pa
 | `POST /api/torneos/{torneoId}/equipos` | `TorneoEquiposController.php:58` |
 
 Es el flujo completo de *crear equipo → gestionar plantilla → postular a torneo*.
-**Es un problema de datos, no de esquema.** El ENUM ya admite `'jugador'`; simplemente nadie
-lo tiene. Decisión pendiente: poblar ese rol, o relajar `requireJugador()` para que se
-baste con `estado='activo' AND jugador_activo=1` (que es lo que ya significa la columna).
 
-### 1.6 `git mv` a `_retired/` no desconecta nada
+**No es un problema de datos.** El ENUM admite `'jugador'`; lo que impide obtenerlo es §1.7.
+Arreglado ese bug, cada login nuevo de una matrícula inscrita recibe el rol automáticamente.
+Decisión de producto pendiente (§8): si el rol debe re-validarse en cada login o quedarse
+como registro histórico — ver §1.8.
+
+### 1.6 El endpoint de AFIHub nunca responde bien en local — S0
+
+**Este es el bloqueo raíz de §1.5 y el hallazgo más grave del documento.**
+
+El diseño de autenticación es intencional y está documentado en el código: el login **no**
+pide contraseña, y `jugadores_service.php` consulta un endpoint público de AFIHub que decide
+si la matrícula está inscrita. Ese endpoint es **la fuente de verdad del rol**. Es un diseño
+legítimo para un torneo escolar.
+
+El problema es que en local **nunca devuelve datos**:
+
+```php
+// AFIhub/controllers/publico_verificar_inscripcion.php:4
+$ALLOWED_ORIGINS = ['https://passballcup.encuestapassword2026.com'];   // ← solo producción
+
+// backend/services/jugadores_service.php:38
+'Origin: http://localhost',   // ← en local se envía localhost
+```
+
+Verificado en vivo:
+
+```bash
+curl -i "http://localhost/AFIhub/controllers/publico_verificar_inscripcion.php?afi_id=330&matricula=0000000" \
+     -H "Origin: http://localhost"
+# HTTP/1.1 403  {"success":false,"message":"Origen no permitido"}
+```
+
+Cadena completa del fallo:
+
+| # | Archivo:línea | Resultado |
+|---|---|---|
+| 1 | `publico_verificar_inscripcion.php:6` | 403, `Origen no permitido` |
+| 2 | `jugadores_service.php:61` | `$httpCode !== 200` → `return null` |
+| 3 | `AuthController.php:124` | `$esJugador = (null !== null)` → `false` |
+| 4 | `AuthController.php:125` | `$rol = 'usuario'` |
+| 5 | `AuthController.php:136` | `jugador_activo = 0` → `requireJugador()` nunca pasa |
+
+**Ningún usuario puede obtener `rol='jugador'` en local. Nunca.** Por eso la tabla tiene 51
+`usuario` y 0 `jugador`.
+
+> El comentario en `jugadores_service.php:35-36` documenta un contrato que AFIHub no cumple:
+> "local → local, producción → producción". El whitelist es un arreglo fijo de solo producción.
+
+**Por qué nadie lo notó:** `jugadores_service.php:61` devuelve `null` **sin ningún
+`error_log`**. Las líneas 48 y 54 sí registran fallo de conexión y JSON inválido, pero el
+caso 403 — el que realmente ocurre — se traga en silencio.
+
+**El `Origin` no protege nada aquí.** La llamada es server-to-server con `curl`, no un
+navegador; `Origin` es un mecanismo de CORS y un servidor puede enviar el que quiera, o
+ninguno. El check no autentica al llamador: no aporta seguridad real y solo causa este bug.
+Lo que sí protegería es un secreto compartido.
+
+> **Requiere tocar `AFIhub/`, que es otro proyecto y probablemente de otro equipo.**
+> Decisión pendiente: agregar `http://localhost` (mínimo, frágil), mover los orígenes a
+> config, o reemplazar el check por secreto compartido.
+
+### 1.7 El rol es una instantánea del primer login
+
+`datosJugadorSiEstaInscrito()` se llama desde **un único sitio**: `AuthController.php:123`,
+dentro de `registrarUsuario()`, que solo corre **si el usuario no existe**. Si ya existe,
+`buscarUsuarioPorMatricula()` devuelve la fila y **AFIHub no se vuelve a consultar jamás**.
+
+| Escenario | Resultado |
+|---|---|
+| Se reinscribe en la AFI después de su primer login | queda `rol='usuario'` para siempre |
+| Abandona la AFI después de su primer login | conserva `rol='jugador'` para siempre |
+
+`UsuariosController.php:269` permite corregir `jugador_activo` a mano vía `PATCH`, pero nada
+re-valida automáticamente.
+
+> **La premisa de seguridad —"AFIHub decide quién es jugador"— se cumple únicamente en el
+> primer login.** Después, la BD local es la única autoridad. Decisión pendiente: re-validar
+> en cada login, con TTL, o dejarlo como registro histórico. **No se asume aquí.**
+
+### 1.8 La matrícula es la única credencial, y es enumerable
+
+AFIHub valida **inscripción**, no **identidad**. El modelo de seguridad resultante es:
+*"eres quien reclame esta matrícula, siempre que esté inscrita"*.
+
+- 7 dígitos secuenciales → enumerables trivialmente.
+- El endpoint de AFIHub devuelve nombre, semestre y horario → sirve de **oráculo** para
+  confirmar qué matrículas existen.
+- Cualquiera que conozca la matrícula de alguien inscrito entra como esa persona.
+
+Para un torneo escolar puede ser aceptable, pero conviene que sea una decisión consciente.
+Combinado con S7 (`GET /api/usuarios` pide sesión de jugador, no de admin) la enumeración
+es total. No se modifica sin acuerdo explícito.
+
+### 1.9 Conflicto de claves de sesión — bloquea la Etapa 1
+
+Este no estaba detectado y **condiciona toda la conexión panel ↔ API**:
+
+| | Clave | Forma | Lo escribe |
+|---|---|---|---|
+| Panel legacy | `$_SESSION['admin']` | array `{id, nombre, usuario}` | `admin/controllers/login.php:40` |
+| API | `$_SESSION['admin_id']` | int | `AdminAuthController.php:44` |
+
+`admin/controllers/auth.php:12` exige `$_SESSION['admin']`.
+`backend/middleware/adminAuth.php:7` exige `$_SESSION['admin_id']`.
+
+**Ninguno reconoce al otro.** Autenticar contra la API no abre el panel, y entrar por el
+panel no habilita ningún endpoint. Cualquier migración de vistas empieza por resolver esto.
+Ver E1.3.
+
+Además, `AdminAuthController.php:31` **no comprueba `activo`** antes de `password_verify`, a
+diferencia de `admin/controllers/login.php:34` que sí lo hace. La API permite entrar a un
+admin desactivado; el panel no.
+
+### 1.10 `git mv` a `_retired/` no desconecta nada
 
 El plan original era mover `admin/` a `_retired/`. **Eso no corta el acceso**: `_retired/`
 sigue dentro del docroot de XAMPP, y el panel seguiría respondiendo en
@@ -186,9 +315,9 @@ solo módulo.** Los 8 defectos de §3.2 viven en el 84% sin probar — por eso s
 
 | # | Defecto | Ubicación | Impacto |
 |---|---|---|---|
-| **S1** | `requireAdminAPI()` **comentado** en 5 métodos de administrators | `AdministradoresController.php:64,118,143,229,268` | 🚨 **Toma de control total de la cuenta.** Un anónimo puede crear un admin con la contraseña que elija, **resetear la contraseña de cualquier admin** (`PATCH` acepta `contrasena` en `:193-204`), desactivarlos y borrarlos. El propio código lo admite: `// TODO: Activar cuando exista un flujo autorizado` (`:63`) |
-| **S2** | Tests alcanzables por HTTP sin autenticación | `backend/tests/test_votaciones.php`, `prueba_bd.php` | 🚨 `backend/.htaccess:2` (`RewriteCond %{REQUEST_FILENAME} !-f`) deja los archivos servibles. `test_votaciones.php` **crea un admin `testadmin` en la BD** por HTTP anónimo. `prueba_bd.php` devuelve `DATABASE()` |
-| **S3** | `APP_DEBUG=1` por defecto, sin `.env` ni `.env.example` | `backend/config/app.php:23` | Cualquier 500 imprime traza PDO completa **con el DSN y el nombre de la base** a un llamador anónimo. Credenciales de BD: `root` con contraseña vacía |
+| ~~**S1**~~ ✅ | `requireAdminAPI()` **comentado** en 5 métodos de administradores — **corregido en E1.2** | `AdministradoresController.php:64,118,143,229,268` | 🚨 **Toma de control total de la cuenta.** Un anónimo puede crear un admin con la contraseña que elija, **resetear la contraseña de cualquier admin** (`PATCH` acepta `contrasena` en `:193-204`), desactivarlos y borrarlos. El propio código lo admite: `// TODO: Activar cuando exista un flujo autorizado` (`:63`) |
+| ~~**S2**~~ ✅ | Tests alcanzables por HTTP sin autenticación — **corregido en E1.1** | `backend/tests/test_votaciones.php`, `prueba_bd.php` | 🚨 `backend/.htaccess:2` (`RewriteCond %{REQUEST_FILENAME} !-f`) deja los archivos servibles. `test_votaciones.php` **crea un admin `testadmin` en la BD** por HTTP anónimo. `prueba_bd.php` devuelve `DATABASE()` |
+| ~~**S3**~~ ✅ | `APP_DEBUG=1` por defecto, sin `.env` ni `.env.example` — **corregido en E1.4** | `backend/config/app.php:22-26` | Cualquier 500 imprime traza PDO completa **con el DSN y el nombre de la base** a un llamador anónimo. Credenciales de BD: `root` con contraseña vacía |
 | **S4** | Sin rate limiting ni lockout en login de admin | `AdminAuthController.php:8` | Permite fuerza bruta |
 | **S5** | `session_destroy()` en el logout de la API | `AuthController.php:50`, `AdminAuthController.php:56` | Destruye la sesión **completa**, incluida la del legacy. Un logout de jugador mata la sesión del panel admin |
 | **S6** | Sin CSRF, sin `SameSite`/`Secure`/`HttpOnly` explícitos | `middleware/auth.php:5` | Todo endpoint mutante se autentica solo con cookie de sesión |
@@ -201,13 +330,13 @@ solo módulo.** Los 8 defectos de §3.2 viven en el 84% sin probar — por eso s
 
 | # | Defecto | Ubicación | Impacto |
 |---|---|---|---|
-| **F1** | `GET /api/partidos` no se puede filtrar | `PartidosController.php:25` | `$this->obtenerId(['id' => $filtros[$campo]], $campo)` pasa el array con clave `'id'` pero `obtenerId` (`:198`) busca `$campo` (`'ronda_id'`/`'equipo_id'`) → siempre `null` → **400 en todo request filtrado**. Sin filtro no hay forma de acotar a un torneo, porque **no existe filtro `torneo_id`**. El frontend no puede listar partidos por torneo |
+| ~~**F1**~~ ✅ | `GET /api/partidos` no se puede filtrar — **corregido en E1.5** | `PartidosController.php:25` | `$this->obtenerId(['id' => $filtros[$campo]], $campo)` pasa el array con clave `'id'` pero `obtenerId` (`:198`) busca `$campo` (`'ronda_id'`/`'equipo_id'`) → siempre `null` → **400 en todo request filtrado**. Sin filtro no hay forma de acotar a un torneo, porque **no existe filtro `torneo_id`**. El frontend no puede listar partidos por torneo |
 | **F2** | `rechazar` nunca escribe `motivo_rechazo` | `TorneoEquiposController.php:124` | El `UPDATE` pone `estado="rechazado"` y limpia `aprobado_por`, pero **nunca el motivo** — aunque el panel lo lee (`admin/partials/postulaciones.php:203`). Rechazos vía API se ven en blanco |
-| **F3** | Router no devuelve 405 | `backend/core/router.php:25` | `if ($rutaMetodo !== strtoupper($metodo)) continue;` descarta el método y cae en el 404 genérico. Sin cabecera `Allow` |
+| ~~**F3**~~ ✅ | Router no devuelve 405 — **corregido en E1.7** | `backend/core/router.php:21-61` | `if ($rutaMetodo !== strtoupper($metodo)) continue;` descarta el método y cae en el 404 genérico. Sin cabecera `Allow` |
 | **F4** | Sin CORS, sin `OPTIONS` | `backend/` (0 coincidencias de `Access-Control`) | ⚠️ **No bloquea el panel admin**: admin y API están en el mismo origen (`localhost:80`). Sí bloquearía un frontend servido en otro origen |
 | **F5** | Sin soporte de subida de archivos | `backend/` (0 coincidencias de `$_FILES`) | `logo` y `avatar` se manejan como **string**. Un frontend **no puede subir** logo ni avatar por la API |
 | **F6** | Sin paginación en ningún listado | `EquiposController.php:34`, `UsuariosController.php:67`, `EstadisticasController` | Aceptable a escala de torneo; problemático cuando crezca |
-| **F7** | Base path hardcodeado | `backend/index.php:29` | `substr($uri, strlen('/PASSBALL-Cup/backend'))`. Desplegar en otra carpeta o en raíz → **las 83 rutas dan 404** |
+| ~~**F7**~~ ✅ | Base path hardcodeado — **corregido en E1.8** | `backend/index.php:27-38` | `substr($uri, strlen('/PASSBALL-Cup/backend'))`. Desplegar en otra carpeta o en raíz → **las 83 rutas dan 404** |
 | **F8** | `session_start()` sin guarda | `AuthController.php:38`, `AdminAuthController.php:43` | `E_NOTICE` "session already started" si se alcanza dos veces. El resto del código sí usa la guarda `session_status()` |
 | **F9** | `requireRol()` es código muerto | `security/authorization.php:5` | 0 call sites en todo el repo |
 | **F10** | Sin versionado de API | rutas `/api/...` | Sin `/v1` no hay espacio para cambios incompatibles |
@@ -235,11 +364,139 @@ solo módulo.** Los 8 defectos de §3.2 viven en el 84% sin probar — por eso s
 
 ## 5. Fases de ejecución
 
-> Regla: **cada fase deja el sistema en un estado coherente.** Nada de todo-o-nada.
-> Las fases 0 y 1 no dependen de ninguna otra y pueden ir de inmediato.
+> Regla: **cada etapa deja el sistema en un estado coherente.** Nada de todo-o-nada.
 
-### Fase 0 — Cerrar vulnerabilidades
-*No toca la BD, no toca el legacy, no rompe nada. Sin dependencias.*
+### ⚠️ Reordenamiento: por qué "Etapa 1" ya no es la primera
+
+La versión anterior de este documento empezaba por **desconectar** `admin/` y luego
+reconstruirlo sobre la API. **Ese orden era un error operativo:** con el panel desconectado
+y la API sin corregir, no queda nada funcionando en medio. Y la conexión tampoco era posible
+por el conflicto de claves de sesión (§1.9).
+
+**El orden correcto es al revés:** asegurar la API, conectar el panel, y **solo entonces**
+desconectar el legacy. Ningún momento sin sistema utilizable.
+
+| Etapa | Alcance | Toca el legacy | Toca la BD |
+|---|---|---|---|
+| **E0** ✅ *hecho* | Tercer admin operativo, respaldo, auditoría de AFIHub | no | sí (1 fila) |
+| **E1** 🔄 *en curso* | API segura y fiable; sesión unificada | no | no |
+| **E2** | **Conectar el panel a la API** — queda operativo sobre backend | sí (reescribe) | no |
+| **E3** | Desconectar el legacy | sí | no |
+| **E4** | Migrar vistas y habilitar lo inalcanzable | sí | no |
+
+### Etapa 0 — Rescate de acceso ✅
+
+| # | Acción | Estado |
+|---|---|---|
+| 0.1 | Respaldo de `passballcup` (67 KB) antes de tocar nada | ✅ |
+| 0.2 | Admin `id=3` `admin_local` con bcrypt válido; login verificado por HTTP | ✅ |
+| 0.3 | Auditoría del flujo AFIHub → hallazgo §1.6 | ✅ |
+| 0.4 | Corrección de este documento (A506H6, rol, sesión) | ✅ |
+
+### Etapa 1 — API segura y fiable ✅ *completa salvo 1.6*
+*No toca la BD. Es la precondition de la conexión.*
+
+| # | Acción | Defecto | Archivo | Estado |
+|---|---|---|---|---|
+| 1.1 | Guard `php_sapi_name() === 'cli'` + `RedirectMatch 403` | S2 | `backend/tests/`, `backend/.htaccess` | ✅ |
+| 1.2 | `requireAdminAPI()` en 5 métodos | S1 | `AdministradoresController.php:63,117,142,228,267` | ✅ |
+| 1.3 | **Unificar `$_SESSION['admin']` y `$_SESSION['admin_id']`** | §1.9 | `middleware/adminAuth.php`, `AdminAuthController.php`, `admin/controllers/login.php` | ✅ |
+| 1.4 | `APP_DEBUG=0` + `.env.example` | S3 | `backend/config/app.php` | ✅ |
+| 1.5 | Filtro de `GET /api/partidos` + filtro `torneo_id` nuevo | F1 | `PartidosController.php:25` | ✅ |
+| 1.6 | `rechazar` escribe `motivo_rechazo` | F2 | `TorneoEquiposController.php:124` | ⛔ **bloqueada** |
+| 1.7 | Router devuelve 405 con `Allow` | F3 | `backend/core/router.php:21-61` | ✅ |
+| 1.8 | `basePath` derivado de `SCRIPT_NAME` | F7 | `backend/index.php:27-38` | ✅ |
+| 1.9 | Comprobar `activo` antes de autenticar en la API | §1.9 | `AdminAuthController.php:37-41` | ✅ |
+
+**Cómo se resolvió 1.3 (el bloqueador de la conexión)**
+
+Se añadió `setAdminSession(int $adminId)` en `middleware/adminAuth.php`, que escribe **las
+dos claves** desde un id. Los tres puntos de entrada la usan:
+
+| Punto de entrada | Antes | Ahora |
+|---|---|---|
+| `POST /api/admin/login` | solo `admin_id` | `setAdminSession()` → ambas |
+| `admin/controllers/login.php` | solo `admin` | ambas |
+| `requireAdminAPI()` | leía solo `admin_id` | acepta cualquiera de las dos y normaliza |
+
+`requireAdminAPI()` además **rechaza la sesión** si el admin fue borrado en medio, en vez de
+dejar un id válido apuntando a nada.
+
+**Criterio de salida — verificado**
+
+- [x] `GET /backend/tests/test_votaciones.php` → **403**
+- [x] `GET /backend/tests/prueba_bd.php` → **403**
+- [x] `POST /api/administradores` sin sesión → **401**
+- [x] `PATCH /api/administradores/1` (reset de contraseña) sin sesión → **401**
+- [x] `DELETE /api/administradores/2` sin sesión → **401**
+- [x] `GET /api/partidos?ronda_id=1` → **200** con 4 partidos (antes 400)
+- [x] `GET /api/partidos?equipo_id=1` → **200** con 3 partidos
+- [x] `GET /api/partidos?torneo_id=1&ronda_id=3` → **200** con 1 partido
+- [x] `GET /api/partidos?ronda_id=abc` → **400** "ID inválido para ronda_id"
+- [x] `GET /api/auth/login` (GET a ruta POST) → **405** `Allow: POST`
+- [x] `GET /api/nope` → **404** con método y ruta en el mensaje
+- [x] Login por API → `GET /api/admin/me` → **200**
+- [x] Login por panel → `GET /api/admin/me` → **200** (sesión compartida)
+- [x] `APP_DEBUG=0` por defecto
+
+#### ⛔ 1.6 bloqueada — requiere decisión de esquema
+
+F2 **no se puede arreglar solo con código.** `SHOW COLUMNS FROM torneo_equipos` confirma que
+`motivo_rechazo` **no existe**:
+
+```
+id · torneo_id · equipo_id · estado · fecha_solicitud · fecha_aprobacion · aprobado_por
+```
+
+Escribirla daría un 500. Corregirlo implica `ALTER TABLE`, y la Etapa 1 se definió explícitamente
+como **"no toca la BD"**. Opciones:
+
+| Opción | Efecto |
+|---|---|
+| **(a)** `ALTER TABLE torneo_equipos ADD motivo_rechazo VARCHAR(255) NULL` | Habilita F2 y lo que el panel lee en `postulaciones.php:203`. Toca la BD |
+| **(b)** Dejar F2 documentado | El motivo de rechazo sigue sin persistirse por API |
+
+> Nota: el panel legacy **tampoco** puede escribir el motivo hoy, por el mismo motivo. El
+> archivo `sql/migracion_admin.sql` la declaraba pero nunca se aplicó (§1.3). No es una
+> regresión de la Etapa 1: es una columna que nunca existió.
+
+### Etapa 2 — Conectar el panel a la API
+*Objetivo: que el panel funcione sobre el backend. Es la "Etapa 1" del pedido original.*
+
+| # | Acción |
+|---|---|
+| 2.1 | `admin/assets/js/api.js` — cliente base con `credentials: 'include'` y envelope `{exito, data, errores}` |
+| 2.2 | Login del panel vía `POST /api/admin/login`; eliminar la autenticación duplicada |
+| 2.3 | Migrar **Inicio** (solo lectura) como prueba de extremo a extremo |
+| 2.4 | Migrar Participantes → Postulaciones → Votaciones → Torneo → Resultados |
+
+**Criterio de salida**
+- [ ] El panel entra con la contraseña de `admin_local` vía la API
+- [ ] `GET /api/admin/me` responde 200 con la sesión del panel
+- [ ] Inicio sin `$pdo->`
+
+### Etapa 3 — Desconectar el legacy
+*Solo después de que la Etapa 2 esté completa.*
+
+| # | Acción |
+|---|---|
+| 3.1 | `git mv admin _retired/admin` |
+| 3.2 | **`_retired/.htaccess` con `Require all denied`** — sin esto no desconecta (§1.10) |
+| 3.3 | `.htaccess` raíz: `RedirectMatch 410 ^/PASSBALL-Cup/admin/` |
+| 3.4 | `git mv crear_admin.php _retired/crear_admin.php` (S9) |
+
+**Criterio de salida**
+- [ ] `GET /admin/dashboard.php` → 410 o 404
+- [ ] `GET /_retired/admin/dashboard.php` → **denegado**
+- [ ] `admin/` sigue versionado como referencia
+
+> Las rutas relativas de `_retired/admin/` (`../../config/database.php`) siguen resolviendo,
+> así que el código se conserva funcional como referencia.
+
+<details>
+<summary>Fases originales 0–4 (superadas por el reordenamiento)</summary>
+
+### Fase 0 — Cerrar vulnerabilidades (original)
 
 | # | Acción | Archivo |
 |---|---|---|
@@ -320,6 +577,8 @@ solo módulo.** Los 8 defectos de §3.2 viven en el 84% sin probar — por eso s
 - [ ] Cero `$pdo->` en `admin/partials/`
 - [ ] Sin `$_SESSION['flash_*']` — el estado de la vista vive en el cliente
 - [ ] Finalizar un partido propaga el ganador al bracket
+
+</details>
 
 ---
 
@@ -444,16 +703,57 @@ const API = {
 
 ---
 
-## 9. Resumen de fases
+## 9. Resumen de etapas
 
-| Fase | Alcance | Bloqueada por | Entregable |
-|---|---|---|---|
-| **0** | Seguridad: S1–S5, S9 | — | Sin toma de control de admin |
-| **1** | Desconectar `admin/` | — | Panel inaccesible por HTTP |
-| **2** | API explotable: F1, F2, F7, P1–P8, S5 | 2.2 (hashes) | 83 rutas usables |
-| **3** | Documentar incidencias | — | Sin cambios de BD |
-| **4** | Reconstruir panel sobre API | Fases 0–2 | 6 vistas migradas, 3 funcionalidades nuevas |
+| Etapa | Alcance | Bloqueada por | Entregable | Estado |
+|---|---|---|---|---|
+| **0** | Admin `id=3` operativo, respaldo, auditoría AFIHub | — | Acceso restaurado | ✅ |
+| **1** | API segura y fiable: S1, S2, S3, F1, F3, F7, §1.9 | 1.6 (F2, requiere esquema) | 83 rutas usables, sesión unificada | ✅ salvo 1.6 |
+| **2** | Conectar panel a la API | E1 | Panel operativo sobre backend | ⏭️ siguiente |
+| **3** | Desconectar el legacy | E2 | Panel legacy inaccesible | — |
+| **4** | Migrar vistas + funcionalidad nueva | E2 | 6 vistas, 3 funciones nuevas | — |
 
-**Riesgo por fase:** 0 baja · 1 baja (reversible) · 2 media (toca auth) · 3 nula · 4 alta (reescritura).
+**Corregidos en la Etapa 1:** S1 (toma de control de admin) · S2 (tests por HTTP) · S3
+(`APP_DEBUG`) · F1 (filtro de partidos, + `torneo_id`) · F3 (405 con `Allow`) · F7 (basePath) ·
+§1.9 (sesión compartida entre panel y API).
 
-**Fase 0 y Fase 1 no dependen de nada y se pueden ejecutar de inmediato.**
+**Lo que la Etapa 1 desbloquea:** la Etapa 2 es posible por primera vez. Autenticar por la API
+ahora abre el panel, y entrar por el panel habilita los 37 endpoints protegidos. Antes
+ninguna de las dos vías reconocía a la otra.
+
+**Lo que sigue bloqueado, y por qué:**
+
+| Bloqueo | Causa | Quién decide |
+|---|---|---|
+| **F2** `motivo_rechazo` | La columna no existe; requiere `ALTER TABLE` | tú (§ Etapa 1, opción a/b) |
+| **§1.6** rol `jugador` | Whitelist de `Origin` en AFIHub | equipo de AFIhub |
+| **§1.7** re-validación del rol | Diseño de producto | producto |
+| **§1.8** matrícula como credencial | Diseño de producto | producto |
+
+**Riesgo por etapa:** 0 nula · 1 media (toca auth) · 2 alta (reescribe el panel) ·
+3 baja (reversible) · 4 alta.
+
+### Bloqueos que requieren decisión de otro equipo
+
+| Bloqueo | Afecta | Quién decide |
+|---|---|---|
+| **§1.6** whitelist de `Origin` en AFIHub | 6 endpoints en 403, ningún jugador | Equipo de AFIHub |
+| **§1.7** re-validación del rol | consistencia de permisos | Producto |
+| **§1.8** matrícula como credencial única | modelo de identidad completo | Producto |
+| **E1.2** vía para crear admins sin sesión | primer admin tras limpiar la BD | Producto |
+
+### 9.1 Discrepancia resuelta sobre la Etapa 1
+
+El pedido original fue "dejar operativo solo el panel de administrador con el backend",
+identificado como **Etapa 1**. En la versión anterior de este documento la Fase 1 era
+*desconectar* el panel — el objetivo contrario.
+
+Se reordenó por dos razones concretas, ambas verificadas:
+
+1. **Orden operativo:** desconectar antes de conectar deja la aplicación sin nada
+   funcionando durante la migración.
+2. **Bloqueo técnico:** el panel y la API no se reconocen (§1.9). Autenticar por la API no
+   abría el panel. Sin resolver eso, la conexión no era posible en ninguna dirección.
+
+La **Etapa 1** de este documento es por tanto la que prepara la API, y la conexión del panel
+es la **Etapa 2**.
