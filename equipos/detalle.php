@@ -30,10 +30,12 @@ if (!$equipo) {
     exit;
 }
 
-// Miembros con posición real (equipo_miembros.posicion usa códigos)
+// Miembros con posición real (equipo_miembros.posicion usa códigos).
+// Se proyecta em.* porque la columna posicion llega con la migración 001
+// (sql/migraciones/001_equipo_miembros_posicion.sql): si la BD todavía no la
+// tiene, nombrarla en el SELECT rompe la página entera.
 $stmt = $pdo->prepare("
-    SELECT em.id AS miembro_id, em.posicion, em.fecha_union,
-           u.id AS jugador_id, u.matricula, u.nombre, u.avatar
+    SELECT em.*, u.matricula, u.nombre, u.avatar
     FROM equipo_miembros em
     JOIN usuarios u ON u.id = em.jugador_id
     WHERE em.equipo_id = ? AND em.estado = 'activo'
@@ -66,10 +68,10 @@ foreach ($miembros as $m) {
         $estoyEnEste = true;
     }
 
-    $posCode = $m['posicion'] ?: 'DEL';
+    $posCode = !empty($m['posicion']) ? $m['posicion'] : 'DEL';
 
     $jugadores[] = [
-        'id'           => (int) $m['miembro_id'],
+        'id'           => (int) $m['id'],
         'jugador_id'   => (int) $m['jugador_id'],
         'nombre'       => $m['nombre'],
         'matricula'    => $m['matricula'],
@@ -450,6 +452,7 @@ $avatarUsuario = $usuario['avatar'] ?? null;
                         <?php if ($logoUrl !== ''): ?>
 
                             <img
+                                id="equipoLogo"
                                 src="<?= htmlspecialchars($logoUrl) ?>"
                                 alt="Logo <?= htmlspecialchars($equipo['nombre']) ?>"
                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
@@ -457,7 +460,7 @@ $avatarUsuario = $usuario['avatar'] ?? null;
 
                         <?php endif; ?>
 
-                        <div class="team-logo-fallback" <?= $logoUrl !== '' ? '' : 'style="display:flex;"' ?>>
+                        <div id="equipoLogoFallback" class="team-logo-fallback" <?= $logoUrl !== '' ? '' : 'style="display:flex;"' ?>>
                             <?= htmlspecialchars(mb_strtoupper(mb_substr($equipo['nombre'], 0, 1, 'UTF-8'), 'UTF-8')) ?>
                         </div>
 
@@ -469,7 +472,7 @@ $avatarUsuario = $usuario['avatar'] ?? null;
                             PASSBALL CUP
                         </span>
 
-                        <h1>
+                        <h1 id="equipoNombre">
                             <?= htmlspecialchars($equipo['nombre']) ?>
                         </h1>
 
@@ -888,7 +891,7 @@ $avatarUsuario = $usuario['avatar'] ?? null;
 
                                     <?php if (!$jugador['lider']): ?>
 
-                                        <button class="icon-btn" title="Eliminar" onclick="removePlayer(<?= $jugador['id'] ?>)">
+                                        <button class="icon-btn" title="Eliminar" onclick="removePlayer(<?= $jugador['jugador_id'] ?>)">
                                             <i class="fa-solid fa-xmark"></i>
                                         </button>
 
@@ -1061,11 +1064,12 @@ $avatarUsuario = $usuario['avatar'] ?? null;
                                 </span>
 
                                 <h2>
-                                    Invitar jugador
+                                    Agregar jugador
                                 </h2>
 
                                 <p>
-                                    Agrega a un jugador por su matrícula.
+                                    Busca a un jugador por su nombre o matrícula
+                                    y agrégalo al equipo.
                                 </p>
 
                             </div>
@@ -1074,26 +1078,27 @@ $avatarUsuario = $usuario['avatar'] ?? null;
 
                         <div class="lineup-settings">
 
-                            <label>
-                                Matrícula
+                            <label for="agregarBusqueda">
+                                Jugador
                             </label>
 
                             <input
                                 type="text"
-                                id="inviteMatricula"
-                                maxlength="20"
-                                placeholder="Ej. 6767676"
+                                id="agregarBusqueda"
+                                maxlength="60"
+                                autocomplete="off"
+                                placeholder="Ej. PB00027"
                             >
 
-                            <button
-                                type="button"
-                                class="primary-btn"
-                                style="width:100%;justify-content:center;margin-top:15px;"
-                                onclick="invitar(<?= (int) $equipo['id'] ?>)"
-                            >
-                                <i class="fa-solid fa-user-plus"></i>
-                                Invitar al equipo
-                            </button>
+                            <div class="member-search" id="agregarResultados"></div>
+
+                            <div class="lineup-help">
+
+                                <i class="fa-solid fa-circle-info"></i>
+                                Escribe al menos 2 letras. El equipo admite
+                                máximo 12 integrantes.
+
+                            </div>
 
                         </div>
 
@@ -1118,7 +1123,7 @@ $avatarUsuario = $usuario['avatar'] ?? null;
 </div>
 
 <!-- =============================================================
-     (Los modales de invitar/editar viven dentro del tab Gestionar)
+     (El buscador para agregar jugadores vive dentro del tab Gestionar)
 ============================================================= -->
 
 <script>
@@ -1210,34 +1215,281 @@ function msg(text, ok) {
     msg._t = setTimeout(() => { el.className = 'team-msg'; }, 4000);
 }
 
-function api(action, data, cb) {
-    const body = new URLSearchParams(data);
-    body.append('action', action);
+const API_BASE = '../backend/api';
+const EQUIPO_ID = <?= (int) $equipo['id'] ?>;
+const JUGADOR_ID = <?= (int) $usuario['id'] ?>;
+const EQUIPO_LLENO = <?= $equipoLleno ? 'true' : 'false' ?>;
 
-    fetch('../controllers/equiposController.php', {
-        method: 'POST',
-        body: body
-    })
-    .then(r => r.json())
-    .then(cb)
-    .catch(() => msg('Error de conexión. Intenta de nuevo.', false));
+function apiRequest(url, options) {
+    return fetch(url, Object.assign({ credentials: 'same-origin' }, options))
+        .then(r => r.json().catch(() => ({})).then(payload => {
+            if (!r.ok || !payload.exito) {
+                throw new Error(
+                    (payload.errores && payload.errores.error)
+                        ? payload.errores.error
+                        : 'No se pudo completar la operación.'
+                );
+            }
+
+            return payload.data || {};
+        }));
 }
+
+apiRequest(API_BASE + '/equipos/' + EQUIPO_ID)
+    .then(({ equipo }) => {
+        if (!equipo) return;
+
+        const nombre = document.getElementById('equipoNombre');
+        const logo = document.getElementById('equipoLogo');
+        const fallback = document.getElementById('equipoLogoFallback');
+
+        if (equipo.nombre && nombre) {
+            nombre.textContent = equipo.nombre;
+            document.title = equipo.nombre + ' | PASSBALL Cup';
+        }
+
+        if (fallback && equipo.nombre) {
+            fallback.textContent = equipo.nombre.trim().charAt(0).toLocaleUpperCase('es');
+        }
+
+        if (equipo.logo && logo) {
+            logo.src = /^(https?:)?\/\//i.test(equipo.logo)
+                ? equipo.logo
+                : '../' + equipo.logo;
+            logo.alt = 'Logo ' + (equipo.nombre || 'del equipo');
+            logo.style.display = '';
+        } else if (logo && fallback) {
+            logo.remove();
+            fallback.style.display = 'flex';
+        }
+    })
+    .catch(() => {});
 
 function unirse(id) {
     if (!confirm('¿Quieres unirte a este equipo?')) return;
-    api('unirse', { equipo_id: id }, d => {
-        msg(d.message, d.success);
-        if (d.success) setTimeout(() => location.reload(), 900);
-    });
+
+    apiRequest(API_BASE + '/equipos/' + id + '/miembros', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jugador_id: JUGADOR_ID })
+    })
+        .then(data => {
+            msg(data.mensaje || 'Te uniste al equipo.', true);
+            setTimeout(() => location.reload(), 900);
+        })
+        .catch(error => msg(error.message, false));
 }
 
 function salirEquipo() {
     if (!confirm('¿Salir de tu equipo actual?')) return;
-    api('salir', {}, d => {
-        msg(d.message, d.success);
-        if (d.success) setTimeout(() => location.reload(), 900);
-    });
+
+    apiRequest(API_BASE + '/equipos/' + EQUIPO_ID + '/miembros/' + JUGADOR_ID + '/salida', {
+        method: 'PATCH'
+    })
+        .then(data => {
+            msg(data.mensaje || 'Saliste del equipo.', true);
+            setTimeout(() => location.reload(), 900);
+        })
+        .catch(error => msg(error.message, false));
 }
+
+function removePlayer(jugadorId) {
+    if (!confirm('¿Eliminar a este jugador del equipo?')) return;
+
+    apiRequest(API_BASE + '/equipos/' + EQUIPO_ID + '/miembros/' + jugadorId, {
+        method: 'DELETE'
+    })
+        .then(data => {
+            msg(data.mensaje || 'Jugador eliminado del equipo.', true);
+            setTimeout(() => location.reload(), 900);
+        })
+        .catch(error => msg(error.message, false));
+}
+
+/* =============================================================
+     AGREGAR JUGADOR
+     POST /api/equipos/{equipoId}/miembros  →  { jugador_id }
+     GET  /api/usuarios/buscar?q=…        →  candidatos
+     El tab Gestionar sólo se renderiza para el capitán, y la API
+     vuelve a validarlo con requireCapitanOAdmin().
+   ============================================================= */
+
+<?php if ($es_lider): ?>
+
+const inputAgregar = document.getElementById('agregarBusqueda');
+const boxAgregar = document.getElementById('agregarResultados');
+
+if (inputAgregar && boxAgregar) {
+
+    let temporizador = null;
+
+    function cerrarResultados() {
+        boxAgregar.innerHTML = '';
+        boxAgregar.classList.remove('show');
+    }
+
+    function pintarVacio(texto) {
+        const aviso = document.createElement('p');
+        aviso.className = 'member-vacio';
+        aviso.textContent = texto;
+        boxAgregar.appendChild(aviso);
+        boxAgregar.classList.add('show');
+    }
+
+    function crearAvatarResultado(u) {
+
+        const avatar = document.createElement('span');
+        avatar.className = 'member-result-avatar';
+
+        if (u.avatar) {
+
+            const img = document.createElement('img');
+            img.src = u.avatar;
+            img.alt = '';
+            avatar.appendChild(img);
+
+        } else {
+
+            avatar.textContent = (u.nombre || '?').trim().charAt(0).toUpperCase();
+
+        }
+
+        return avatar;
+
+    }
+
+    function pintarResultado(u) {
+
+        const enOtroEquipo = parseInt(u.en_equipo, 10) > 0;
+
+        const item = document.createElement('div');
+        item.className = 'member-result' + (enOtroEquipo ? ' disabled' : '');
+
+        const info = document.createElement('div');
+        info.className = 'member-result-info';
+
+        const nombre = document.createElement('strong');
+        nombre.textContent = u.nombre || 'Jugador';
+
+        const matricula = document.createElement('span');
+        matricula.textContent = 'Mat: ' + u.matricula;
+
+        info.appendChild(nombre);
+        info.appendChild(matricula);
+
+        const estado = document.createElement('span');
+        estado.className = 'member-result-estado';
+        estado.textContent = enOtroEquipo ? 'En otro equipo' : 'Agregar';
+
+        item.appendChild(crearAvatarResultado(u));
+        item.appendChild(info);
+        item.appendChild(estado);
+
+        if (!enOtroEquipo) {
+            item.addEventListener('click', () => agregarJugador(u, item));
+        }
+
+        boxAgregar.appendChild(item);
+
+    }
+
+    function buscarJugadores(q) {
+
+        apiRequest(API_BASE + '/usuarios/buscar?q=' + encodeURIComponent(q))
+            .then(data => {
+
+                boxAgregar.innerHTML = '';
+
+                const usuarios = Array.isArray(data.usuarios) ? data.usuarios : [];
+
+                if (!usuarios.length) {
+
+                    pintarVacio('Sin resultados.');
+
+                    return;
+
+                }
+
+                usuarios.forEach(pintarResultado);
+                boxAgregar.classList.add('show');
+
+            })
+            .catch(error => pintarVacio(error.message));
+
+    }
+
+    function agregarJugador(u, item) {
+
+        if (EQUIPO_LLENO) {
+            msg('El equipo ya está lleno (máximo 12 miembros).', false);
+            return;
+        }
+
+        if (!confirm('¿Agregar a ' + (u.nombre || 'este jugador') + ' al equipo?')) return;
+
+        const estado = item.querySelector('.member-result-estado');
+        estado.textContent = 'Agregando…';
+        item.classList.add('loading');
+
+        apiRequest(API_BASE + '/equipos/' + EQUIPO_ID + '/miembros', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jugador_id: u.id })
+        })
+            .then(data => {
+
+                msg(data.mensaje || 'Jugador agregado al equipo', true);
+
+                /* El contador, la plantilla y las tabs se calculan en PHP */
+                setTimeout(() => location.reload(), 900);
+
+            })
+            .catch(error => {
+
+                msg(error.message, false);
+                estado.textContent = 'Agregar';
+                item.classList.remove('loading');
+
+            });
+
+    }
+
+    inputAgregar.addEventListener('input', function () {
+
+        clearTimeout(temporizador);
+
+        const q = this.value.trim();
+
+        if (q.length < 2) {
+            cerrarResultados();
+            return;
+        }
+
+        temporizador = setTimeout(() => buscarJugadores(q), 250);
+
+    });
+
+    inputAgregar.addEventListener('keydown', function (e) {
+
+        if (e.key === 'Escape') cerrarResultados();
+
+    });
+
+    document.addEventListener('click', function (e) {
+
+        if (
+            boxAgregar.classList.contains('show') &&
+            !boxAgregar.contains(e.target) &&
+            !inputAgregar.contains(e.target)
+        ) {
+            cerrarResultados();
+        }
+
+    });
+
+}
+
+<?php endif; ?>
 
 </script>
 

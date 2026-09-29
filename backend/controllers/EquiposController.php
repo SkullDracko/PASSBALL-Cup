@@ -137,7 +137,7 @@ $sql = "
 
             $stmt = $this->pdo->prepare("
                 INSERT INTO equipos (nombre, logo, capitan_id, estado)
-                VALUES (?, ?, ?, 'activo')
+                VALUES (?, ?, ?, 'pendiente')
             ");
             $stmt->execute([$nombre, $logoUrl, $capitanId]);
             $equipoId = (int) $this->pdo->lastInsertId();
@@ -183,25 +183,10 @@ $sql = "
     |--------------------------------------------------------------------------
     */
 
-    // Antes se usaba requireJugador(), que exige usuarios.rol = 'jugador'.
-    // El flujo legacy (controllers/auth.php → registrarEquipo.php) sólo pedía
-    // sesión activa, y equipo_miembros.jugador_id referencia usuarios.id, así
-    // que 11 de los 71 usuarios registrados (rol 'usuario') se quedarían sin
-    // poder crear su equipo. Se replica el criterio legacy para que la
-    // migración no rompa ese caso.
+    // Sólo jugadores activos pueden crear equipos.
     private function capitanActual(): int
     {
-        $usuarioId = requireAuthAPI();
-
-        $stmt = $this->pdo->prepare('SELECT estado FROM usuarios WHERE id = ? LIMIT 1');
-        $stmt->execute([$usuarioId]);
-        $usuario = $stmt->fetch();
-
-        if (!$usuario || $usuario['estado'] !== 'activo') {
-            jsonResponse(false, [], ['error' => 'Usuario no autorizado'], 403);
-        }
-
-        return $usuarioId;
+        return requireJugador();
     }
 
     private function normalizarIntegrantes($raw): array

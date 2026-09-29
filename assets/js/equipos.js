@@ -149,23 +149,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function cargarMiEquipo() {
         let loading = document.getElementById('myTeamLoading');
+        let playerSection = document.getElementById('playerTeamsSection');
         let currentUserId;
 
         solicitarApi('backend/api/auth/me')
             .then(function (data) {
-                currentUserId = data.usuario && data.usuario.id;
+                let usuario = data.usuario;
+                currentUserId = usuario && usuario.id;
 
                 if (!currentUserId) {
                     throw new Error('No se pudo identificar al usuario actual.');
                 }
+
+                let esJugadorHabilitado = usuario.rol === 'jugador'
+                    && usuario.estado === 'activo'
+                    && Number(usuario.jugador_activo) === 1;
+
+                if (playerSection) playerSection.hidden = !esJugadorHabilitado;
+                if (!esJugadorHabilitado) return null;
 
                 return solicitarApi(
                     'backend/api/jugadores/' + encodeURIComponent(currentUserId) + '/equipo-actual'
                 );
             })
             .then(function (data) {
+                if (!data) return;
+
                 let team = data.equipo;
-                console.log("Esta es la info del endpoint equipo-actual:", team);
                 let actions = document.getElementById('teamActions');
 
                 if (loading) loading.hidden = true;
@@ -610,7 +620,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return r.json();
             })
             .then(function (data) {
-
+                console.log("Esta es la info del endpoint buscar:", data);
                 miembrosResultados.innerHTML = '';
 
                 if (!data.exito) {

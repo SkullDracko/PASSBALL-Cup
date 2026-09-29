@@ -1215,6 +1215,153 @@ body {
 }
 
 /* =========================================================
+   BUSCADOR PARA AGREGAR JUGADORES (tab Gestionar)
+   ========================================================= */
+
+.member-search {
+
+    display: none;
+
+    margin-top: 10px;
+
+    max-height: 260px;
+
+    overflow-y: auto;
+
+    background: white;
+
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+}
+
+.member-search.show {
+    display: block;
+}
+
+.member-result {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 10px 12px;
+
+    cursor: pointer;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.member-result:last-child {
+    border-bottom: none;
+}
+
+.member-result:not(.disabled):hover {
+    background: #f6f1fb;
+}
+
+.member-result.disabled,
+.member-result.loading {
+
+    opacity: 0.55;
+
+    cursor: not-allowed;
+}
+
+.member-result-avatar {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 32px;
+
+    height: 32px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    overflow: hidden;
+
+    background: var(--purple);
+
+    color: white;
+
+    font-size: 13px;
+
+    font-weight: 800;
+}
+
+.member-result-avatar img {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.member-result-info {
+
+    flex: 1;
+
+    min-width: 0;
+}
+
+.member-result-info strong {
+
+    display: block;
+
+    color: var(--text);
+
+    font-size: 13px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+.member-result-info span {
+
+    color: var(--text-light);
+
+    font-size: 11px;
+}
+
+.member-result-estado {
+
+    flex-shrink: 0;
+
+    color: var(--purple);
+
+    font-size: 11px;
+
+    font-weight: 800;
+}
+
+.member-result.disabled .member-result-estado {
+    color: var(--text-light);
+}
+
+.member-vacio {
+
+    margin: 0;
+
+    padding: 12px;
+
+    color: var(--text-light);
+
+    font-size: 12px;
+}
+
+/* =========================================================
    FOOTER
 ========================================================= */
 
