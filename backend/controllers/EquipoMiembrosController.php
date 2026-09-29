@@ -10,6 +10,8 @@ class EquipoMiembrosController
         $this->pdo = conectarDB();
     }
 
+    // Endpoint nuevo: en el controlador legacy los miembros solo se incluían
+    // dentro de la respuesta de detalle del equipo.
     public function listar(array $params): void
     {
         // GET /api/equipos/{equipoId}/miembros?estado=activo
@@ -45,13 +47,13 @@ class EquipoMiembrosController
         ]);
     }
 
+    // Alta por jugador_id; el controlador legacy invitaba mediante matrícula.
     public function agregar(array $params): void
     {
         // POST /api/equipos/{equipoId}/miembros
 
         $equipoId = $this->obtenerEquipoId($params);
-        requireAuthAPI();
-        $this->requireCapitanOAdmin($equipoId);
+        $usuarioActual = requireAuthAPI();
         $this->verificarEquipoExiste($equipoId);
 
         $body = jsonBody();
@@ -66,6 +68,12 @@ class EquipoMiembrosController
         }
 
         $jugadorId = (int) $jugadorId;
+
+        if ($jugadorId === $usuarioActual) {
+            requireJugador();
+        } else {
+            $this->requireCapitanOAdmin($equipoId);
+        }
 
         $stmt = $this->pdo->prepare(
             "SELECT id FROM usuarios WHERE id = ? AND estado = 'activo' AND jugador_activo = 1 AND rol = 'jugador' LIMIT 1"
@@ -89,6 +97,17 @@ class EquipoMiembrosController
             ], 409);
         }
 
+        $stmt = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM equipo_miembros WHERE equipo_id = ? AND estado = 'activo'"
+        );
+        $stmt->execute([$equipoId]);
+
+        if ((int) $stmt->fetchColumn() >= 12) {
+            jsonResponse(false, [], [
+                'error' => 'El equipo ya está lleno (máximo 12 miembros)'
+            ], 409);
+        }
+
         try {
             $stmt = $this->pdo->prepare('
                 INSERT INTO equipo_miembros (equipo_id, jugador_id, estado)
@@ -107,14 +126,20 @@ class EquipoMiembrosController
         ], [], 201);
     }
 
+    // Equivale a la baja lógica de 'salir'/'eliminar_miembro' del controlador legacy.
     public function marcarSalida(array $params): void
     {
         // PATCH /api/equipos/{equipoId}/miembros/{jugadorId}/salida
 
         $equipoId = $this->obtenerEquipoId($params);
         $jugadorId = $this->obtenerJugadorId($params);
-        requireAuthAPI();
-        $this->requireCapitanOAdmin($equipoId);
+        $usuarioActual = requireAuthAPI();
+
+        if ($jugadorId === $usuarioActual) {
+            requireJugador();
+        } else {
+            $this->requireCapitanOAdmin($equipoId);
+        }
 
         $stmt = $this->pdo->prepare("
             UPDATE equipo_miembros
@@ -134,6 +159,7 @@ class EquipoMiembrosController
         ]);
     }
 
+    // Diferencia con 'eliminar_miembro' legacy: elimina el registro físicamente.
     public function eliminar(array $params): void
     {
         // DELETE /api/equipos/{equipoId}/miembros/{jugadorId}
@@ -159,6 +185,7 @@ class EquipoMiembrosController
         ]);
     }
 
+    // Equivale a 'mi_equipo' legacy; esta ruta recibe el jugadorId como parámetro.
     public function equipoActual(array $params): void
     {
         // GET /api/jugadores/{jugadorId}/equipo-actual
@@ -200,6 +227,7 @@ class EquipoMiembrosController
         ]);
     }
 
+    // Endpoint nuevo: el controlador legacy no exponía el historial de equipos.
     public function historialEquipos(array $params): void
     {
         // GET /api/jugadores/{jugadorId}/historial-equipos
