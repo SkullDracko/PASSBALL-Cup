@@ -37,6 +37,19 @@ try {
 <p class="admin-section-sub"><?= count($participantes) ?> jugadores registrados en la plataforma.</p>
 </div>
 </div>
+<div class="admin-search">
+<div class="admin-search-box">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input type="search" id="buscarParticipantes"
+placeholder="Buscar por nombre, matrícula o equipo..."
+autocomplete="off">
+<button type="button" class="admin-search-clear" id="limpiarBusquedaParticipantes"
+hidden aria-label="Limpiar búsqueda">
+<i class="fa-solid fa-xmark"></i>
+</button>
+</div>
+<span class="admin-search-count" id="conteoParticipantes"></span>
+</div>
 <div class="admin-table-wrap">
 <table class="admin-table">
 <thead>
@@ -56,7 +69,7 @@ try {
 </tr>
 <?php else: ?>
 <?php foreach ($participantes as $p): ?>
-<tr>
+<tr class="participante-row">
 <td><?= (int) $p['id'] ?></td>
 <td><strong><?= htmlspecialchars($p['nombre']) ?></strong></td>
 <td><?= htmlspecialchars($p['matricula']) ?></td>
@@ -69,6 +82,9 @@ try {
 <td><?= $p['jugador_activo'] ? 'Sí' : 'No' ?></td>
 </tr>
 <?php endforeach; ?>
+<tr id="participantesSinResultados" hidden>
+<td colspan="6" class="admin-note">Sin resultados para la búsqueda.</td>
+</tr>
 <?php endif; ?>
 </tbody>
 </table>

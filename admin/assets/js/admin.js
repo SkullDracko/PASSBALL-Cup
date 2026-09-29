@@ -117,4 +117,81 @@ document.addEventListener('DOMContentLoaded', function () {
 
     }
 
+
+    /* =========================================
+       BUSCADOR DE PARTICIPANTES
+       ========================================= */
+
+    var buscar = document.getElementById('buscarParticipantes');
+
+    if (buscar) {
+
+        var limpiar   = document.getElementById('limpiarBusquedaParticipantes');
+        var conteo    = document.getElementById('conteoParticipantes');
+        var vacio     = document.getElementById('participantesSinResultados');
+        var filas     = Array.prototype.slice.call(
+            document.querySelectorAll('.participante-row')
+        );
+
+        var total = filas.length;
+
+        // Sin acentos y en minúsculas, para que "jose" encuentre "José"
+        function normalizar(texto) {
+            return texto
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim();
+        }
+
+        function filtrarParticipantes() {
+
+            var consulta = normalizar(buscar.value);
+            var visibles = 0;
+
+            filas.forEach(function (fila) {
+
+                var coincide =
+                    consulta === '' ||
+                    normalizar(fila.textContent).indexOf(consulta) !== -1;
+
+                fila.hidden = !coincide;
+
+                if (coincide) {
+                    visibles++;
+                }
+
+            });
+
+            if (vacio) {
+                vacio.hidden = visibles > 0 || consulta === '';
+            }
+
+            if (limpiar) {
+                limpiar.hidden = consulta === '';
+            }
+
+            if (conteo) {
+                conteo.textContent =
+                    consulta === '' ? '' : visibles + ' de ' + total + ' jugadores';
+            }
+
+        }
+
+        buscar.addEventListener('input', filtrarParticipantes);
+
+        if (limpiar) {
+
+            limpiar.addEventListener('click', function () {
+
+                buscar.value = '';
+                filtrarParticipantes();
+                buscar.focus();
+
+            });
+
+        }
+
+    }
+
 });

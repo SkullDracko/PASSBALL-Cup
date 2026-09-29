@@ -44,6 +44,9 @@ CREATE TABLE usuarios (
   id INT AUTO_INCREMENT PRIMARY KEY,
   matricula VARCHAR(20) NOT NULL UNIQUE,
   afi_usuario_id VARCHAR(50) UNIQUE,
+  nombre VARCHAR(120) NULL,
+  -- Alias público que se muestra en el portal (arriba y en el perfil)
+  alias VARCHAR(40) NULL,
   rol ENUM('usuario','administrador') NOT NULL DEFAULT 'usuario',
   avatar VARCHAR(255),
   jugador_activo BOOLEAN NOT NULL DEFAULT TRUE, -- Indica si el jugador puede participar en los partidos (al terminar el afiliado, deberÃ­a de ponerse como 0)
@@ -183,6 +186,7 @@ CREATE TABLE torneo_rondas (
   torneo_id INT NOT NULL,
   nombre VARCHAR(50) NOT NULL,
   orden INT NOT NULL,
+  estado ENUM('programado', 'en_curso', 'finalizada', 'cancelada') NOT NULL DEFAULT 'programado',
 
   CONSTRAINT fk_ronda_torneo
     FOREIGN KEY (torneo_id)

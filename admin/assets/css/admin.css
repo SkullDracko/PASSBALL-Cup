@@ -771,6 +771,7 @@
 
 .admin-form input[type="text"],
 .admin-form input[type="number"],
+.admin-form input[type="date"],
 .admin-form input[type="datetime-local"],
 .admin-form select {
 
@@ -828,6 +829,388 @@
     background: #efe7f9;
 
     color: var(--admin-purple-dark);
+}
+
+
+/* ---------- PANEL COLAPSABLE (crear torneo) ---------- */
+
+.admin-collapse {
+
+    background: #fff;
+
+    border: 1px solid var(--admin-border);
+
+    border-radius: 14px;
+
+    margin-bottom: 22px;
+
+    overflow: hidden;
+
+    box-shadow: 0 2px 12px rgba(47, 30, 80, 0.07);
+}
+
+.admin-collapse-head {
+
+    list-style: none;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 15px 18px;
+
+    font-size: 13.5px;
+
+    font-weight: 700;
+
+    color: var(--admin-purple-dark);
+
+    user-select: none;
+}
+
+.admin-collapse-head::-webkit-details-marker {
+
+    display: none;
+}
+
+.admin-collapse-head i {
+
+    color: var(--admin-purple);
+}
+
+.admin-collapse-head::after {
+
+    content: "+";
+
+    margin-left: auto;
+
+    font-size: 17px;
+
+    line-height: 1;
+
+    color: var(--admin-muted);
+}
+
+.admin-collapse[open] .admin-collapse-head::after {
+
+    content: "\2212";
+}
+
+.admin-collapse[open] .admin-collapse-head {
+
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-collapse-body {
+
+    border-radius: 0;
+
+    box-shadow: none;
+
+    margin-bottom: 0;
+}
+
+
+/* ---------- GESTIONAR TORNEO ---------- */
+
+.admin-gesta-torneo {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 16px;
+
+    margin-bottom: 22px;
+}
+
+.admin-gesta-label {
+
+    display: block;
+
+    font-size: 11.5px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.4px;
+
+    color: var(--admin-muted);
+}
+
+.admin-gesta-nombre {
+
+    margin: 4px 0 8px;
+
+    font-size: 18px;
+
+    color: var(--admin-purple-dark);
+}
+
+.admin-gesta-meta {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin: 0;
+
+    font-size: 12.5px;
+
+    color: var(--admin-muted);
+}
+
+.admin-gesta-acts {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+}
+
+.admin-gesta-acts .admin-form.nostyle {
+
+    margin: 0;
+}
+
+
+/* ---------- REGISTRO DE TORNEOS ---------- */
+
+.registro-acts {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    align-items: center;
+
+    gap: 6px;
+}
+
+.registro-acts .admin-form.nostyle {
+
+    margin: 0;
+}
+
+.registro-acts a.admin-btn {
+
+    text-decoration: none;
+}
+
+.registro-nota {
+
+    margin: 12px 4px 26px;
+
+    font-size: 12.5px;
+
+    color: var(--admin-muted);
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+
+/* ---------- BUSCADOR ---------- */
+
+.admin-search {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 16px;
+}
+
+.admin-search-box {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    flex: 1;
+
+    min-width: 260px;
+
+    max-width: 420px;
+
+    background: #fff;
+
+    border: 1.5px solid #e0d8ec;
+
+    border-radius: 10px;
+
+    padding: 0 12px;
+
+    box-shadow: 0 2px 12px rgba(47, 30, 80, 0.07);
+}
+
+.admin-search-box:focus-within {
+
+    border-color: var(--admin-purple);
+}
+
+.admin-search-box > i {
+
+    color: var(--admin-muted);
+
+    font-size: 13px;
+}
+
+.admin-search-box input[type="search"] {
+
+    flex: 1;
+
+    min-width: 0;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    padding: 11px 10px;
+
+    font-size: 13.5px;
+
+    font-family: inherit;
+
+    color: #3c3150;
+}
+
+.admin-search-box input[type="search"]::-webkit-search-cancel-button {
+
+    display: none;
+}
+
+.admin-search-clear {
+
+    border: none;
+
+    background: transparent;
+
+    color: var(--admin-muted);
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+    padding: 4px;
+
+    line-height: 1;
+}
+
+.admin-search-clear:hover {
+
+    color: var(--admin-purple-dark);
+}
+
+.admin-search-count {
+
+    font-size: 12.5px;
+
+    color: var(--admin-muted);
+}
+
+.admin-table tbody tr[hidden] {
+
+    display: none;
+}
+
+
+/* ---------- GESTIONAR RONDAS Y PARTIDOS ---------- */
+
+.round-col .round-order {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    flex-wrap: wrap;
+}
+
+.round-acts {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    align-items: center;
+
+    gap: 6px;
+
+    margin-bottom: 12px;
+
+    padding-bottom: 12px;
+
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.round-acts .admin-form.nostyle {
+
+    margin: 0;
+}
+
+.match-acts {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    align-items: center;
+
+    gap: 6px;
+
+    margin-top: 10px;
+
+    padding-top: 10px;
+
+    border-top: 1px dashed var(--admin-border);
+}
+
+.match-acts .admin-form.nostyle {
+
+    margin: 0;
+}
+
+.round-edit {
+
+    margin: 14px 0 0;
+
+    box-shadow: none;
+
+    background: var(--admin-tint);
+}
+
+.round-edit .admin-form {
+
+    padding: 14px;
 }
 
 
@@ -957,8 +1340,10 @@
 
 .chip.programado   { background: #efe7f9; color: #5b3d91; }
 .chip.en_curso     { background: #fff6e5; color: #a05b00; }
-.chip.finalizado   { background: #e8f7ee; color: #1a7f3a; }
+.chip.finalizado,
+.chip.finalizada  { background: #e8f7ee; color: #1a7f3a; }
 .chip.cancelado,
+.chip.cancelada,
 .chip.rechazado  { background: #fdeeee; color: #b3261e; }
 .chip.pendiente  { background: #fff6e5; color: #a05b00; }
 .chip.aprobado   { background: #e8f7ee; color: #1a7f3a; }

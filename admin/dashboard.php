@@ -10,6 +10,10 @@ require_once __DIR__ . '/../config/app.php';
 
 $tituloPagina = 'Panel Admin';
 $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8');
+
+// Versión de los assets para que el navegador no los deje cacheados
+$cssAdminV = filemtime(__DIR__ . '/assets/css/admin.css');
+$jsAdminV  = filemtime(__DIR__ . '/assets/js/admin.js');
 ?>
 
 <!DOCTYPE html>
@@ -35,7 +39,7 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
     >
 
     <link rel="stylesheet" href="../assets/css/variables.css">
-    <link rel="stylesheet" href="assets/css/admin.css">
+    <link rel="stylesheet" href="assets/css/admin.css?v=<?= $cssAdminV ?>">
 
 </head>
 
@@ -200,7 +204,7 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
 </div>
 
 
-<script src="assets/js/admin.js"></script>
+<script src="assets/js/admin.js?v=<?= $jsAdminV ?>"></script>
 
 </body>
 
