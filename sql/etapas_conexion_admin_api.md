@@ -6,6 +6,85 @@
 >
 > Última actualización incorpora la verificación contra la base de datos real
 > (`passballcup`, 14 tablas) y una auditoría de las 83 rutas de la API.
+>
+> **Si vienes a continuar el trabajo, empieza por la [sección 0](#0-estado-de-la-implementación).**
+
+---
+
+## 0. Estado de la implementación
+
+Estado: ✅ verificado · ⚠️ a medias · ⛔ bloqueado · 🟢 sin bloqueos
+
+Un commit no puede citar su propio hash, así que esta tabla solo cubre las etapas ya
+publicadas. La tabla de estado de la etapa siguiente se añade en su propio commit.
+
+| # | Alcance | Estado | Commit | Verificado por |
+|---|---|---|---|---|
+| 0 | Rescate de acceso: admin `id=3`, respaldo, auditoría AFIHub | ✅ | *sin commit, solo datos* | curl |
+| 1 | API segura y fiable: S1, S2, S3, F1, F3, F7, §1.9 | ✅ salvo §1.6 | `241d5da` | HTTP |
+| 2.1 | `api.js`: cliente base, `credentials`, envelope `{exito,data,errores}` | ✅ | `20462c4` | node + HTTP |
+| 2.2 | Login del panel por `POST /api/admin/login` | ✅ | `20462c4` | HTTP |
+| 2.3 | Migrar **Inicio** como prueba de extremo a extremo | ✅ | `20462c4` | HTTP |
+| 2.4 | Migrar las cinco vistas restantes | ⚠️ | `c3885fc` | HTTP, **no navegador** |
+| 2.5 | `GET /api/admin/usuarios` | ✅ | `20462c4` | HTTP |
+| 2.6–2.10 | Los cinco endpoints admin-only | ✅ | `c3885fc` | HTTP 200/401 |
+| 3.1 | `git mv admin _retired/admin` | ⛔ b1, b2 | — | — |
+| 3.2 | `_retired/.htaccess` con `Require all denied` | ⛔ depende de 3.1 | — | — |
+| 3.3 | `.htaccess` raíz con `RedirectMatch 410` | ⛔ depende de 3.1 | — | — |
+| 3.4 | `git mv crear_admin.php _retired/` | 🟢 | — | — |
+
+**Por qué 2.4 está en ⚠️ y no en ✅.** Las lecturas se verificaron por HTTP, y dos
+escrituras (crear ronda y crear categoría) se probaron creando y borrando el registro. Pero
+**el render de las seis vistas y las escrituras completas nunca se probaron en un
+navegador**, porque este entorno no tiene ninguno. Los contratos se validaron leyendo los
+controladores, no viéndolos funcionar. Es lo primero que debería hacer quien retome.
+
+**3.4 no depende de 3.1**, así que se puede sacar ya. No es obvious al leer los pasos en
+orden, que es el orden natural en que seffee el documento.
+
+**Línea de tiempo.** El documento nació en `7e58a3e`. Los tres commits de etapa son del
+2026-09-29, y `c3885fc` es la `HEAD` de `David` en el momento de escribirse esto.
+
+### 0.1 Cómo continuar desde aquí
+
+**La Etapa 3 no se puede ejecutar tal como está escrita.** Estos seis bloqueos están
+verificados contra el código, no supuestos:
+
+| # | Bloqueo | Dónde |
+|---|---|---|
+| b1 | **Comunidad sigue en legacy**: consulta SQL directa y tres formularios con `action="controllers/comunidad.php"`, y la tabla `posts` no existe. Mover `admin/` la deja rota | `admin/partials/comunidad.php:19, 78, 148, 156` |
+| b2 | `dashboard.php` mantiene el `require` de `database.php` **solo** para alimentar a Comunidad | `admin/dashboard.php:8` |
+| b3 | `admin/controllers/login.php` sigue siendo un endpoint HTTP público aunque esté huérfano: escribe `$_SESSION['admin']` y `admin_id` | `admin/controllers/login.php:34, 40, 47` |
+| b4 | No existe `.htaccess` en la raíz ni en `admin/`, solo en `backend/`: los pasos 3.2 y 3.3 hay que crearlos de cero | — |
+| b5 | `dashboard.php` depende de `$_SESSION['admin']` para pintar nombre, inicial y usuario | `admin/dashboard.php:12, 139, 147, 155` |
+| b6 | Credenciales quemadas en el repo | `crear_admin.php`, `auth_67676767.txt`, `auth_jug003.txt` |
+
+**Hallazgos de seguridad abiertos**, a resolver antes de poner esto en producción:
+
+1. **"Cerrar sesión" no destruye la sesión de la API.** `logout.php` solo hace
+   `unset($_SESSION['admin'])`, pero `requireAdminAPI()` lee `admin_id` **primero**, y esa
+   clave la deja puesta `setAdminSession()`. La sesión sobrevive contra los 37 endpoints
+   protegidos. El arreglo es apuntar el enlace del panel a `POST /api/admin/logout`, que sí
+   hace `session_destroy()`.
+   (`admin/controllers/logout.php:7` · `backend/middleware/adminAuth.php:47, 19`)
+2. El endpoint de login legacy del punto b3 sigue alcanzable por HTTP.
+3. Los tres archivos del punto b6 llevan credenciales dentro y están versionados.
+
+**Lo que queda sin verificar**, en orden de utilidad: render de las seis vistas, y las
+seis escrituras (aprobar, rechazar, crear ronda, crear partido, guardar resultado,
+registrar evento).
+
+### 0.2 Leyenda de la numeración
+
+Los identificadores `2.x` y `3.x` se usan en tres sentidos distintos dentro de este
+archivo, y conviene saber cuál es cuál antes de leer cualquier tabla:
+
+| Prefijo | Significado |
+|---|---|
+| `2.1`–`2.10` en el §5 | Sub-etapas **actuales** de la Etapa 2 |
+| `3.1`–`3.4` en el §5 | Sub-etapas **actuales** de la Etapa 3 |
+| `Fase 0`–`Fase 4` | Numeración **original, superada** por el reordenamiento (ver §9.1) |
+| `§3.1`, `§3.2` | **Defectos** de la API, no etapas |
 
 ---
 
@@ -376,13 +455,20 @@ por el conflicto de claves de sesión (§1.9).
 **El orden correcto es al revés:** asegurar la API, conectar el panel, y **solo entonces**
 desconectar el legacy. Ningún momento sin sistema utilizable.
 
-| Etapa | Alcance | Toca el legacy | Toca la BD |
-|---|---|---|---|
-| **E0** ✅ *hecho* | Tercer admin operativo, respaldo, auditoría de AFIHub | no | sí (1 fila) |
-| **E1** 🔄 *en curso* | API segura y fiable; sesión unificada | no | no |
-| **E2** | **Conectar el panel a la API** — queda operativo sobre backend | sí (reescribe) | no |
-| **E3** | Desconectar el legacy | sí | no |
-| **E4** | Migrar vistas y habilitar lo inalcanzable | sí | no |
+| Etapa | Alcance | Toca el legacy | Toca la BD | Estado |
+|---|---|---|---|---|
+| **E0** | Tercer admin operativo, respaldo, auditoría de AFIHub | no | sí (1 fila) | ✅ `sin commit` |
+| **E1** | API segura y fiable; sesión unificada | no | no | ✅ salvo §1.6 · `241d5da` |
+| **E2** | **Conectar el panel a la API** — queda operativo sobre backend | sí (reescribe) | no | ✅ 6 de 7 vistas · `20462c4` + `c3885fc` |
+| **E3** | Desconectar el legacy | sí | no | ⛔ bloqueada por b1–b6 |
+
+> `E0`–`E3` son las mismas cuatro etapas que lasnumbered `0`–`3` del §5, con prefijo `E`.
+> El estado y los commits por sub-etapa están en el [§0](#0-estado-de-la-implementación).
+>
+> La antigua `E4` ("migrar vistas y habilitar lo inalcanzable") **ya no es una etapa**: su
+> parte de migración de vistas quedó absorbida por `E2`. Lo que sí quedó fuera —convocatorias,
+> porteros, editar rondas— son funcionalidades pendientes, no un paso del plan; están
+> listadas en la columna "Se habilita" del [§8](#8-cobertura-por-vista).
 
 ### Etapa 0 — Rescate de acceso ✅
 
@@ -879,17 +965,19 @@ const API = {
 
 ## 8. Cobertura por vista
 
-🔄 pendiente · ✅ migrado · ❌ fuera de alcance
-
 | Vista | Lecturas | Escrituras | Se habilita |
 |---|---|---|---|
-| **Inicio** | 🔄 torneos, partidos, postulaciones, estadísticas | — | — |
-| **Torneo y Rondas** | 🔄 torneos, rondas, bracket, equipos | 🔄 crear ronda, crear partido | editar/borrar ronda y partido, finalizar partido, bracket de `BracketController` |
-| **Postulaciones** | 🔄 `torneos/{id}/equipos` | 🔄 aprobar, rechazar | retirar equipo |
-| **Participantes** | 🔄 `usuarios` | — | toggles de `estado` y `jugador_activo`, detalle de jugador, historial de equipos |
-| **Resultados** | 🔄 partidos, eventos, estadísticas | 🔄 resultado, registrar evento | **convocatorias (84 filas)**, **porteros (14 filas)**, editar/borrar evento |
-| **Votaciones** | 🔄 categorías, candidatos, pool, resultados de votos | 🔄 6 acciones | pool con `ResolverPoolCandidatos` en vez de SQL ad-hoc |
+| **Inicio** | ✅ torneos, partidos, postulaciones, estadísticas | — | — |
+| **Torneo y Rondas** | ✅ torneos, rondas, bracket, equipos | ⚠️ crear ronda, crear partido | editar/borrar ronda y partido, finalizar partido, bracket de `BracketController` |
+| **Postulaciones** | ✅ `torneos/{id}/equipos` | ⚠️ aprobar, rechazar | retirar equipo |
+| **Participantes** | ✅ `admin/usuarios` | — | toggles de `estado` y `jugador_activo`, detalle de jugador, historial de equipos |
+| **Resultados** | ✅ partidos, eventos, estadísticas | ⚠️ resultado, registrar evento | **convocatorias (84 filas)**, **porteros (14 filas)**, editar/borrar evento |
+| **Votaciones** | ✅ categorías, candidatos, jugadores | ⚠️ 6 acciones | pool con `ResolverPoolCandidatos` en vez de SQL ad-hoc |
 | **Comunidad** | ❌ | ❌ | — sin API y sin tabla |
+
+✅ migrado sobre la API · ⚠️ migrado y **sin probar en navegador** · ❌ fuera de alcance
+(la columna "Se habilita" lista lo que **no** quedó migrado: funciones que el legacy tenía
+y la API no expone).
 
 ---
 
@@ -899,9 +987,8 @@ const API = {
 |---|---|---|---|---|
 | **0** | Admin `id=3` operativo, respaldo, auditoría AFIHub | — | Acceso restaurado | ✅ |
 | **1** | API segura y fiable: S1, S2, S3, F1, F3, F7, §1.9 | 1.6 (F2, requiere esquema) | 83 rutas usables, sesión unificada | ✅ salvo 1.6 |
-| **2** | Conectar panel a la API | E1 | Panel operativo sobre backend | ⏭️ siguiente |
-| **3** | Desconectar el legacy | E2 | Panel legacy inaccesible | — |
-| **4** | Migrar vistas + funcionalidad nueva | E2 | 6 vistas, 3 funciones nuevas | — |
+| **2** | Conectar panel a la API | — | 6 de 7 vistas sobre el backend | ✅ ver [§0](#0-estado-de-la-implementación) |
+| **3** | Desconectar el legacy | b1–b6 | Panel legacy inaccesible | ⛔ bloqueada |
 
 **Corregidos en la Etapa 1:** S1 (toma de control de admin) · S2 (tests por HTTP) · S3
 (`APP_DEBUG`) · F1 (filtro de partidos, + `torneo_id`) · F3 (405 con `Allow`) · F7 (basePath) ·
