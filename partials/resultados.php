@@ -12,172 +12,191 @@
 
 /*
 |--------------------------------------------------------------------------
-| TORNEO ACTIVO
+| DATOS DE LA VISTA
 |--------------------------------------------------------------------------
+| dashboard.php incluye las seis vistas en la misma peticion, asi que una
+| excepcion sin capturar aqui tumbaria tambien las demas. Defaults primero
+| y consultas dentro de un try/catch, igual que en partials/equipos.html.
 */
 
-$torneoActivo = $pdo
-    ->query("SELECT id, nombre FROM torneos WHERE estado = 'en_curso' ORDER BY id DESC LIMIT 1")
-    ->fetch(PDO::FETCH_ASSOC);
+$torneoId       = 0;
+$torneoNombre   = 'PASSBALL Cup';
+$canchas        = [];
+$resultados     = [];
+$totalFinalizados = 0;
+$totalGoles       = 0;
+$mejorGoleador    = '—';
+$golesGoleador    = 0;
+$mejorEquipo      = '—';
+$equipoVictorias  = '—';
+$winsVictorias    = 0;
 
-if (!$torneoActivo) {
+try {
+
+    /*
+    |----------------------------------------------------------------------
+    | TORNEO ACTIVO
+    |----------------------------------------------------------------------
+    */
+
     $torneoActivo = $pdo
-        ->query("SELECT id, nombre FROM torneos ORDER BY id DESC LIMIT 1")
+        ->query("SELECT id, nombre FROM torneos WHERE estado = 'en_curso' ORDER BY id DESC LIMIT 1")
         ->fetch(PDO::FETCH_ASSOC);
-}
 
-$torneoId = (int) ($torneoActivo['id'] ?? 0);
-$torneoNombre = $torneoActivo['nombre'] ?? 'PASSBALL Cup';
-
-
-/*
-|--------------------------------------------------------------------------
-| ESTADÍSTICAS
-|--------------------------------------------------------------------------
-*/
-
-$totalFinalizados  = 0;
-$totalGoles        = 0;
-$mejorGoleador     = '—';
-$golesGoleador     = 0;
-$mejorEquipo       = '—';
-$equipoVictorias   = '—';
-$winsVictorias     = 0;
-
-if ($torneoId > 0) {
-
-    $stmt = $pdo->prepare("
-        SELECT COUNT(*) AS total
-        FROM partidos p
-        JOIN torneo_rondas r ON r.id = p.ronda_id
-        WHERE r.torneo_id = ? AND p.estado = 'finalizado'
-    ");
-    $stmt->execute([$torneoId]);
-    $totalFinalizados = (int) $stmt->fetchColumn();
-
-    $stmt = $pdo->prepare("
-        SELECT COALESCE(SUM(COALESCE(p.goles_local,0) + COALESCE(p.goles_visitante,0)), 0) AS total
-        FROM partidos p
-        JOIN torneo_rondas r ON r.id = p.ronda_id
-        WHERE r.torneo_id = ? AND p.estado = 'finalizado'
-    ");
-    $stmt->execute([$torneoId]);
-    $totalGoles = (int) $stmt->fetchColumn();
-
-    $stmt = $pdo->prepare("
-        SELECT u.nombre AS jugador, e.nombre AS equipo, COUNT(*) AS goles
-        FROM partido_eventos pe
-        JOIN usuarios u ON u.id = pe.jugador_id
-        JOIN equipos e ON e.id = pe.equipo_id
-        JOIN partidos p ON p.id = pe.partido_id
-        JOIN torneo_rondas r ON r.id = p.ronda_id
-        WHERE r.torneo_id = ? AND pe.tipo IN ('gol', 'penal_anotado')
-        GROUP BY pe.jugador_id, e.id
-        ORDER BY goles DESC, u.nombre ASC
-        LIMIT 1
-    ");
-    $stmt->execute([$torneoId]);
-    $goleador = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($goleador) {
-        $mejorGoleador = $goleador['jugador'];
-        $golesGoleador = (int) $goleador['goles'];
-        $mejorEquipo   = $goleador['equipo'];
+    if (!$torneoActivo) {
+        $torneoActivo = $pdo
+            ->query("SELECT id, nombre FROM torneos ORDER BY id DESC LIMIT 1")
+            ->fetch(PDO::FETCH_ASSOC);
     }
 
-    $stmt = $pdo->prepare("
-        SELECT e.nombre AS equipo, COUNT(*) AS wins
-        FROM partidos p
-        JOIN torneo_rondas r ON r.id = p.ronda_id
-        JOIN equipos e ON e.id = p.ganador_id
-        WHERE r.torneo_id = ? AND p.estado = 'finalizado' AND p.ganador_id IS NOT NULL
-        GROUP BY p.ganador_id
-        ORDER BY wins DESC, e.nombre ASC
-        LIMIT 1
-    ");
-    $stmt->execute([$torneoId]);
-    $ganador = $stmt->fetch(PDO::FETCH_ASSOC);
+    $torneoId = (int) ($torneoActivo['id'] ?? 0);
+    $torneoNombre = $torneoActivo['nombre'] ?? 'PASSBALL Cup';
 
-    if ($ganador) {
-        $equipoVictorias = $ganador['equipo'];
-        $winsVictorias   = (int) $ganador['wins'];
+
+    /*
+    |----------------------------------------------------------------------
+    | ESTADÍSTICAS
+    |----------------------------------------------------------------------
+    */
+
+    if ($torneoId > 0) {
+
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) AS total
+            FROM partidos p
+            JOIN torneo_rondas r ON r.id = p.ronda_id
+            WHERE r.torneo_id = ? AND p.estado = 'finalizado'
+        ");
+        $stmt->execute([$torneoId]);
+        $totalFinalizados = (int) $stmt->fetchColumn();
+
+        $stmt = $pdo->prepare("
+            SELECT COALESCE(SUM(COALESCE(p.goles_local,0) + COALESCE(p.goles_visitante,0)), 0) AS total
+            FROM partidos p
+            JOIN torneo_rondas r ON r.id = p.ronda_id
+            WHERE r.torneo_id = ? AND p.estado = 'finalizado'
+        ");
+        $stmt->execute([$torneoId]);
+        $totalGoles = (int) $stmt->fetchColumn();
+
+        $stmt = $pdo->prepare("
+            SELECT u.nombre AS jugador, e.nombre AS equipo, COUNT(*) AS goles
+            FROM partido_eventos pe
+            JOIN usuarios u ON u.id = pe.jugador_id
+            JOIN equipos e ON e.id = pe.equipo_id
+            JOIN partidos p ON p.id = pe.partido_id
+            JOIN torneo_rondas r ON r.id = p.ronda_id
+            WHERE r.torneo_id = ? AND pe.tipo IN ('gol', 'penal_anotado')
+            GROUP BY pe.jugador_id, e.id
+            ORDER BY goles DESC, u.nombre ASC
+            LIMIT 1
+        ");
+        $stmt->execute([$torneoId]);
+        $goleador = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($goleador) {
+            $mejorGoleador = $goleador['jugador'];
+            $golesGoleador = (int) $goleador['goles'];
+            $mejorEquipo   = $goleador['equipo'];
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT e.nombre AS equipo, COUNT(*) AS wins
+            FROM partidos p
+            JOIN torneo_rondas r ON r.id = p.ronda_id
+            JOIN equipos e ON e.id = p.ganador_id
+            WHERE r.torneo_id = ? AND p.estado = 'finalizado' AND p.ganador_id IS NOT NULL
+            GROUP BY p.ganador_id
+            ORDER BY wins DESC, e.nombre ASC
+            LIMIT 1
+        ");
+        $stmt->execute([$torneoId]);
+        $ganador = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($ganador) {
+            $equipoVictorias = $ganador['equipo'];
+            $winsVictorias   = (int) $ganador['wins'];
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT DISTINCT p.cancha
+            FROM partidos p
+            JOIN torneo_rondas r ON r.id = p.ronda_id
+            WHERE r.torneo_id = ? AND p.cancha IS NOT NULL AND p.cancha <> ''
+            ORDER BY p.cancha
+        ");
+        $stmt->execute([$torneoId]);
+        $canchas = $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 
-    $stmt = $pdo->prepare("
-        SELECT DISTINCT p.cancha
-        FROM partidos p
-        JOIN torneo_rondas r ON r.id = p.ronda_id
-        WHERE r.torneo_id = ? AND p.cancha IS NOT NULL AND p.cancha <> ''
-        ORDER BY p.cancha
-    ");
-    $stmt->execute([$torneoId]);
-    $canchas = $stmt->fetchAll(PDO::FETCH_COLUMN);
-} else {
-    $canchas = [];
-}
 
+    /*
+    |----------------------------------------------------------------------
+    | RESULTADOS
+    |----------------------------------------------------------------------
+    */
 
-/*
-|--------------------------------------------------------------------------
-| RESULTADOS
-|--------------------------------------------------------------------------
-*/
+    if ($torneoId > 0) {
 
-$resultados = [];
+        $stmt = $pdo->prepare("
+            SELECT
+                p.id,
+                p.fecha_hora,
+                p.cancha,
+                p.goles_local,
+                p.goles_visitante,
+                l.nombre AS local,
+                l.logo   AS local_logo,
+                v.nombre AS visitante,
+                v.logo   AS visitante_logo,
+                r.nombre AS ronda
+            FROM partidos p
+            JOIN torneo_rondas r ON r.id = p.ronda_id
+            LEFT JOIN equipos l ON l.id = p.equipo_local_id
+            LEFT JOIN equipos v ON v.id = p.equipo_visitante_id
+            WHERE r.torneo_id = ? AND p.estado = 'finalizado'
+            ORDER BY p.fecha_hora DESC, p.id DESC
+        ");
+        $stmt->execute([$torneoId]);
 
-if ($torneoId > 0) {
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $fila) {
 
-    $stmt = $pdo->prepare("
-        SELECT
-            p.id,
-            p.fecha_hora,
-            p.cancha,
-            p.goles_local,
-            p.goles_visitante,
-            l.nombre AS local,
-            l.logo   AS local_logo,
-            v.nombre AS visitante,
-            v.logo   AS visitante_logo,
-            r.nombre AS ronda
-        FROM partidos p
-        JOIN torneo_rondas r ON r.id = p.ronda_id
-        LEFT JOIN equipos l ON l.id = p.equipo_local_id
-        LEFT JOIN equipos v ON v.id = p.equipo_visitante_id
-        WHERE r.torneo_id = ? AND p.estado = 'finalizado'
-        ORDER BY p.fecha_hora DESC, p.id DESC
-    ");
-    $stmt->execute([$torneoId]);
+            $fechaHora = $fila['fecha_hora'] ? strtotime($fila['fecha_hora']) : false;
 
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $fila) {
+            $marcadorLocal = $fila['goles_local'] !== null
+                ? (int) $fila['goles_local']
+                : '—';
 
-        $fechaHora = $fila['fecha_hora'] ? strtotime($fila['fecha_hora']) : false;
+            $marcadorVisit = $fila['goles_visitante'] !== null
+                ? (int) $fila['goles_visitante']
+                : '—';
 
-        $marcadorLocal = $fila['goles_local'] !== null
-            ? (int) $fila['goles_local']
-            : '—';
-
-        $marcadorVisit = $fila['goles_visitante'] !== null
-            ? (int) $fila['goles_visitante']
-            : '—';
-
-        $resultados[] = [
-            'id'          => (int) $fila['id'],
-            'fecha'       => $fechaHora
-                ? strtoupper(date('d M', $fechaHora))
-                : '—',
-            'hora'        => $fechaHora
-                ? date('g:i A', $fechaHora)
-                : '—',
-            'local'       => $fila['local'] ?? '—',
-            'visitante'   => $fila['visitante'] ?? '—',
-            'local_score' => $marcadorLocal,
-            'visit_score' => $marcadorVisit,
-            'local_logo'  => $fila['local_logo'],
-            'visit_logo'  => $fila['visitante_logo'],
-            'cancha'      => $fila['cancha'] ?: 'Por definir',
-            'estadio'     => $fila['ronda'] ?? '',
-        ];
+            $resultados[] = [
+                'id'          => (int) $fila['id'],
+                'fecha'       => $fechaHora
+                    ? strtoupper(date('d M', $fechaHora))
+                    : '—',
+                'hora'        => $fechaHora
+                    ? date('g:i A', $fechaHora)
+                    : '—',
+                'local'       => $fila['local'] ?? '—',
+                'visitante'   => $fila['visitante'] ?? '—',
+                'local_score' => $marcadorLocal,
+                'visit_score' => $marcadorVisit,
+                'local_logo'  => $fila['local_logo'],
+                'visit_logo'  => $fila['visitante_logo'],
+                'cancha'      => $fila['cancha'] ?: 'Por definir',
+                'estadio'     => $fila['ronda'] ?? '',
+            ];
+        }
     }
+
+} catch (PDOException $e) {
+
+    error_log("PASSBALL - Error en la vista Resultados: " . $e->getMessage());
+
+    $resultados = [];
+    $canchas    = [];
 }
 
 ?>

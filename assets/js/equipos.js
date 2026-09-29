@@ -8,103 +8,248 @@ document.addEventListener('DOMContentLoaded', function () {
        BUSCADOR DE EQUIPOS
        ========================================= */
 
-    var searchInput = document.getElementById('teamSearch');
-    var teamCards   = document.querySelectorAll('.team-card');
-    var noResults   = document.getElementById('noResults');
+    function solicitarApi(url) {
+        return fetch(url, { credentials: 'same-origin' })
+            .then(function (response) {
+                return response.json().catch(function () {
+                    return {};
+                }).then(function (payload) {
+                    if (!response.ok || !payload.exito) {
+                        let message = payload.errores && payload.errores.error;
+                        throw new Error(message || 'No se pudo cargar la información.');
+                    }
 
-    if (searchInput) {
+                    return payload.data || {};
+                });
+            });
+    }
+
+    function mostrarErrorEquipos(message) {
+        let feedback = document.getElementById('teamsFeedback');
+
+        if (feedback) {
+            feedback.textContent = message;
+            feedback.hidden = false;
+        }
+    }
+
+    function crearLogoEquipo(container, team, className) {
+        if (team.logo) {
+            let image = document.createElement('img');
+            image.src = team.logo;
+            image.alt = team.nombre || 'Logo del equipo';
+            container.appendChild(image);
+            return;
+        }
+
+        let initials = document.createElement('div');
+        initials.className = className;
+        initials.style.background = 'let(--purple, #4b2780)';
+        initials.textContent = (team.nombre || '?').trim().charAt(0).toLocaleUpperCase();
+        container.appendChild(initials);
+    }
+
+    function filtrarEquipos() {
+        let searchInput = document.getElementById('teamSearch');
+
+        if (!searchInput || searchInput.dataset.bound === 'true') return;
+        searchInput.dataset.bound = 'true';
 
         searchInput.addEventListener('input', function () {
+            let value = this.value.toLocaleLowerCase().trim();
+            let visible = 0;
+            let teamCards = document.querySelectorAll('.team-card');
+            let noResults = document.getElementById('noResults');
+            let emptyState = document.getElementById('teamsEmpty');
+            let grid = document.getElementById('teamsGrid');
 
-            var value = this.value.toLowerCase().trim();
-            var visible = 0;
+            if (grid && grid.dataset.hasTeams === 'false') {
+                if (emptyState) emptyState.classList.toggle('show', value === '');
+                if (noResults) noResults.classList.remove('show');
+                return;
+            }
 
             teamCards.forEach(function (card) {
+                let name = card.getAttribute('data-team-name') || '';
+                let matches = name.indexOf(value) !== -1;
 
-                var name = card.getAttribute('data-team-name') || '';
-
-                if (name.indexOf(value) !== -1) {
-
-                    card.style.display = '';
-                    visible++;
-
-                } else {
-
-                    card.style.display = 'none';
-
-                }
-
+                card.style.display = matches ? '' : 'none';
+                if (matches) visible++;
             });
 
             if (noResults) {
-
-                if (visible === 0) {
-                    noResults.classList.add('show');
-                } else {
-                    noResults.classList.remove('show');
-                }
-
+                noResults.classList.toggle('show', value !== '' && visible === 0);
             }
+        });
+    }
 
+    function renderizarEquipos(teams) {
+        let grid = document.getElementById('teamsGrid');
+        let emptyState = document.getElementById('teamsEmpty');
+
+        if (!grid) return;
+
+        grid.replaceChildren();
+        grid.dataset.hasTeams = teams.length ? 'true' : 'false';
+
+        if (emptyState) {
+            emptyState.classList.toggle('show', teams.length === 0);
+        }
+
+        teams.forEach(function (team, index) {
+            let card = document.createElement('article');
+            card.className = 'team-card';
+            card.dataset.teamName = (team.nombre || '').toLocaleLowerCase();
+
+            let logo = document.createElement('div');
+            logo.className = 'team-card-logo';
+            crearLogoEquipo(logo, team, 'no-logo');
+
+            let name = document.createElement('h3');
+            name.textContent = team.nombre || 'Equipo sin nombre';
+
+            let members = document.createElement('p');
+            members.className = 'team-members';
+
+            let membersIcon = document.createElement('i');
+            membersIcon.className = 'fa-solid fa-users';
+            members.appendChild(membersIcon);
+            members.appendChild(document.createTextNode(' Participantes: ' + (team.total_miembros || 0)));
+
+            let detail = document.createElement('a');
+            detail.className = 'btn-outline' + (index % 2 === 1 ? ' orange' : '');
+            detail.href = 'equipos/detalle.php?id=' + encodeURIComponent(team.id);
+            detail.textContent = 'Ver equipo ';
+
+            let arrow = document.createElement('i');
+            arrow.className = 'fa-solid fa-arrow-right';
+            detail.appendChild(arrow);
+
+            card.appendChild(logo);
+            card.appendChild(name);
+            card.appendChild(members);
+            card.appendChild(detail);
+            grid.appendChild(card);
         });
 
+        filtrarEquipos();
+    }
+
+    function cargarEquiposDisponibles() {
+        solicitarApi('backend/api/equipos?estado=activo')
+            .then(function (data) {
+                renderizarEquipos(Array.isArray(data.equipos) ? data.equipos : []);
+            })
+            .catch(function (error) {
+                let grid = document.getElementById('teamsGrid');
+                if (grid) grid.replaceChildren();
+                mostrarErrorEquipos(error.message);
+            });
+    }
+
+    function cargarMiEquipo() {
+        let loading = document.getElementById('myTeamLoading');
+        let currentUserId;
+
+        solicitarApi('backend/api/auth/me')
+            .then(function (data) {
+                currentUserId = data.usuario && data.usuario.id;
+
+                if (!currentUserId) {
+                    throw new Error('No se pudo identificar al usuario actual.');
+                }
+
+                return solicitarApi(
+                    'backend/api/jugadores/' + encodeURIComponent(currentUserId) + '/equipo-actual'
+                );
+            })
+            .then(function (data) {
+                let team = data.equipo;
+                console.log("Esta es la info del endpoint equipo-actual:", team);
+                let actions = document.getElementById('teamActions');
+
+                if (loading) loading.hidden = true;
+
+                if (!team) {
+                    if (actions) actions.hidden = false;
+                    return;
+                }
+
+                let card = document.getElementById('myTeamCard');
+                let logo = document.getElementById('myTeamLogo');
+                let name = document.getElementById('myTeamName');
+                let members = document.getElementById('myTeamMembers');
+                let role = document.getElementById('myTeamRole');
+                let detail = document.getElementById('myTeamDetail');
+                let estado = document.getElementById('myTeamTournamentStatus');
+                
+
+                if (card) card.hidden = false;
+                if (name) name.textContent = team.nombre || 'Equipo sin nombre';
+                if (logo) crearLogoEquipo(logo, team, 'no-logo');
+                if (members) members.appendChild(document.createTextNode(' Participantes: ' + (team.total_miembros || 0)));
+                if (detail) detail.href = 'equipos/detalle.php?id=' + encodeURIComponent(team.id);
+                if (estado) estado.textContent = 'Estado en torneo: ' + (team.estado || 'Desconocido');
+                if (role) {
+                    let roleIcon = document.createElement('i');
+                    roleIcon.className = 'fa-solid fa-star';
+                    role.appendChild(roleIcon);
+                    role.appendChild(document.createTextNode(
+                        Number(team.capitan_id) === Number(currentUserId)
+                            ? ' Líder del equipo'
+                            : ' Miembro del equipo'
+                    ));
+                }
+            })
+            .catch(function (error) {
+                if (loading) {
+                    loading.textContent = 'No se pudo cargar la información de tu equipo.';
+                }
+                mostrarErrorEquipos(error.message);
+            });
+    }
+
+    function iniciarVistaEquipos() {
+        let view = document.getElementById('view-equipos');
+
+        if (!view) return;
+
+        let markup = view.querySelector('#teamsGrid')
+            ? Promise.resolve()
+            : fetch(view.dataset.fetchPartial || 'partials/equipos.html', {
+                credentials: 'same-origin'
+            }).then(function (response) {
+                if (!response.ok) throw new Error('No se pudo cargar la sección de equipos.');
+                return response.text();
+            }).then(function (html) {
+                view.innerHTML = html;
+            });
+
+        markup.then(function () {
+            filtrarEquipos();
+            cargarEquiposDisponibles();
+            cargarMiEquipo();
+        }).catch(function (error) {
+            view.textContent = error.message;
+        });
     }
 
 
     /* =========================================
-       CERRAR MODAL
-       ========================================= */
-
-    var modals = document.querySelectorAll('.modal');
-
-    modals.forEach(function (modal) {
-
-        var overlay = modal.querySelector('.modal-overlay');
-
-        if (overlay) {
-
-            overlay.addEventListener('click', function () {
-
-                modal.classList.remove('show');
-
-            });
-
-        }
-
-    });
-
-
-    /* =========================================
-       CERRAR FLASH DESPUÉS DE 4 SEGUNDOS
-       ========================================= */
-
-    var flashes = document.querySelectorAll('.flash');
-
-    flashes.forEach(function (flash) {
-
-        setTimeout(function () {
-
-            flash.style.transition = 'opacity 0.4s ease';
-            flash.style.opacity = '0';
-
-            setTimeout(function () {
-
-                flash.remove();
-
-            }, 400);
-
-        }, 4000);
-
-    });
+       NOTA
+       =========================================
+       El cierre del modal (.modal-overlay) y el retiro
+       automatico de .flash estan en dashboard.js, que
+       es quien abre el modal. Estaban duplicados aqui. */
 
 
     /* =========================================
        SUBIR LOGO (PREVIEW + COLOR VÍA CANVAS)
        ========================================= */
 
-    var logoInput   = document.getElementById('logo_equipo');
-    var logoDrop    = document.getElementById('logoDrop');
-    var logoPreview = document.getElementById('logoPreview');
+    let logoInput   = document.getElementById('logo_equipo');
+    let logoDrop    = document.getElementById('logoDrop');
+    let logoPreview = document.getElementById('logoPreview');
 
     if (logoInput && logoDrop) {
 
@@ -156,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        var reader = new FileReader();
+        let reader = new FileReader();
 
         reader.onload = function (e) {
 
@@ -166,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function () {
             logoPreview.style.display = 'flex';
             logoDrop.style.display    = 'none';
 
-            derivarColor(e.target.result);
+            deriletColor(e.target.result);
 
         };
 
@@ -176,26 +321,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* Color dominante del logo para acento del preview (canvas en navegador) */
 
-    function derivarColor(dataUrl) {
+    function deriletColor(dataUrl) {
 
-        var img = new Image();
+        let img = new Image();
 
         img.onload = function () {
 
-            var canvas = document.createElement('canvas');
+            let canvas = document.createElement('canvas');
             canvas.width  = img.width;
             canvas.height = img.height;
 
-            var ctx = canvas.getContext('2d');
+            let ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0);
 
             try {
 
-                var data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                let data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
 
-                var r = 0, g = 0, b = 0, n = 0;
+                let r = 0, g = 0, b = 0, n = 0;
 
-                for (var i = 0; i < data.length; i += 40) {
+                for (let i = 0; i < data.length; i += 40) {
                     r += data[i];
                     g += data[i + 1];
                     b += data[i + 2];
@@ -204,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (n > 0) {
 
-                    var color = 'rgb(' +
+                    let color = 'rgb(' +
                         Math.round(r / n) + ',' +
                         Math.round(g / n) + ',' +
                         Math.round(b / n) + ')';
@@ -226,27 +371,27 @@ document.addEventListener('DOMContentLoaded', function () {
        ELEGIR INTEGRANTES AL CREAR EQUIPO
        ========================================= */
 
-    var MAX_MIEMBROS = 12;
+    let MAX_MIEMBROS = 12;
 
-    var buscarJugador =
+    let buscarJugador =
         document.getElementById('buscarJugador');
 
-    var miembrosResultados =
+    let miembrosResultados =
         document.getElementById('miembrosResultados');
 
-    var miembrosElegidos =
+    let miembrosElegidos =
         document.getElementById('miembrosElegidos');
 
-    var miembrosHidden =
+    let miembrosHidden =
         document.getElementById('miembrosHidden');
 
-    var integrantesTotal =
+    let integrantesTotal =
         document.getElementById('integrantesTotal');
 
     if (buscarJugador && miembrosResultados) {
 
-        var seleccionados = {};
-        var CAPITAN = 1;
+        let seleccionados = {};
+        let CAPITAN = 1;
 
         function contarSeleccionados() {
             return CAPITAN + Object.keys(seleccionados).length;
@@ -254,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function actualizarTotal() {
 
-            var total = contarSeleccionados();
+            let total = contarSeleccionados();
 
             if (integrantesTotal) {
                 integrantesTotal.textContent =
@@ -272,14 +417,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function crearAvatar(u) {
 
-            var avatar =
+            let avatar =
                 document.createElement('span');
 
             avatar.className = 'miembro-select-avatar';
 
             if (u.avatar) {
 
-                var img = document.createElement('img');
+                let img = document.createElement('img');
                 img.src = u.avatar;
                 img.alt = '';
                 avatar.appendChild(img);
@@ -304,7 +449,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             /* Hidden input dentro del formulario */
 
-            var hidden = document.createElement('input');
+            let hidden = document.createElement('input');
             hidden.type = 'hidden';
             hidden.name = 'integrantes[]';
             hidden.value = u.id;
@@ -313,20 +458,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
             /* Chip visible */
 
-            var chip =
+            let chip =
                 document.createElement('span');
 
             chip.className = 'miembro-chip';
             chip.setAttribute('data-chip', u.id);
 
-            var avatar =
+            let avatar =
                 document.createElement('span');
 
             avatar.className = 'miembro-chip-avatar';
 
             if (u.avatar) {
 
-                var img = document.createElement('img');
+                let img = document.createElement('img');
                 img.src = u.avatar;
                 img.alt = '';
                 avatar.appendChild(img);
@@ -338,13 +483,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
 
-            var nombre =
+            let nombre =
                 document.createElement('span');
 
             nombre.className = 'miembro-chip-nombre';
             nombre.textContent = u.nombre;
 
-            var remove =
+            let remove =
                 document.createElement('button');
 
             remove.type = 'button';
@@ -375,14 +520,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             delete seleccionados[id];
 
-            var hidden =
+            let hidden =
                 miembrosHidden.querySelector(
                     'input[data-miembro="' + id + '"]'
                 );
 
             if (hidden) hidden.remove();
 
-            var chip =
+            let chip =
                 miembrosElegidos.querySelector(
                     'span[data-chip="' + id + '"]'
                 );
@@ -394,16 +539,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function renderResultado(u) {
 
-            var yaSeleccionado =
+            let yaSeleccionado =
                 !!seleccionados[u.id];
 
-            var ocupado =
+            let ocupado =
                 parseInt(u.en_equipo, 10) > 0 && !yaSeleccionado;
 
-            var lleno =
+            let lleno =
                 contarSeleccionados() >= MAX_MIEMBROS && !yaSeleccionado;
 
-            var item =
+            let item =
                 document.createElement('div');
 
             item.className = 'miembro-select-item';
@@ -412,19 +557,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 item.classList.add('disabled');
             }
 
-            var avatar = crearAvatar(u);
+            let avatar = crearAvatar(u);
 
-            var info =
+            let info =
                 document.createElement('div');
 
             info.className = 'miembro-select-info';
 
-            var nombre =
+            let nombre =
                 document.createElement('strong');
 
             nombre.textContent = u.nombre;
 
-            var matricula =
+            let matricula =
                 document.createElement('span');
 
             matricula.textContent = 'Mat: ' + u.matricula;
@@ -432,7 +577,7 @@ document.addEventListener('DOMContentLoaded', function () {
             info.appendChild(nombre);
             info.appendChild(matricula);
 
-            var estado =
+            let estado =
                 document.createElement('span');
 
             estado.className = 'miembro-select-estado';
@@ -457,29 +602,32 @@ document.addEventListener('DOMContentLoaded', function () {
         function buscar(q) {
 
             fetch(
-                'controllers/buscarUsuarios.php?q=' +
-                encodeURIComponent(q)
+                'backend/api/usuarios/buscar?q=' +
+                encodeURIComponent(q),
+                { credentials: 'same-origin' }
             )
             .then(function (r) {
                 return r.json();
             })
             .then(function (data) {
-
+                console.log("Esta es la info del endpoint buscar:", data);
                 miembrosResultados.innerHTML = '';
 
-                if (!data.success) {
+                if (!data.exito) {
                     miembrosResultados.innerHTML =
                         '<p class="miembro-vacio">Error al buscar.</p>';
                     return;
                 }
 
-                if (!data.usuarios.length) {
+                let usuarios = data.data.usuarios;
+
+                if (!usuarios.length) {
                     miembrosResultados.innerHTML =
                         '<p class="miembro-vacio">Sin resultados.</p>';
                     return;
                 }
 
-                data.usuarios.forEach(function (u) {
+                usuarios.forEach(function (u) {
                     renderResultado(u);
                 });
 
@@ -492,13 +640,13 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        var timer = null;
+        let timer = null;
 
         buscarJugador.addEventListener('input', function () {
 
             clearTimeout(timer);
 
-            var q = this.value.trim();
+            let q = this.value.trim();
 
             if (q.length < 2) {
                 cerrarResultados();
@@ -531,10 +679,117 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* =========================================
+       REGISTRAR EQUIPO (API)
+       =========================================
+       El <form> sigue apuntando a controllers/registrarEquipo.php como
+       red de seguridad para cuando no hay JS, pero si el script carga
+       se intercepta el submit y se va por POST /api/equipos.
+
+       No se usa apiRequest() a propósito: esa helper fuerza
+       Content-Type: application/json y hace JSON.stringify(), y un
+       archivo binario no sobrevive a ninguna de las dos cosas. Con
+       FormData el navegador pone el multipart boundary solo y no hay
+       que tocar el header. */
+
+    let registerForm = document.getElementById('registerForm');
+
+    if (registerForm) {
+
+        let registerError = document.getElementById('registerError');
+        let registerSubmit = registerForm.querySelector('.submit-button');
+
+        registerForm.addEventListener('submit', function (e) {
+
+            e.preventDefault();
+
+            let nombre = document.getElementById('nombre_equipo').value.trim();
+            let archivo = document.getElementById('logo_equipo').files[0];
+
+            if (nombre.length < 3) {
+                mostrarErrorRegister('El nombre debe tener al menos 3 caracteres.');
+                return;
+            }
+
+            if (!archivo) {
+                mostrarErrorRegister('El logo del equipo es obligatorio.');
+                return;
+            }
+
+            let fd = new FormData();
+
+            fd.append('nombre', nombre);
+            fd.append('logo', archivo);
+
+            miembrosHidden.querySelectorAll('input[name="integrantes[]"]')
+                .forEach(function (input) {
+                    fd.append('integrantes[]', input.value);
+                });
+
+            if (registerSubmit) setLoading(registerSubmit, true);
+            if (registerError) registerError.innerHTML = '';
+
+            fetch('backend/api/equipos', {
+                method: 'POST',
+                body: fd,
+                credentials: 'same-origin'
+            })
+                .then(function (r) {
+                    return r.json().then(function (data) {
+                        return { status: r.status, data: data };
+                    });
+                })
+                .then(function (res) {
+
+                    if (!res.data.exito) {
+
+                        mostrarErrorRegister(
+                            (res.data.errores && res.data.errores.error)
+                                ? res.data.errores.error
+                                : 'No se pudo registrar el equipo.'
+                        );
+
+                        if (registerSubmit) setLoading(registerSubmit, false);
+                        return;
+                    }
+
+                    /* El servidor ya guardó el equipo: recargar muestra la
+                       tarjeta de "mi equipo" y la postulación al torneo. */
+
+                    window.location.reload();
+
+                })
+                .catch(function () {
+
+                    mostrarErrorRegister('Error de conexión. Intenta de nuevo.');
+
+                    if (registerSubmit) setLoading(registerSubmit, false);
+
+                });
+
+        });
+
+        function mostrarErrorRegister(mensaje) {
+
+            if (!registerError) {
+
+                alert(mensaje);
+                return;
+
+            }
+
+            registerError.textContent = mensaje;
+            registerError.classList.add('show');
+
+        }
+
+    }
+
+
+    /* =========================================
        CONFIRMAR POSTULACIÓN AL TORNEO
        ========================================= */
 
-    var postularForms = document.querySelectorAll('.postular-form');
+    let postularForms = document.querySelectorAll('.postular-form');
 
     postularForms.forEach(function (form) {
 
@@ -547,5 +802,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
     });
+
+    iniciarVistaEquipos();
 
 });

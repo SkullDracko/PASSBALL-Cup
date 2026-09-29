@@ -20,11 +20,19 @@ $tituloPagina = 'Inicio';
 |--------------------------------------------------------------------------
 */
 
+$aliasUsuario = trim((string) ($usuario['alias'] ?? ''));
+
+$nombreVisible = $aliasUsuario !== ''
+    ? $aliasUsuario
+    : ($usuario['nombre'] ?? 'Usuario');
+
 $nombreUsuario = htmlspecialchars(
-    $usuario['nombre'] ?? 'Usuario',
+    $nombreVisible,
     ENT_QUOTES,
     'UTF-8'
 );
+
+$avatarUsuario = $usuario['avatar'] ?? null;
 
 $rolUsuario = strtolower(
     $usuario['rol'] ?? 'participante'
@@ -147,6 +155,13 @@ try {
     <link
         rel="stylesheet"
         href="assets/css/pages/comunidad.css"
+    >
+
+    <!-- CSS DE PERFIL -->
+
+    <link
+        rel="stylesheet"
+        href="assets/css/pages/perfil.css"
     >
 
 </head>
@@ -311,33 +326,49 @@ try {
 
         <div class="topbar-user">
 
-            <span class="topbar-user-name">
-                <?= $nombreUsuario ?>
-            </span>
+            <a
+                class="topbar-profile nav-tab"
+                href="dashboard.php#view-perfil"
+                data-target="view-perfil"
+                title="Mi perfil"
+            >
+
+                <span class="topbar-user-name">
+                    <?= $nombreUsuario ?>
+                </span>
 
 
-            <div class="topbar-avatar">
+                <div class="topbar-avatar">
 
-                <svg viewBox="0 0 24 24">
+                    <?php if (!empty($avatarUsuario)): ?>
+                        <img
+                            src="<?= htmlspecialchars($avatarUsuario, ENT_QUOTES, 'UTF-8') ?>"
+                            alt="Foto de perfil"
+                        >
+                    <?php else: ?>
+                        <svg viewBox="0 0 24 24">
 
-                    <circle
-                        cx="12"
-                        cy="8"
-                        r="4"
-                    />
+                            <circle
+                                cx="12"
+                                cy="8"
+                                r="4"
+                            />
 
-                    <path
-                        d="M4 21c.7-4 3.3-6 8-6s7.3 2 8 6"
-                    />
+                            <path
+                                d="M4 21c.7-4 3.3-6 8-6s7.3 2 8 6"
+                            />
 
-                </svg>
+                        </svg>
+                    <?php endif; ?>
 
-            </div>
+                </div>
 
 
-            <span class="topbar-chevron">
-                ⌄
-            </span>
+                <span class="topbar-chevron">
+                    ⌄
+                </span>
+
+            </a>
 
             <a href="controllers/logout.php" class="topbar-logout">
                 <svg viewBox="0 0 24 24">
@@ -388,19 +419,26 @@ try {
 
                 <div class="profile-avatar">
 
-                    <svg viewBox="0 0 24 24">
+                    <?php if (!empty($avatarUsuario)): ?>
+                        <img
+                            src="<?= htmlspecialchars($avatarUsuario, ENT_QUOTES, 'UTF-8') ?>"
+                            alt="Foto de perfil"
+                        >
+                    <?php else: ?>
+                        <svg viewBox="0 0 24 24">
 
-                        <circle
-                            cx="12"
-                            cy="8"
-                            r="4"
-                        />
+                            <circle
+                                cx="12"
+                                cy="8"
+                                r="4"
+                            />
 
-                        <path
-                            d="M4 21c.7-4 3.3-6 8-6s7.3 2 8 6"
-                        />
+                            <path
+                                d="M4 21c.7-4 3.3-6 8-6s7.3 2 8 6"
+                            />
 
-                    </svg>
+                        </svg>
+                    <?php endif; ?>
 
                 </div>
 
@@ -522,6 +560,18 @@ try {
             </div>
 
 
+            <!-- VISTA: PERFIL -->
+
+            <div
+                class="dashboard-view"
+                id="view-perfil"
+            >
+
+                <?php include __DIR__ . '/partials/perfil.php'; ?>
+
+            </div>
+
+
             <!-- FOOTER -->
 
             <footer class="dashboard-footer">
@@ -577,6 +627,7 @@ try {
 
 
         <form
+            id="registerForm"
             action="controllers/registrarEquipo.php"
             method="POST"
             enctype="multipart/form-data"
@@ -730,8 +781,14 @@ try {
             ></div>
 
 
-            <div class="modal-buttons">
+            <p
+                class="register-error"
+                id="registerError"
+                role="alert"
+            ></p>
 
+
+            <div class="modal-buttons">
                 <button
                     type="button"
                     class="cancel-button"
@@ -756,6 +813,8 @@ try {
 
 </div>
 
+
+<script src="assets/js/app.js"></script>
 
 <script src="assets/js/dashboard.js"></script>
 

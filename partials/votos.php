@@ -11,145 +11,24 @@
 
 /*
 |--------------------------------------------------------------------------
-| TORNEO ACTIVO
+| DATOS DE LA VISTA
 |--------------------------------------------------------------------------
+| dashboard.php incluye las seis vistas en la misma peticion, asi que una
+| excepcion sin capturar aqui tumbaria tambien Inicio, Equipos, Partidos,
+| Resultados y Comunidad. Se inicializan los defaults y se consulta dentro
+| de un try/catch, igual que en partials/equipos.html.
 */
 
-$torneoActivo = $pdo
-    ->query("SELECT id, nombre FROM torneos WHERE estado = 'en_curso' ORDER BY id DESC LIMIT 1")
-    ->fetch(PDO::FETCH_ASSOC);
-
-if (!$torneoActivo) {
-    $torneoActivo = $pdo
-        ->query("SELECT id, nombre FROM torneos ORDER BY id DESC LIMIT 1")
-        ->fetch(PDO::FETCH_ASSOC);
-}
-
-$torneoId      = (int) ($torneoActivo['id'] ?? 0);
-$usuarioId     = (int) ($_SESSION['usuario']['id'] ?? 0);
-
-
-/*
-|--------------------------------------------------------------------------
-| CATEGORÍAS ABIERTAS
-|--------------------------------------------------------------------------
-*/
-
-$categorias = [];
-
-if ($torneoId > 0) {
-    $stmt = $pdo->prepare("
-        SELECT c.id, c.clave, c.nombre, c.tipo, c.modo_candidatos, c.orden
-        FROM torneo_categorias_voto c
-        WHERE c.torneo_id = ? AND c.estado = 'abierta'
-        ORDER BY c.orden, c.id
-    ");
-    $stmt->execute([$torneoId]);
-    $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-$totalCategorias = count($categorias);
-
-
-/*
-|--------------------------------------------------------------------------
-| GRUPO BASE DE CANDIDATOS
-|--------------------------------------------------------------------------
-*/
-
-$jugadoresBase = [];
-$equiposBase   = [];
-
-if ($torneoId > 0) {
-    $stmt = $pdo->prepare("
-        SELECT DISTINCT u.id, u.nombre, e.nombre AS equipo, e.id AS equipo_id
-        FROM equipo_miembros em
-        JOIN usuarios u ON u.id = em.jugador_id
-        JOIN equipos e ON e.id = em.equipo_id
-        JOIN torneo_equipos te ON te.equipo_id = e.id
-        WHERE te.torneo_id = ? AND te.estado = 'aprobado' AND em.estado = 'activo'
-        ORDER BY u.nombre
-    ");
-    $stmt->execute([$torneoId]);
-    $jugadoresBase = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $stmt = $pdo->prepare("
-        SELECT e.id, e.nombre, e.logo
-        FROM equipos e
-        JOIN torneo_equipos te ON te.equipo_id = e.id
-        WHERE te.torneo_id = ? AND te.estado = 'aprobado'
-        ORDER BY e.nombre
-    ");
-    $stmt->execute([$torneoId]);
-    $equiposBase = $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| AJUSTES DE CANDIDATOS POR CATEGORÍA
-|--------------------------------------------------------------------------
-*/
-
-$ajustesPorCat = [];
-
-if (!empty($categorias)) {
-    $ids  = array_map('intval', array_column($categorias, 'id'));
-    $in   = implode(',', $ids);
-    $stmt = $pdo->query("
-        SELECT categoria_id, jugador_id, equipo_id, ajuste
-        FROM torneo_categoria_candidatos
-        WHERE categoria_id IN ($in)
-    ");
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $aj) {
-        $ajustesPorCat[(int) $aj['categoria_id']][] = $aj;
-    }
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| VOTOS DEL USUARIO
-|--------------------------------------------------------------------------
-*/
-
+$torneoId          = 0;
+$usuarioId         = (int) ($_SESSION['usuario']['id'] ?? 0);
+$categorias        = [];
+$jugadoresBase     = [];
+$equiposBase       = [];
+$ajustesPorCat     = [];
 $votoJugadorPorCat = [];
 $votoEquipoPorCat  = [];
-
-if ($usuarioId > 0) {
-    $stmt = $pdo->prepare("
-        SELECT categoria_id, jugador_id, equipo_id
-        FROM torneo_votos
-        WHERE usuario_id = ?
-    ");
-    $stmt->execute([$usuarioId]);
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $v) {
-        $votoJugadorPorCat[(int) $v['categoria_id']] = (int) $v['jugador_id'];
-        $votoEquipoPorCat[(int) $v['categoria_id']]  = (int) $v['equipo_id'];
-    }
-}
-
-$misVotos = 0;
-if ($usuarioId > 0) {
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM torneo_votos WHERE usuario_id = ?");
-    $stmt->execute([$usuarioId]);
-    $misVotos = (int) $stmt->fetchColumn();
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| TOTAL DE VOTOS DEL TORNEO
-|--------------------------------------------------------------------------
-*/
-
-$totalVotosTorneo = 0;
-if ($torneoId > 0) {
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM torneo_votos WHERE torneo_id = ?");
-    $stmt->execute([$torneoId]);
-    $totalVotosTorneo = (int) $stmt->fetchColumn();
-}
-
+$misVotos          = 0;
+$totalVotosTorneo  = 0;
 
 /*
 |--------------------------------------------------------------------------
@@ -203,9 +82,145 @@ function resolverCandidatos(array $categoria, array $jugadoresBase, array $equip
     return array_values($candIds);
 }
 
+try {
+
+    /*
+    |----------------------------------------------------------------------
+    | TORNEO ACTIVO
+    |----------------------------------------------------------------------
+    */
+
+    $torneoActivo = $pdo
+        ->query("SELECT id, nombre FROM torneos WHERE estado = 'en_curso' ORDER BY id DESC LIMIT 1")
+        ->fetch(PDO::FETCH_ASSOC);
+
+    if (!$torneoActivo) {
+        $torneoActivo = $pdo
+            ->query("SELECT id, nombre FROM torneos ORDER BY id DESC LIMIT 1")
+            ->fetch(PDO::FETCH_ASSOC);
+    }
+
+    $torneoId = (int) ($torneoActivo['id'] ?? 0);
+
+
+    /*
+    |----------------------------------------------------------------------
+    | CATEGORÍAS ABIERTAS
+    |----------------------------------------------------------------------
+    */
+
+    if ($torneoId > 0) {
+        $stmt = $pdo->prepare("
+            SELECT c.id, c.clave, c.nombre, c.tipo, c.modo_candidatos, c.orden
+            FROM torneo_categorias_voto c
+            WHERE c.torneo_id = ? AND c.estado = 'abierta'
+            ORDER BY c.orden, c.id
+        ");
+        $stmt->execute([$torneoId]);
+        $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    $totalCategorias = count($categorias);
+
+
+    /*
+    |----------------------------------------------------------------------
+    | GRUPO BASE DE CANDIDATOS
+    |----------------------------------------------------------------------
+    */
+
+    if ($torneoId > 0) {
+        $stmt = $pdo->prepare("
+            SELECT DISTINCT u.id, u.nombre, e.nombre AS equipo, e.id AS equipo_id
+            FROM equipo_miembros em
+            JOIN usuarios u ON u.id = em.jugador_id
+            JOIN equipos e ON e.id = em.equipo_id
+            JOIN torneo_equipos te ON te.equipo_id = e.id
+            WHERE te.torneo_id = ? AND te.estado = 'aprobado' AND em.estado = 'activo'
+            ORDER BY u.nombre
+        ");
+        $stmt->execute([$torneoId]);
+        $jugadoresBase = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmt = $pdo->prepare("
+            SELECT e.id, e.nombre, e.logo
+            FROM equipos e
+            JOIN torneo_equipos te ON te.equipo_id = e.id
+            WHERE te.torneo_id = ? AND te.estado = 'aprobado'
+            ORDER BY e.nombre
+        ");
+        $stmt->execute([$torneoId]);
+        $equiposBase = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    /*
+    |----------------------------------------------------------------------
+    | AJUSTES DE CANDIDATOS POR CATEGORÍA
+    |----------------------------------------------------------------------
+    */
+
+    if (!empty($categorias)) {
+        $ids  = array_map('intval', array_column($categorias, 'id'));
+        $in   = implode(',', $ids);
+        $stmt = $pdo->query("
+            SELECT categoria_id, jugador_id, equipo_id, ajuste
+            FROM torneo_categoria_candidatos
+            WHERE categoria_id IN ($in)
+        ");
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $aj) {
+            $ajustesPorCat[(int) $aj['categoria_id']][] = $aj;
+        }
+    }
+
+
+    /*
+    |----------------------------------------------------------------------
+    | VOTOS DEL USUARIO
+    |----------------------------------------------------------------------
+    */
+
+    if ($usuarioId > 0) {
+        $stmt = $pdo->prepare("
+            SELECT categoria_id, jugador_id, equipo_id
+            FROM torneo_votos
+            WHERE usuario_id = ?
+        ");
+        $stmt->execute([$usuarioId]);
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $v) {
+            $votoJugadorPorCat[(int) $v['categoria_id']] = (int) $v['jugador_id'];
+            $votoEquipoPorCat[(int) $v['categoria_id']]  = (int) $v['equipo_id'];
+        }
+
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM torneo_votos WHERE usuario_id = ?");
+        $stmt->execute([$usuarioId]);
+        $misVotos = (int) $stmt->fetchColumn();
+    }
+
+
+    /*
+    |----------------------------------------------------------------------
+    | TOTAL DE VOTOS DEL TORNEO
+    |----------------------------------------------------------------------
+    */
+
+    if ($torneoId > 0) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM torneo_votos WHERE torneo_id = ?");
+        $stmt->execute([$torneoId]);
+        $totalVotosTorneo = (int) $stmt->fetchColumn();
+    }
+
+} catch (PDOException $e) {
+
+    error_log("PASSBALL - Error en la vista Votos: " . $e->getMessage());
+
+    $categorias    = [];
+    $totalCategorias = 0;
+}
+
 ?>
 
-<div id="view-votos">
+<div class="votos-page">
 
     <!-- =====================================================
          ENCABEZADO

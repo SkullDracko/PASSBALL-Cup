@@ -9,16 +9,169 @@
  */
 
 
+function timeAgo(string $fecha): string
+{
+    $ts   = strtotime($fecha);
+    $diff = time() - $ts;
+
+    if ($diff < 60)       return 'Hace un momento';
+    if ($diff < 3600)     return 'Hace ' . floor($diff / 60) . ' min';
+    if ($diff < 86400)    return 'Hace ' . floor($diff / 3600) . ' h';
+    if ($diff < 604800)   return 'Hace ' . floor($diff / 86400) . ' d';
+    return date('d M Y', $ts);
+}
+
+
 /*
 |--------------------------------------------------------------------------
-| ESTADÍSTICAS
+| DATOS DE LA VISTA
 |--------------------------------------------------------------------------
+| Este partial se incluye dentro de dashboard.php, que a su vez incluye las
+| seis vistas en la misma peticion. Una excepcion sin capturar aqui no
+| degrada solo Comunidad: aborta el HTML entero y el usuario se queda sin
+| Inicio, Equipos, Partidos, Votos y Resultados tambien. Por eso los
+| defaults se inicializan antes de consultar y todo va en un try/catch,
+| igual que en partials/equipos.html.
 */
 
-$totalMiembros = (int) $pdo->query("SELECT COUNT(*) FROM usuarios WHERE estado = 'activo'")->fetchColumn();
-$totalPosts    = (int) $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
-$totalLikes    = (int) $pdo->query("SELECT COALESCE(SUM(likes), 0) FROM posts")->fetchColumn();
-$totalReacc    = (int) $pdo->query("SELECT COUNT(*) FROM post_reacciones")->fetchColumn();
+$totalMiembros = 0;
+$totalPosts    = 0;
+$totalLikes    = 0;
+$totalReacc    = 0;
+
+$publicaciones     = [];
+$reaccionesUsuario = [];
+$eventos           = [];
+$miembros          = [];
+
+$usuarioId = (int) ($_SESSION['usuario']['id'] ?? 0);
+
+try {
+
+    /*
+    |----------------------------------------------------------------------
+    | ESTADÍSTICAS
+    |----------------------------------------------------------------------
+    */
+
+    $totalMiembros = (int) $pdo->query("SELECT COUNT(*) FROM usuarios WHERE estado = 'activo'")->fetchColumn();
+    $totalPosts    = (int) $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
+    $totalLikes    = (int) $pdo->query("SELECT COALESCE(SUM(likes), 0) FROM posts")->fetchColumn();
+    $totalReacc    = (int) $pdo->query("SELECT COUNT(*) FROM post_reacciones")->fetchColumn();
+
+
+    /*
+    |----------------------------------------------------------------------
+    | PUBLICACIONES (solo admin publica)
+    |----------------------------------------------------------------------
+    */
+
+    $stmt = $pdo->query("
+        SELECT p.id, p.titulo, p.contenido, p.imagen_url, p.likes, p.fijado, p.fecha,
+               u.nombre AS autor, u.avatar
+        FROM posts p
+        JOIN usuarios u ON u.id = p.usuario_id
+        ORDER BY p.fijado DESC, p.fecha DESC
+        LIMIT 50
+    ");
+
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $post) {
+        $publicaciones[] = [
+            'id'       => (int) $post['id'],
+            'titulo'   => $post['titulo'],
+            'texto'    => $post['contenido'],
+            'imagen'   => $post['imagen_url'],
+            'likes'    => (int) $post['likes'],
+            'fijado'   => (int) $post['fijado'],
+            'autor'    => $post['autor'] ?? 'Comité PASSBALL',
+            'avatar'   => $post['avatar'],
+            'tiempo'   => timeAgo($post['fecha']),
+            'reacciones' => [],  // counts per tipo
+        ];
+    }
+
+    // Reacciones del post para el participante actual
+    if ($usuarioId > 0 && !empty($publicaciones)) {
+        $ids = array_map('intval', array_column($publicaciones, 'id'));
+        $in  = implode(',', $ids);
+        $stmt = $pdo->prepare("
+            SELECT post_id, tipo FROM post_reacciones
+            WHERE usuario_id = ? AND post_id IN ($in)
+        ");
+        $stmt->execute([$usuarioId]);
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            $reaccionesUsuario[(int) $r['post_id']] = $r['tipo'];
+        }
+    }
+
+
+    /*
+    |----------------------------------------------------------------------
+    | PRÓXIMOS PARTIDOS (eventos)
+    |----------------------------------------------------------------------
+    */
+
+    $stmt = $pdo->query("
+        SELECT p.fecha_hora, p.cancha, p.goles_local, p.goles_visitante,
+               l.nombre AS local, v.nombre AS visitante
+        FROM partidos p
+        JOIN torneo_rondas r ON r.id = p.ronda_id
+        LEFT JOIN equipos l ON l.id = p.equipo_local_id
+        LEFT JOIN equipos v ON v.id = p.equipo_visitante_id
+        WHERE p.estado = 'programado'
+        ORDER BY p.fecha_hora ASC
+        LIMIT 5
+    ");
+
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $partido) {
+        if (!empty($partido['fecha_hora'])) {
+            $ts = strtotime($partido['fecha_hora']);
+            $eventos[] = [
+                'dia'   => date('d', $ts),
+                'mes'   => strtoupper(date('M', $ts)),
+                'titulo' => trim(($partido['local'] ?? '—') . ' vs ' . ($partido['visitante'] ?? '—')),
+                'hora'  => date('g:i A', $ts),
+                'lugar' => $partido['cancha'] ?: 'Por definir',
+            ];
+        }
+    }
+
+
+    /*
+    |----------------------------------------------------------------------
+    | MIEMBROS DESTACADOS (capitanes)
+    |----------------------------------------------------------------------
+    */
+
+    $stmt = $pdo->query("
+        SELECT u.nombre, e.nombre AS equipo, u.id AS usuario_id
+        FROM equipos e
+        JOIN usuarios u ON u.id = e.capitan_id
+        WHERE e.estado = 'activo'
+        ORDER BY e.nombre
+        LIMIT 6
+    ");
+
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $m) {
+        $miembros[] = [
+            'nombre'  => $m['nombre'],
+            'equipo'  => $m['equipo'],
+            'rol'     => 'Capitán',
+            'tipo'    => 'capitan',
+            'avatar'  => '<i class="fa-solid fa-user"></i>',
+            'usuario_id' => (int) $m['usuario_id'],
+        ];
+    }
+
+} catch (PDOException $e) {
+
+    error_log("PASSBALL - Error en la vista Comunidad: " . $e->getMessage());
+
+    $publicaciones = [];
+    $reaccionesUsuario = [];
+    $eventos = [];
+    $miembros = [];
+}
 
 $comunidadStats = [
     [
@@ -51,99 +204,6 @@ $comunidadStats = [
     ],
 ];
 
-
-/*
-|--------------------------------------------------------------------------
-| PUBLICACIONES (solo admin publica)
-|--------------------------------------------------------------------------
-*/
-
-$publicaciones = [];
-$stmt = $pdo->query("
-    SELECT p.id, p.titulo, p.contenido, p.imagen_url, p.likes, p.fijado, p.fecha,
-           u.nombre AS autor, u.avatar
-    FROM posts p
-    JOIN usuarios u ON u.id = p.usuario_id
-    ORDER BY p.fijado DESC, p.fecha DESC
-    LIMIT 50
-");
-
-foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $post) {
-    $publicaciones[] = [
-        'id'       => (int) $post['id'],
-        'titulo'   => $post['titulo'],
-        'texto'    => $post['contenido'],
-        'imagen'   => $post['imagen_url'],
-        'likes'    => (int) $post['likes'],
-        'fijado'   => (int) $post['fijado'],
-        'autor'    => $post['autor'] ?? 'Comité PASSBALL',
-        'avatar'   => $post['avatar'],
-        'tiempo'   => timeAgo($post['fecha']),
-        'reacciones' => [],  // counts per tipo
-    ];
-}
-
-function timeAgo(string $fecha): string
-{
-    $ts   = strtotime($fecha);
-    $diff = time() - $ts;
-
-    if ($diff < 60)       return 'Hace un momento';
-    if ($diff < 3600)     return 'Hace ' . floor($diff / 60) . ' min';
-    if ($diff < 86400)    return 'Hace ' . floor($diff / 3600) . ' h';
-    if ($diff < 604800)   return 'Hace ' . floor($diff / 86400) . ' d';
-    return date('d M Y', $ts);
-}
-
-// Reacciones del post para el participante actual
-$usuarioId = $_SESSION['usuario']['id'] ?? 0;
-$reaccionesUsuario = [];
-
-if ($usuarioId > 0 && !empty($publicaciones)) {
-    $ids = array_map('intval', array_column($publicaciones, 'id'));
-    $in  = implode(',', $ids);
-    $stmt = $pdo->query("
-        SELECT post_id, tipo FROM post_reacciones
-        WHERE usuario_id = $usuarioId AND post_id IN ($in)
-    ");
-    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
-        $reaccionesUsuario[(int) $r['post_id']] = $r['tipo'];
-    }
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| PRÓXIMOS PARTIDOS (eventos)
-|--------------------------------------------------------------------------
-*/
-
-$eventos = [];
-$stmt = $pdo->query("
-    SELECT p.fecha_hora, p.cancha, p.goles_local, p.goles_visitante,
-           l.nombre AS local, v.nombre AS visitante
-    FROM partidos p
-    JOIN torneo_rondas r ON r.id = p.ronda_id
-    LEFT JOIN equipos l ON l.id = p.equipo_local_id
-    LEFT JOIN equipos v ON v.id = p.equipo_visitante_id
-    WHERE p.estado = 'programado'
-    ORDER BY p.fecha_hora ASC
-    LIMIT 5
-");
-
-foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $partido) {
-    if (!empty($partido['fecha_hora'])) {
-        $ts = strtotime($partido['fecha_hora']);
-        $eventos[] = [
-            'dia'   => date('d', $ts),
-            'mes'   => strtoupper(date('M', $ts)),
-            'titulo' => trim(($partido['local'] ?? '—') . ' vs ' . ($partido['visitante'] ?? '—')),
-            'hora'  => date('g:i A', $ts),
-            'lugar' => $partido['cancha'] ?: 'Por definir',
-        ];
-    }
-}
-
 if (empty($eventos)) {
     $eventos[] = [
         'dia'   => date('d'),
@@ -154,41 +214,13 @@ if (empty($eventos)) {
     ];
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| MIEMBROS DESTACADOS (capitanes)
-|--------------------------------------------------------------------------
-*/
-
-$miembros = [];
-$stmt = $pdo->query("
-    SELECT u.nombre, e.nombre AS equipo, u.id AS usuario_id
-    FROM equipos e
-    JOIN usuarios u ON u.id = e.capitan_id
-    WHERE e.estado = 'activo'
-    ORDER BY e.nombre
-    LIMIT 6
-");
-
-foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $m) {
-    $miembros[] = [
-        'nombre'  => $m['nombre'],
-        'equipo'  => $m['equipo'],
-        'rol'     => 'Capitán',
-        'tipo'    => 'capitan',
-        'avatar'  => '<i class="fa-solid fa-user"></i>',
-        'usuario_id' => (int) $m['usuario_id'],
-    ];
-}
-
 ?>
 
 <!-- ============================================================
      COMUNIDAD - CONTENEDOR PRINCIPAL
      ============================================================ -->
 
-<div class="comunidad-page" id="view-comunidad">
+<div class="comunidad-page">
 
     <!-- ========================================================
          ENCABEZADO
