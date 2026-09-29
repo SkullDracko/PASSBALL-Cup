@@ -5,7 +5,7 @@
  * =========================================================
  * Esta pagina quedo huérfana tras la refactorización del
  * dashboard como SPA. La sección Equipos ahora vive en la
- * pestaña "Equipos" del dashboard (partials/equipos.php).
+ * pestaña "Equipos" del dashboard (partials/equipos.html).
  * Redirigimos aquí para mantener compatibilidad con links
  * externos (registrarEquipo, detalle, etc.).
  * =========================================================

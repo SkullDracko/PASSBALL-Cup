@@ -2,15 +2,19 @@
 require_once __DIR__ . '/../core/db.php';
 require_once __DIR__ . '/../security/authorization.php';
 
-class EquipoMiembrosController {
+class EquipoMiembrosController
+{
     private PDO $pdo;
-    public function __construct() { $this->pdo = conectarDB(); }
+    public function __construct()
+    {
+        $this->pdo = conectarDB();
+    }
 
     public function listar(array $params): void
     {
         // GET /api/equipos/{equipoId}/miembros?estado=activo
 
-      /*   requireAuthAPI(); */
+        requireAuthAPI();
         $equipoId = $this->obtenerEquipoId($params);
         $this->verificarEquipoExiste($equipoId);
 
@@ -46,6 +50,7 @@ class EquipoMiembrosController {
         // POST /api/equipos/{equipoId}/miembros
 
         $equipoId = $this->obtenerEquipoId($params);
+        requireAuthAPI();
         $this->requireCapitanOAdmin($equipoId);
         $this->verificarEquipoExiste($equipoId);
 
@@ -108,6 +113,7 @@ class EquipoMiembrosController {
 
         $equipoId = $this->obtenerEquipoId($params);
         $jugadorId = $this->obtenerJugadorId($params);
+        requireAuthAPI();
         $this->requireCapitanOAdmin($equipoId);
 
         $stmt = $this->pdo->prepare("
@@ -134,6 +140,7 @@ class EquipoMiembrosController {
 
         $equipoId = $this->obtenerEquipoId($params);
         $jugadorId = $this->obtenerJugadorId($params);
+        requireAuthAPI();
         $this->requireCapitanOAdmin($equipoId);
 
         $stmt = $this->pdo->prepare(
@@ -156,16 +163,35 @@ class EquipoMiembrosController {
     {
         // GET /api/jugadores/{jugadorId}/equipo-actual
 
-      /*   requireAuthAPI(); */
+         requireAuthAPI(); 
         $jugadorId = $this->obtenerJugadorId($params);
 
         $stmt = $this->pdo->prepare("
-            SELECT e.id, e.nombre, e.logo, e.capitan_id, e.estado, em.fecha_union
-            FROM equipo_miembros em
-            JOIN equipos e ON e.id = em.equipo_id
-            WHERE em.jugador_id = ? AND em.estado = 'activo'
-            LIMIT 1
-        ");
+    SELECT 
+        e.id,
+        e.nombre,
+        e.logo,
+        e.capitan_id,
+        e.estado,
+        em.fecha_union,
+        COUNT(em2.id) AS total_miembros
+    FROM equipo_miembros em
+    JOIN equipos e 
+        ON e.id = em.equipo_id
+    LEFT JOIN equipo_miembros em2
+        ON em2.equipo_id = e.id
+        AND em2.estado = 'activo'
+    WHERE em.jugador_id = ?
+      AND em.estado = 'activo'
+    GROUP BY 
+        e.id,
+        e.nombre,
+        e.logo,
+        e.capitan_id,
+        e.estado,
+        em.fecha_union
+    LIMIT 1
+");
         $stmt->execute([$jugadorId]);
         $equipo = $stmt->fetch();
 
@@ -178,7 +204,7 @@ class EquipoMiembrosController {
     {
         // GET /api/jugadores/{jugadorId}/historial-equipos
 
-      /*   requireAuthAPI(); */
+        requireAuthAPI();
         $jugadorId = $this->obtenerJugadorId($params);
 
         $stmt = $this->pdo->prepare("

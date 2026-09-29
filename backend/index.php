@@ -26,10 +26,17 @@ require __DIR__ . '/routes/api.php';
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-$basePath = '/PASSBALL-Cup/backend';
+// El servidor antepone su propia raíz a /api/* y las rutas de routes/api.php
+// no la incluyen, así que se recorta: en local el proyecto vive en
+// /PASSBALL-Cup/backend, y en producción el docroot ya es la raíz del sitio
+// y sólo queda /backend.
+$basePaths = ['/PASSBALL-Cup/backend', '/backend'];
 
-if (str_starts_with($uri, $basePath)) {
-    $uri = substr($uri, strlen($basePath));
+foreach ($basePaths as $basePath) {
+    if (str_starts_with($uri, $basePath)) {
+        $uri = substr($uri, strlen($basePath));
+        break;
+    }
 }
 
 $router->dispatch(

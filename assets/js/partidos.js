@@ -20,8 +20,8 @@ document.addEventListener("DOMContentLoaded", function () {
     var matchSearch =
         document.getElementById("matchSearch");
 
-    var courtFilter =
-        document.getElementById("courtFilter");
+    var categoriaFilter =
+        document.getElementById("categoriaFilter");
 
     var emptyResults =
         document.getElementById("emptyResults");
@@ -39,8 +39,8 @@ document.addEventListener("DOMContentLoaded", function () {
             ? matchSearch.value.toLowerCase().trim()
             : "";
 
-        var courtValue = courtFilter
-            ? courtFilter.value
+        var categoriaValue = categoriaFilter
+            ? categoriaFilter.value
             : "todos";
 
         var visibleMatches = 0;
@@ -50,8 +50,8 @@ document.addEventListener("DOMContentLoaded", function () {
             var status =
                 row.getAttribute("data-status");
 
-            var court =
-                row.getAttribute("data-court");
+            var categoria =
+                row.getAttribute("data-categoria");
 
             var searchData =
                 row.getAttribute("data-search") || "";
@@ -60,9 +60,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 currentStatus === "todos" ||
                 status === currentStatus;
 
-            var courtMatches =
-                courtValue === "todos" ||
-                court === courtValue;
+            var categoriaMatches =
+                categoriaValue === "todos" ||
+                categoria === categoriaValue;
 
             var searchMatches =
                 searchValue === "" ||
@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (
                 statusMatches &&
-                courtMatches &&
+                categoriaMatches &&
                 searchMatches
             ) {
 
@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ========================================================
-       BUSCADOR / FILTRO DE CANCHA
+       BUSCADOR / FILTRO DE CATEGORÍA
        ======================================================== */
 
     if (matchSearch) {
@@ -136,9 +136,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    if (courtFilter) {
+    if (categoriaFilter) {
 
-        courtFilter.addEventListener("change", filterMatches);
+        categoriaFilter.addEventListener("change", filterMatches);
 
     }
 

@@ -106,14 +106,8 @@ $error = $_GET['error'] ?? '';
 
         <img
             src="assets/img/passball-cup.png"
-            class="login-logo"
-            alt="PASSBALL Cup"
+            alt="PASSBALL Cup Logo"
         >
-
-
-        <!-- ======================================
-             DIVISOR
-             ====================================== -->
 
         <div class="login-divider">
 
@@ -166,21 +160,6 @@ $error = $_GET['error'] ?? '';
             Inicia sesión para continuar
 
         </h2>
-
-
-        <!-- ======================================
-             ERROR
-             ====================================== -->
-
-        <?php if ($error): ?>
-
-            <div class="alert alert-error">
-
-                <?= htmlspecialchars($error) ?>
-
-            </div>
-
-        <?php endif; ?>
 
 
         <!-- ======================================
@@ -244,6 +223,16 @@ $error = $_GET['error'] ?? '';
                 >
 
             </div>
+
+
+            <div
+                id="loginAlert"
+                class="custom-alert-slot"
+                <?php if ($error): ?>
+                    data-custom-alert="<?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>"
+                    data-alert-type="error"
+                <?php endif; ?>
+            ></div>
 
 
             <!-- ==================================

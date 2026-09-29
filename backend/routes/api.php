@@ -19,6 +19,9 @@ $router->post('/api/admin/logout', [AdminAuthController::class, 'logout']);
 $router->get('/api/admin/me', [AdminAuthController::class, 'me']);
 
 // --- usuarios / administradores ---
+// 'buscar' va antes que '{id}': el router prueba las rutas en orden y
+// {id} también haría match con la palabra "buscar".
+$router->get('/api/usuarios/buscar', [UsuariosController::class, 'buscar']);
 $router->get('/api/usuarios', [UsuariosController::class, 'listar']);
 $router->get('/api/usuarios/{id}', [UsuariosController::class, 'detalle']);
 $router->patch('/api/usuarios/{id}', [UsuariosController::class, 'actualizarAvatar']);

@@ -23,8 +23,7 @@ $partidos = [
         'hora'       => '10:00 AM',
         'local'      => 'Águilas FC',
         'visitante'  => 'Tigres FC',
-        'cancha'     => 'Cancha Principal',
-        'estadio'    => 'Estadio Municipal',
+        'categoria'  => 'Femenil',
         'estado'     => 'proximo',
         'local_icon' => '🦅',
         'visit_icon' => '🐯',
@@ -35,8 +34,7 @@ $partidos = [
         'hora'       => '12:00 PM',
         'local'      => 'Lobos FC',
         'visitante'  => 'Real Passball',
-        'cancha'     => 'Cancha Principal',
-        'estadio'    => 'Estadio Municipal',
+        'categoria'  => 'Varonil',
         'estado'     => 'proximo',
         'local_icon' => '🐺',
         'visit_icon' => '⚽',
@@ -47,8 +45,7 @@ $partidos = [
         'hora'       => '09:00 AM',
         'local'      => 'Guerreros FC',
         'visitante'  => 'Leones FC',
-        'cancha'     => 'Cancha Secundaria',
-        'estadio'    => 'Estadio Municipal',
+        'categoria'  => 'Femenil',
         'estado'     => 'jugando',
         'local_icon' => '🛡️',
         'visit_icon' => '🦁',
@@ -59,8 +56,7 @@ $partidos = [
         'hora'       => '11:00 AM',
         'local'      => 'Halcones FC',
         'visitante'  => 'Panteras FC',
-        'cancha'     => 'Cancha Secundaria',
-        'estadio'    => 'Estadio Municipal',
+        'categoria'  => 'Varonil',
         'estado'     => 'finalizado',
         'local_icon' => '🦅',
         'visit_icon' => '🐈‍⬛',
@@ -264,18 +260,18 @@ $totalGoles       = 12;
 
                 <i class="fa-solid fa-filter"></i>
 
-                <select id="courtFilter">
+                <select id="categoriaFilter">
 
                     <option value="todos">
-                        Todas las canchas
+                        Todas las categorías
                     </option>
 
-                    <option value="Cancha Principal">
-                        Cancha Principal
+                    <option value="Femenil">
+                        Femenil
                     </option>
 
-                    <option value="Cancha Secundaria">
-                        Cancha Secundaria
+                    <option value="Varonil">
+                        Varonil
                     </option>
 
                 </select>
@@ -328,12 +324,12 @@ $totalGoles       = 12;
                 <article
                     class="match-row"
                     data-status="<?= $partido['estado'] ?>"
-                    data-court="<?= htmlspecialchars($partido['cancha'], ENT_QUOTES, 'UTF-8') ?>"
+                    data-categoria="<?= htmlspecialchars($partido['categoria'], ENT_QUOTES, 'UTF-8') ?>"
                     data-search="<?= htmlspecialchars(
                         strtolower(
                             $partido['local'] . ' ' .
                             $partido['visitante'] . ' ' .
-                            $partido['cancha']
+                            $partido['categoria']
                         ),
                         ENT_QUOTES,
                         'UTF-8'
@@ -401,13 +397,11 @@ $totalGoles       = 12;
 
                     <div class="match-location">
 
-                        <i class="fa-solid fa-location-dot"></i>
+                        <i class="fa-solid <?= $partido['categoria'] === 'Femenil' ? 'fa-venus' : 'fa-mars' ?>"></i>
 
                         <div>
 
-                            <strong><?= htmlspecialchars($partido['cancha'], ENT_QUOTES, 'UTF-8') ?></strong>
-
-                            <span><?= htmlspecialchars($partido['estadio'], ENT_QUOTES, 'UTF-8') ?></span>
+                            <strong><?= htmlspecialchars($partido['categoria'], ENT_QUOTES, 'UTF-8') ?></strong>
 
                         </div>
 

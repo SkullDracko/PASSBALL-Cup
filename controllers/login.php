@@ -107,6 +107,7 @@ try {
         'nombre'    => $usuario['nombre'],
         'rol'       => $usuario['rol'],
         'avatar'    => $usuario['avatar'],
+        'alias'     => $usuario['alias'] ?? null,
     ];
 
     echo json_encode([

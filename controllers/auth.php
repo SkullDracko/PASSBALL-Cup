@@ -10,7 +10,16 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['usuario'])) {
-    header("Location: login.php");
+    // El login vive en la raíz del proyecto: la ruta relativa "login.php"
+    // rompe en subcarpetas (equipos/, etc.). Calculamos la raíz web del
+    // proyecto a partir del documento raíz del servidor.
+    $raizAbs  = str_replace('\\', '/', realpath(__DIR__ . '/../'));
+    $docRoot  = str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? ''));
+    $raizWeb  = ($docRoot && strpos($raizAbs, $docRoot) === 0)
+        ? substr($raizAbs, strlen(rtrim($docRoot, '/')))
+        : '';
+
+    header('Location: ' . $raizWeb . '/login.php');
     exit;
 }
 

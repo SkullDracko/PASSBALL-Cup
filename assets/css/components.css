@@ -93,6 +93,108 @@
     border: 1px solid #ffeeba;
 }
 
+.custom-alert-slot {
+    width: 100%;
+    display: grid;
+    grid-template-rows: minmax(0, 0fr);
+    margin-bottom: 0;
+    overflow: hidden;
+    transition: grid-template-rows 180ms ease, margin-bottom 180ms ease;
+}
+
+.custom-alert-slot.has-alert {
+    grid-template-rows: minmax(0, 1fr);
+    margin-bottom: 0.5rem;
+}
+
+.custom-alert {
+    --alert-accent: var(--primary);
+    --alert-tint: #f4f0f7;
+    min-height: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1rem 1rem 1.1rem;
+    border: 1px solid var(--light-gray);
+    border-left: 4px solid var(--alert-accent);
+    border-radius: var(--radius-sm);
+    background: linear-gradient(100deg, var(--alert-tint), var(--white) 55%);
+    color: var(--dark-gray);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-0.35rem);
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.custom-alert.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.custom-alert--success {
+    --alert-accent: #18794e;
+    --alert-tint: #edf8f1;
+}
+
+.custom-alert--error {
+    --alert-accent: #b42318;
+    --alert-tint: #fff1f0;
+}
+
+.custom-alert--warning {
+    --alert-accent: #946200;
+    --alert-tint: #fff8e6;
+}
+
+.custom-alert--info {
+    --alert-accent: var(--primary);
+    --alert-tint: #f4f0f7;
+}
+
+.custom-alert__message {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.custom-alert__close {
+    display: grid;
+    flex: 0 0 1.75rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    place-items: center;
+    margin: -0.2rem -0.2rem 0 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--primary-mid);
+    font: inherit;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.custom-alert__close:hover,
+.custom-alert__close:focus-visible {
+    background: rgba(47, 30, 80, 0.08);
+}
+
+.custom-alert__close:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .custom-alert-slot,
+    .custom-alert {
+        transition: none;
+    }
+}
+
 /* --- Cards --- */
 .card {
     background: var(--white);

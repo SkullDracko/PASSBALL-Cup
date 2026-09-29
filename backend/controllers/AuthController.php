@@ -36,7 +36,19 @@ class AuthController
         }
 
         session_start();
+
+        // La API lee $_SESSION['user_id'] y las páginas del sitio validan
+        // $_SESSION['usuario'] (controllers/auth.php); se escriben ambas.
+        session_regenerate_id(true);
+
         $_SESSION['user_id'] = (int) $usuario['id'];
+        $_SESSION['usuario'] = [
+            'id'        => (int) $usuario['id'],
+            'matricula' => $usuario['matricula'],
+            'nombre'    => $usuario['nombre'] ?? '',
+            'rol'       => $usuario['rol'],
+            'avatar'    => $usuario['avatar'] ?? null,
+        ];
 
         jsonResponse(true, ['usuario' => $usuario]);
     }
@@ -74,7 +86,7 @@ class AuthController
     private function buscarUsuarioPorMatricula(string $matricula): ?array
     {
         $stmt = $this->pdo->prepare("
-            SELECT id, matricula, rol, estado, jugador_activo
+            SELECT id, matricula, nombre, avatar, rol, estado, jugador_activo
             FROM usuarios
             WHERE matricula = ?
             LIMIT 1
@@ -89,7 +101,7 @@ class AuthController
     private function buscarUsuarioPorId(int $id): ?array
     {
         $stmt = $this->pdo->prepare("
-            SELECT id, matricula, rol, estado, jugador_activo
+            SELECT id, matricula, nombre, avatar, rol, estado, jugador_activo
             FROM usuarios
             WHERE id = ?
             LIMIT 1

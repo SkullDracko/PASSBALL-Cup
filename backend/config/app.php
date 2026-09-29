@@ -24,3 +24,13 @@ $_ENV['APP_DEBUG'] = $_ENV['APP_DEBUG'] ?? '1';  // '1' muestra errores detallad
 
 error_reporting($_ENV['APP_DEBUG'] === '1' ? E_ALL : 0);
 ini_set('display_errors', $_ENV['APP_DEBUG'] === '1' ? '1' : '0');
+
+// Subida de archivos. Se replican aquí los valores de config/app.php del sitio
+// legacy para que backend/ siga siendo autónomo; los guards evitan un
+// "Constant already defined" si alguna vez se cargaran ambos.
+if (!defined('UPLOADS_PATH')) {
+    define('UPLOADS_PATH', __DIR__ . '/../../uploads/');
+    define('UPLOADS_URL', 'uploads/');
+    define('MAX_FILE_SIZE', 5 * 1024 * 1024);
+    define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+}
