@@ -28,6 +28,11 @@ $router->patch('/api/usuarios/{id}', [UsuariosController::class, 'actualizarAvat
 $router->patch('/api/usuarios/{id}/estado', [UsuariosController::class, 'cambiarEstado']);
 $router->patch('/api/usuarios/{id}/jugador-activo', [UsuariosController::class, 'cambiarJugadorActivo']);
 
+// El panel admin no puede usar /api/usuarios: exige sesión de jugador
+// (requireAuthAPI) y un admin recibía 401. Este listado es su equivalente
+// con requireAdminAPI.
+$router->get('/api/admin/usuarios', [AdminUsuariosController::class, 'listar']);
+
 $router->get('/api/administradores', [AdministradoresController::class, 'listar']);
 $router->post('/api/administradores', [AdministradoresController::class, 'crear']);
 $router->get('/api/administradores/{id}', [AdministradoresController::class, 'detalle']);

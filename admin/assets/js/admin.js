@@ -5,6 +5,12 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    // Los datos de Inicio los pide api.js a backend/api.
+    if (typeof cargarInicio === 'function') {
+        cargarInicio();
+    }
+
+
     var shell  = document.getElementById('adminShell');
     var burger = document.getElementById('adminBurger');
     var title  = document.getElementById('adminTitle');

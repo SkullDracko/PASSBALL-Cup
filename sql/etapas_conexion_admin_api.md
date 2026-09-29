@@ -471,9 +471,73 @@ como **"no toca la BD"**. Opciones:
 | 2.4 | Migrar Participantes → Postulaciones → Votaciones → Torneo → Resultados |
 
 **Criterio de salida**
-- [ ] El panel entra con la contraseña de `admin_local` vía la API
-- [ ] `GET /api/admin/me` responde 200 con la sesión del panel
-- [ ] Inicio sin `$pdo->`
+- [x] El panel entra con la contraseña de `admin_local` vía la API
+- [x] `GET /api/admin/me` responde 200 con la sesión del panel
+- [x] Inicio sin `$pdo->`
+- [ ] 2.4 completo (las seis vistas restantes)
+
+#### Estado tras 2.1–2.3
+
+Verificado por HTTP contra Apache (`http://localhost/PASSBALL-Cup`), no solo por lectura:
+
+| Comprobación | Resultado |
+|---|---|
+| `POST /api/admin/login` con `admin_local` | 200, devuelve `{id, nombre, usuario, activo}` sin el hash |
+| `GET /api/admin/me` con esa sesión | 200 |
+| Los 7 endpoints que consume `api.js` | 200 |
+| `admin/login.php` ya no llama a `controllers/login.php` | correcto |
+| `admin/dashboard.php` renderiza y cierra `</html>` | 200, 46 850 bytes |
+| `inicio.php` con `$pdo->` | 0 apariciones |
+
+`admin/controllers/login.php` queda sin referencias desde el HTML y el JS. El archivo
+sigue en disco hasta E3.3, junto con `admin/assets/js/login.js`, que ya estaba huérfano.
+
+#### Dos bloqueos que aparecieron al ejecutar 2.3
+
+**a) `GET /api/usuarios` es inutilizable desde el panel (resuelve S7)**
+
+`UsuariosController::listar()` llama a `requireAuthAPI()`, que solo reconoce
+`$_SESSION['user_id']` / `$_SESSION['usuario']['id']` — la sesión de **jugador**. Un
+administrador autenticado recibía `401 No autenticado` con su sesión perfectamente válida.
+
+No se debilitó `requireAuthAPI()`: el panel necesita listar usuarios, no el jugador, y
+cambiar el guard expondría a cualquier jugador al listado completo. Se añadió en su lugar
+
+| # | Endpoint | Guard | Para qué |
+|---|---|---|---|
+| 2.5 | `GET /api/admin/usuarios?estado&jugador_activo&rol` (`AdminUsuariosController`) | `requireAdminAPI()` | Listados del panel; devuelve además `total` |
+
+`api.js` consume este. Verificado: 200 con sesión de admin, 401 sin ella.
+
+**b) La vista Comunidad tumbaba el panel entero (preexistente, no lo causó la E2)**
+
+`admin/partials/comunidad.php` consultaba la tabla `posts`, que **no existe** en el esquema
+(14 tablas, ninguna de comunidad). El `PDOException` era fatal y cortaba el render a
+mitad: la página llegaba a 34 751 bytes sin `</html>` y, critically, **sin las etiquetas
+`<script>` del final**, así que ningún JS del panel cargaba.
+
+Auditoría de los siete partials contra `SHOW TABLES`: `posts` era la única referencia
+colgante. La vista ahora degrada a un aviso y desactiva su formulario, en vez de tumbar
+el panel. La reconstrucción real de Comunidad sobre la API es trabajo de E3; hasta entonces
+no hay dónde publicar.
+
+#### Pérdida de datos aceptada en Inicio
+
+La tarjeta **Votos** queda en `0`. El legacy la llenaba con un `SELECT COUNT(*)` sobre
+`torneo_votos` y la API no expone ese conteo. Se marca en el código con un comentario en
+lugar de inventar un endpoint; se resuelve en E2.4 junto con Votaciones.
+
+#### Cambio de credencial de `admin_local` (error propio)
+
+Al verificar el login por HTTP, un script de comprobación sobrescribió el hash de
+`admin_local` (id=3) **antes** de guardar el original: una ruta de archivo en PHP
+interpretaba `\e2_hash_original.txt` como secuencia de escape, así que el
+`file_put_contents` falló en silencio. El hash anterior quedó perdido y la contraseña que
+el usuario tenía anotada dejó de servir.
+
+Se fijó una nueva. `id=1` (hash de 40 caracteres, inválido) y `id=2` (7 caracteres, texto
+plano) siguen rotos como antes; `admin_local` es el único administrador utilizable.
+
 
 ### Etapa 3 — Desconectar el legacy
 *Solo después de que la Etapa 2 esté completa.*

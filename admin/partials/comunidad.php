@@ -8,13 +8,25 @@ $flashSuccess = $_SESSION['flash_success'] ?? null;
 $flashError   = $_SESSION['flash_error'] ?? null;
 unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
-$posts = $pdo->query("
-    SELECT p.id, p.titulo, p.contenido, p.imagen_url, p.fijado, p.likes, p.fecha,
-           u.nombre AS autor
-    FROM posts p
-    LEFT JOIN usuarios u ON u.id = p.usuario_id
-    ORDER BY p.fijado DESC, p.fecha DESC
-")->fetchAll(PDO::FETCH_ASSOC);
+// La tabla 'posts' no existe en el esquema actual (14 tablas, ninguna de
+// comunidad). Sin este try/catch el PDOException es fatal y corta el render
+// de TODO el panel, dejando la página sin etiquetas de cierre. La vista se
+// migra por completo a la API en E3; aquí solo se evita que tumbe el resto.
+$posts = [];
+$errorPosts = null;
+
+try {
+    $posts = $pdo->query("
+        SELECT p.id, p.titulo, p.contenido, p.imagen_url, p.fijado, p.likes, p.fecha,
+               u.nombre AS autor
+        FROM posts p
+        LEFT JOIN usuarios u ON u.id = p.usuario_id
+        ORDER BY p.fijado DESC, p.fecha DESC
+    ")->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $errorPosts = $e->getMessage();
+    error_log("Comunidad: no se pudieron leer los posts: " . $errorPosts);
+}
 
 function timeAgoAdmin(string $fecha): string
 {
@@ -57,6 +69,12 @@ function timeAgoAdmin(string $fecha): string
             </div>
         </div>
 
+        <?php if ($errorPosts !== null): ?>
+        <div class="admin-stub compact">
+            <h3>Formulario desactivado</h3>
+            <p>No se puede publicar mientras la tabla de publicaciones no exista.</p>
+        </div>
+        <?php else: ?>
         <form class="admin-form" method="POST" action="controllers/comunidad.php">
             <input type="hidden" name="action" value="crear_post">
             <div class="field">
@@ -80,6 +98,7 @@ function timeAgoAdmin(string $fecha): string
                 </button>
             </div>
         </form>
+        <?php endif; ?>
     </section>
 
     <!-- Listado de posts -->
@@ -89,7 +108,13 @@ function timeAgoAdmin(string $fecha): string
             <span class="feed-count"><?= count($posts) ?></span>
         </div>
 
-        <?php if (empty($posts)): ?>
+        <?php if ($errorPosts !== null): ?>
+        <div class="admin-stub compact">
+            <h3>Comunidad no disponible</h3>
+            <p>La tabla de publicaciones no existe en la base de datos actual.
+               Esta vista se reconstruye sobre la API en la etapa E3.</p>
+        </div>
+        <?php elseif (empty($posts)): ?>
         <div class="admin-stub compact">
             <h3>No hay publicaciones aún</h3>
             <p>Usa el formulario para publicar la primera novedad.</p>

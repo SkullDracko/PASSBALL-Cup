@@ -200,6 +200,7 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
 </div>
 
 
+<script src="assets/js/api.js"></script>
 <script src="assets/js/admin.js"></script>
 
 </body>
