@@ -31,7 +31,7 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
 
     <link
         rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        href="../assets/css/fa/all.min.css"
     >
 
     <link rel="stylesheet" href="../assets/css/variables.css">
@@ -40,6 +40,13 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
 </head>
 
 <body>
+
+<div class="pb-loader" id="pbLoader" role="status" aria-label="Cargando">
+    <div class="pb-ball-wrap">
+        <i class="pb-ball" aria-hidden="true">⚽</i>
+        <div class="pb-shadow"></div>
+    </div>
+</div>
 
 <div class="admin-shell" id="adminShell">
 

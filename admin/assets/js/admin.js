@@ -3,6 +3,40 @@
  * Navegación por vistas + sidebar móvil
  */
 
+/* =========================================
+   SPLASH DE CARGA
+   ========================================= */
+
+var pbLoaderHidden = false;
+var pbStart = Date.now();
+var pbMinShow = 2000;
+
+function pbHideLoader() {
+
+    var loader = document.getElementById('pbLoader');
+
+    if (pbLoaderHidden || !loader) return;
+
+    if (Date.now() - pbStart < pbMinShow) {
+        setTimeout(pbHideLoader, pbMinShow - (Date.now() - pbStart));
+        return;
+    }
+
+    pbLoaderHidden = true;
+
+    loader.classList.add('pb-done');
+
+    setTimeout(function () {
+        if (loader.parentNode) {
+            loader.parentNode.removeChild(loader);
+        }
+    }, 650);
+
+}
+
+window.addEventListener('load', pbHideLoader);
+setTimeout(pbHideLoader, pbMinShow);
+
 document.addEventListener('DOMContentLoaded', function () {
 
     var shell  = document.getElementById('adminShell');
