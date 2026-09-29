@@ -14,7 +14,7 @@ class EquipoMiembrosController
     {
         // GET /api/equipos/{equipoId}/miembros?estado=activo
 
-        /*   requireAuthAPI(); */
+        requireAuthAPI();
         $equipoId = $this->obtenerEquipoId($params);
         $this->verificarEquipoExiste($equipoId);
 
@@ -50,6 +50,7 @@ class EquipoMiembrosController
         // POST /api/equipos/{equipoId}/miembros
 
         $equipoId = $this->obtenerEquipoId($params);
+        requireAuthAPI();
         $this->requireCapitanOAdmin($equipoId);
         $this->verificarEquipoExiste($equipoId);
 
@@ -112,6 +113,7 @@ class EquipoMiembrosController
 
         $equipoId = $this->obtenerEquipoId($params);
         $jugadorId = $this->obtenerJugadorId($params);
+        requireAuthAPI();
         $this->requireCapitanOAdmin($equipoId);
 
         $stmt = $this->pdo->prepare("
@@ -138,6 +140,7 @@ class EquipoMiembrosController
 
         $equipoId = $this->obtenerEquipoId($params);
         $jugadorId = $this->obtenerJugadorId($params);
+        requireAuthAPI();
         $this->requireCapitanOAdmin($equipoId);
 
         $stmt = $this->pdo->prepare(
@@ -160,7 +163,7 @@ class EquipoMiembrosController
     {
         // GET /api/jugadores/{jugadorId}/equipo-actual
 
-        /*   requireAuthAPI(); */
+         requireAuthAPI(); 
         $jugadorId = $this->obtenerJugadorId($params);
 
         $stmt = $this->pdo->prepare("
@@ -201,7 +204,7 @@ class EquipoMiembrosController
     {
         // GET /api/jugadores/{jugadorId}/historial-equipos
 
-        /*   requireAuthAPI(); */
+        requireAuthAPI();
         $jugadorId = $this->obtenerJugadorId($params);
 
         $stmt = $this->pdo->prepare("
