@@ -16,7 +16,8 @@
 Estado: ✅ verificado · ⚠️ a medias · ⛔ bloqueado · ❌ sin hacer
 
 > **Si vienes a continuar el trabajo, empieza por la [sección 0](#0-estado-de-la-implementación).**
-> Cada etapa tiene su tabla con el detalle en el [§5](#5-fases-de-ejecución).
+> Para el estado de un vistazo y sus commits, ve directo al
+> [§10](#10-tabla-final-de-etapas), al final del documento.
 
 ### Las cinco etapas de un vistazo
 
@@ -155,12 +156,12 @@ archivo, y conviene saber cuál es cuál antes de leer cualquier tabla:
 
 | Prefijo | Significado |
 |---|---|
+| `Etapa 0`–`Etapa 4` | Plan **vigente** (§5) |
 | `2.1`–`2.10` en el §5 | Sub-etapas **actuales** de la Etapa 2 |
-| `3.1`–`3.6` en el §5 | Sub-etapas **actuales** de la Etapa 3 |
+| `3.1`–`3.7` en el §5 | Sub-etapas **actuales** de la Etapa 3 |
 | `4.1`–`4.10` en el §5 | Sub-etapas **actuales** de la Etapa 4 |
-| `Fase 0`–`Fase 4` | Numeración **original, superada** por el reordenamiento (ver §9.1) |
-| `E0`–`E3` | Las mismas cuatro primeras etapas, con prefijo (ver §5) |
-| `§3.1`, `§3.2` | **Defectos** de la API, no etapas |
+| `Fase 0`–`Fase 4` | Plan **original, superado** por el reordenamiento (§5, y §10 para la equivalencia) |
+| `S1`–`S10`, `F1`–`F10` | **Defectos** de la API (§3), no etapas |
 | `p1`–`p11` en el §0.1 | Pendientes de trabajo, no etapas |
 
 ---
@@ -501,28 +502,28 @@ solo módulo.** Los 8 defectos de §3.2 viven en el 84% sin probar — por eso s
 
 | # | Defecto | Ubicación | Impacto |
 |---|---|---|---|
-| ~~**S1**~~ ✅ | `requireAdminAPI()` **comentado** en 5 métodos de administradores — **corregido en E1.2** | `AdministradoresController.php:64,118,143,229,268` | 🚨 **Toma de control total de la cuenta.** Un anónimo puede crear un admin con la contraseña que elija, **resetear la contraseña de cualquier admin** (`PATCH` acepta `contrasena` en `:193-204`), desactivarlos y borrarlos. El propio código lo admite: `// TODO: Activar cuando exista un flujo autorizado` (`:63`) |
-| ~~**S2**~~ ✅ | Tests alcanzables por HTTP sin autenticación — **corregido en E1.1** | `backend/tests/test_votaciones.php`, `prueba_bd.php` | 🚨 `backend/.htaccess:2` (`RewriteCond %{REQUEST_FILENAME} !-f`) deja los archivos servibles. `test_votaciones.php` **crea un admin `testadmin` en la BD** por HTTP anónimo. `prueba_bd.php` devuelve `DATABASE()` |
-| ~~**S3**~~ ✅ | `APP_DEBUG=1` por defecto, sin `.env` ni `.env.example` — **corregido en E1.4** | `backend/config/app.php:22-26` | Cualquier 500 imprime traza PDO completa **con el DSN y el nombre de la base** a un llamador anónimo. Credenciales de BD: `root` con contraseña vacía |
+| ~~**S1**~~ ✅ | `requireAdminAPI()` **comentado** en 5 métodos de administradores — **corregido en 1.2** | `AdministradoresController.php:64,118,143,229,268` | 🚨 **Toma de control total de la cuenta.** Un anónimo puede crear un admin con la contraseña que elija, **resetear la contraseña de cualquier admin** (`PATCH` acepta `contrasena` en `:193-204`), desactivarlos y borrarlos. El propio código lo admite: `// TODO: Activar cuando exista un flujo autorizado` (`:63`) |
+| ~~**S2**~~ ✅ | Tests alcanzables por HTTP sin autenticación — **corregido en 1.1** | `backend/tests/test_votaciones.php`, `prueba_bd.php` | 🚨 `backend/.htaccess:2` (`RewriteCond %{REQUEST_FILENAME} !-f`) deja los archivos servibles. `test_votaciones.php` **crea un admin `testadmin` en la BD** por HTTP anónimo. `prueba_bd.php` devuelve `DATABASE()` |
+| ~~**S3**~~ ✅ | `APP_DEBUG=1` por defecto, sin `.env` ni `.env.example` — **corregido en 1.4** | `backend/config/app.php:22-26` | Cualquier 500 imprime traza PDO completa **con el DSN y el nombre de la base** a un llamador anónimo. Credenciales de BD: `root` con contraseña vacía |
 | **S4** | Sin rate limiting ni lockout en login de admin | `AdminAuthController.php:8` | Permite fuerza bruta |
 | **S5** | `session_destroy()` en el logout de jugador borra la sesión del panel | `AuthController.php:62`, `AdminAuthController.php:56` | **Sigue abierto.** Panel y API comparten una sola sesión PHP con dos claves (`admin_id` y `user_id`, ver `middleware/auth.php:7` y `adminAuth.php:24`). Un `session_destroy()` a secas se lleva las dos: si un jugador cierra sesión en el mismo navegador, el admin queda desconectado del panel. Lo correcto es borrar solo `$_SESSION['user_id']` y el `usuario`, y dejar `admin_id` intacto |
 | **S6** | Sin CSRF, sin `SameSite`/`Secure`/`HttpOnly` explícitos | `middleware/auth.php:5` | Todo endpoint mutante se autentica solo con cookie de sesión |
 | **S7** | `GET /api/usuarios` y `/api/usuarios/{id}` piden sesión de **jugador**, no de admin | `UsuariosController.php:19,81` | Cualquier jugador autenticado enumera todos los usuarios (matrícula, rol, estado) |
 | **S8** | Auth de jugador: **sin contraseña**, con autoaprovisionamiento | `AuthController.php:20,23,31` | La matrícula de 7 dígitos es la credencial completa. Una matrícula desconocida **crea la cuenta** (`:31`). Combinado con S7 es enumeración total |
-| ~~**S9**~~ ✅ | Credencial de admin en claro, en archivo trackeado y dentro del docroot — **corregido en E3.6** | `crear_admin.php:2-3` | El archivo ya no está en el repo (sigue en disco local, ignorado por `.gitignore`). La contraseña está en el historial: hay que rotarla, ver p6 |
-| ~~**S10**~~ ✅ | Hash inválido y contraseña en claro sembrados en producción — **corregido en E0** | `inserts.sql:98`, tabla `administradores` id=2 | §1.4 — el panel ya no era accesible; `admin_local` tiene bcrypt válido |
+| ~~**S9**~~ ✅ | Credencial de admin en claro, en archivo trackeado y dentro del docroot — **corregido en 3.6** | `crear_admin.php:2-3` | El archivo ya no está en el repo (sigue en disco local, ignorado por `.gitignore`). La contraseña está en el historial: hay que rotarla, ver p6 |
+| ~~**S10**~~ ✅ | Hash inválido y contraseña en claro sembrados en producción — **corregido en la Etapa 0** | `inserts.sql:98`, tabla `administradores` id=2 | §1.4 — el panel ya no era accesible; `admin_local` tiene bcrypt válido |
 
 ### 3.2 Funcionalidad
 
 | # | Defecto | Ubicación | Impacto |
 |---|---|---|---|
-| ~~**F1**~~ ✅ | `GET /api/partidos` no se puede filtrar — **corregido en E1.5** | `PartidosController.php:25` | `$this->obtenerId(['id' => $filtros[$campo]], $campo)` pasa el array con clave `'id'` pero `obtenerId` (`:198`) busca `$campo` (`'ronda_id'`/`'equipo_id'`) → siempre `null` → **400 en todo request filtrado**. Sin filtro no hay forma de acotar a un torneo, porque **no existe filtro `torneo_id`**. El frontend no puede listar partidos por torneo |
+| ~~**F1**~~ ✅ | `GET /api/partidos` no se puede filtrar — **corregido en 1.5** | `PartidosController.php:25` | `$this->obtenerId(['id' => $filtros[$campo]], $campo)` pasa el array con clave `'id'` pero `obtenerId` (`:198`) busca `$campo` (`'ronda_id'`/`'equipo_id'`) → siempre `null` → **400 en todo request filtrado**. Sin filtro no hay forma de acotar a un torneo, porque **no existe filtro `torneo_id`**. El frontend no puede listar partidos por torneo |
 | **F2** | `rechazar` nunca escribe `motivo_rechazo` | `TorneoEquiposController.php:122-127` | El `UPDATE` pone `estado="rechazado"` y limpia `aprobado_por`, pero **nunca el motivo**. La columna **sí existe** (`text`, nullable, la creó `migracion_admin.sql`), así que no hace falta `ALTER TABLE`; y el panel **tampoco la lee** — `postulaciones.php` no la menciona, y el cliente manda un `confirm()` a secas en `views.js:1244`. Cerrarlo son tres líneas: leer el motivo del cuerpo, escribirlo, y pedirlo en un diálogo |
-| ~~**F3**~~ ✅ | Router no devuelve 405 — **corregido en E1.7** | `backend/core/router.php:21-61` | `if ($rutaMetodo !== strtoupper($metodo)) continue;` descarta el método y cae en el 404 genérico. Sin cabecera `Allow` |
+| ~~**F3**~~ ✅ | Router no devuelve 405 — **corregido en 1.7** | `backend/core/router.php:21-61` | `if ($rutaMetodo !== strtoupper($metodo)) continue;` descarta el método y cae en el 404 genérico. Sin cabecera `Allow` |
 | **F4** | Sin CORS, sin `OPTIONS` | `backend/` (0 coincidencias de `Access-Control`) | ⚠️ **No bloquea el panel admin**: admin y API están en el mismo origen (`localhost:80`). Sí bloquearía un frontend servido en otro origen |
 | **F5** | Sin soporte de subida de archivos | `backend/` (0 coincidencias de `$_FILES`) | `logo` y `avatar` se manejan como **string**. Un frontend **no puede subir** logo ni avatar por la API |
 | **F6** | Sin paginación en ningún listado | `EquiposController.php:34`, `UsuariosController.php:67`, `EstadisticasController` | Aceptable a escala de torneo; problemático cuando crezca |
-| ~~**F7**~~ ✅ | Base path hardcodeado — **corregido en E1.8** | `backend/index.php:27-38` | `substr($uri, strlen('/PASSBALL-Cup/backend'))`. Desplegar en otra carpeta o en raíz → **las 83 rutas dan 404** |
+| ~~**F7**~~ ✅ | Base path hardcodeado — **corregido en 1.8** | `backend/index.php:27-38` | `substr($uri, strlen('/PASSBALL-Cup/backend'))`. Desplegar en otra carpeta o en raíz → **las 83 rutas dan 404** |
 | **F8** | `session_start()` sin guarda | `AuthController.php:38`, `AdminAuthController.php:43` | `E_NOTICE` "session already started" si se alcanza dos veces. El resto del código sí usa la guarda `session_status()` |
 | **F9** | `requireRol()` es código muerto | `security/authorization.php:5` | 0 call sites en todo el repo |
 | **F10** | Sin versionado de API | rutas `/api/...` | Sin `/v1` no hay espacio para cambios incompatibles |
@@ -548,9 +549,19 @@ solo módulo.** Los 8 defectos de §3.2 viven en el 84% sin probar — por eso s
 
 ---
 
-## 5. Fases de ejecución
+## 5. Etapas de ejecución
 
 > Regla: **cada etapa deja el sistema en un estado coherente.** Nada de todo-o-nada.
+
+**En este §5 hay dos numeraciones y solo una manda.** Las **Etapas 0 a 4** (abajo) son el
+plan vigente. Las **Fases 0 a 4**, al final de esta misma sección dentro de un `<details>`,
+son el plan original, ya superado: se conservan solo como registro de por qué se cambió el
+orden. La tabla con la equivalencia está en el
+[§10](#10-tabla-final-de-etapas), al final del documento.
+
+> ⚠️ **El número no significa lo mismo en las dos.** La **Fase 1** era *desconectar el
+> panel*; la **Etapa 1** es *asegurar la API*. Son objetivos opuestos. Si llegaste aquí
+> por un número, lee esta tabla antes que el título de la sección.
 
 ### ⚠️ Reordenamiento: por qué "Etapa 1" ya no es la primera
 
@@ -562,22 +573,8 @@ por el conflicto de claves de sesión (§1.9).
 **El orden correcto es al revés:** asegurar la API, conectar el panel, y **solo entonces**
 desconectar el legacy. Ningún momento sin sistema utilizable.
 
-| Etapa | Alcance | Toca el legacy | Toca la BD | Estado |
-|---|---|---|---|---|
-| **E0** | Tercer admin operativo, respaldo, auditoría de AFIHub | no | sí (1 fila) | ✅ `sin commit` |
-| **E1** | API segura y fiable; sesión unificada | no | no | ✅ salvo §1.6 · `241d5da` |
-| **E2** | **Conectar el panel a la API** — queda operativo sobre backend | sí (reescribe) | no | ✅ 6 de 7 vistas · `20462c4` + `c3885fc` |
-| **E3** | Desconectar el legacy | sí | no | ✅ · `a1bad5f` `9b586ef` `9ae32fb` `be57ab1` `439859d` |
-| **E4** | Poner en pantalla los datos que ya estaban | no | no | ⚠️ 5 de 9 · `99d308b` `0b0cd7b` `2ee5eba` `91579e6` `d151597` |
-
-> `E0`–`E4` son las mismas cinco etapas que las numeradas `0`–`4` más abajo, con prefijo
-> `E`. El estado y los commits por sub-etapa están en el [§0](#0-estado-de-la-implementación).
->
-> Antes de que la Etapa 4 existiera, el plan tenía una `E4` distinta ("migrar vistas y
-> habilitar lo inalcanzable") que **quedó sin efecto** al reordenar: su parte de migración
-> de vistas la absorbió la `E2`. La `E4` de la tabla de arriba es la actual: poner en
-> pantalla las tablas que la siembra ya llenaba. Para no confundir las dos, la antigua
-> quedó archivada al final de este §5 como "Fases originales".
+El resumen con estado y commits está en el [§0](#0-estado-de-la-implementación) y en el
+[§10](#10-tabla-final-de-etapas).
 
 ### Etapa 0 — Rescate de acceso ✅
 
@@ -792,7 +789,7 @@ cambiar el guard expondría a cualquier jugador al listado completo. Se añadió
 
 `api.js` consume este. Verificado: 200 con sesión de admin, 401 sin ella.
 
-**b) La vista Comunidad tumbaba el panel entero (preexistente, no lo causó la E2)**
+**b) La vista Comunidad tumbaba el panel entero (preexistente, no lo causó la Etapa 2)**
 
 `admin/partials/comunidad.php` consultaba la tabla `posts`, que **no existe** en el esquema
 (14 tablas, ninguna de comunidad). El `PDOException` era fatal y cortaba el render a
@@ -801,14 +798,14 @@ mitad: la página llegaba a 34 751 bytes sin `</html>` y, critically, **sin las 
 
 Auditoría de los siete partials contra `SHOW TABLES`: `posts` era la única referencia
 colgante. La vista ahora degrada a un aviso y desactiva su formulario, en vez de tumbar
-el panel. La reconstrucción real de Comunidad sobre la API es trabajo de E3; hasta entonces
+el panel. La reconstrucción real de Comunidad sobre la API es trabajo de la Etapa 3; hasta entonces
 no hay dónde publicar.
 
 #### Pérdida de datos aceptada en Inicio
 
 La tarjeta **Votos** queda en `0`. El legacy la llenaba con un `SELECT COUNT(*)` sobre
 `torneo_votos` y la API no expone ese conteo. Se marca en el código con un comentario en
-lugar de inventar un endpoint; se resuelve en E2.4 junto con Votaciones.
+lugar de inventar un endpoint; se resuelve en 2.4 junto con Votaciones.
 
 #### Cambio de credencial de `admin_local` (error propio)
 
@@ -824,7 +821,7 @@ plano) siguen rotos como antes; `admin_local` es el único administrador utiliza
 #### Dos fallos que sólo aparecen en un navegador
 
 Ninguno lo detecta `php -l` ni `node --check`, y ambos habrían acumulado errores en
-silencio durante la E2.4.
+silencio durante la 2.4.
 
 **La caja de aviso tenía el mismo `id` en los cinco partials.** `views.js` la buscaba con
 `getElementById`, que devuelve sólo la primera del DOM, la de Participantes. Un error al
@@ -1264,7 +1261,7 @@ validación compartida por varias vistas).
 | **§1.6** whitelist de `Origin` en AFIHub | 6 endpoints en 403, ningún jugador | Equipo de AFIHub |
 | **§1.7** re-validación del rol | consistencia de permisos | Producto |
 | **§1.8** matrícula como credencial única | modelo de identidad completo | Producto |
-| **E1.2** vía para crear admins sin sesión | primer admin tras limpiar la BD | Producto |
+| **1.2** vía para crear admins sin sesión | primer admin tras limpiar la BD | Producto |
 
 ### 9.1 Discrepancia resuelta sobre la Etapa 1
 
@@ -1281,3 +1278,75 @@ Se reordenó por dos razones concretas, ambas verificadas:
 
 La **Etapa 1** de este documento es por tanto la que prepara la API, y la conexión del panel
 es la **Etapa 2**.
+
+---
+
+## 10. Tabla final de etapas
+
+> Esta es la tabla de referencia. Si solo vas a leer una cosa del documento, lee esta.
+
+### 10.1 Las etapas y su estado
+
+Estado: ✅ hecho y verificado · ⚠️ a medias · ❌ sin empezar · ⛔ bloqueado por otro equipo
+
+| Etapa | Alcance | Estado | Commit | Verificado por |
+|---|---|---|---|---|
+| **0** | Rescate de acceso: admin `id=3`, respaldo, auditoría AFIHub | ✅ | *sin commit* (solo datos) | curl |
+| **1** | API segura y fiable; sesión unificada | ✅ salvo 1.6 | `241d5da` | HTTP |
+| **2** | Conectar el panel a la API | ⚠️ falta navegador | `20462c4` · `c3885fc` | HTTP |
+| **3** | Desconectar el legacy | ⚠️ falta navegador | `a1bad5f` · `9b586ef` · `9ae32fb` · `be57ab1` · `439859d` | HTTP · `php -l` |
+| **4** | Poner en pantalla los datos que ya estaban | ⚠️ 5 de 9 | `99d308b` · `0b0cd7b` · `2ee5eba` · `91579e6` · `d151597` | HTTP |
+| **5** | Seguridad pendiente: S4, S5, S6, S7, S8 | ❌ sin empezar | — | — |
+
+**Total: 4 etapas cerradas, 1 a medias (Etapa 4), 1 sin empezar (Etapa 5).**
+
+Lo que impide el ✅ de las etapas 2 y 3 no es código: es que **nadie ha abierto el panel en
+un navegador**. Los contratos se validaron por HTTP, leyendo los controladores. Es el
+pendiente p1.
+
+### 10.2 Commits en orden cronológico
+
+Para reconstruir el trabajo en orden, o para saber qué commit revisar:
+
+| # | Commit | Qué hizo |
+|---|---|---|
+| 1 | `241d5da` | Etapa 1: API segura y fiable, y sesión compartida con el panel |
+| 2 | `20462c4` | Etapa 2.1–2.5: cliente base, login por API, Inicio sobre el backend |
+| 3 | `c3885fc` | Etapa 2.6–2.10: las cinco vistas restantes sobre la API |
+| 4 | `a1bad5f` | Los scripts seed ya no escriben en una base fija |
+| 5 | `9b586ef` | Etapa 3.1: la sesión del panel se apoya solo en `admin_id` |
+| 6 | `9ae32fb` | Etapa 3.2: la API de Comunidad, y que solo el admin pueda publicar |
+| 7 | `be57ab1` | Etapa 3.3: la vista de Comunidad deja de hacer SQL |
+| 8 | `439859d` | Etapa 3.4–3.7: legacy a `_retired/`, shim eliminado, credenciales fuera del repo |
+| 9 | `99d308b` | Etapa 4.1: las 84 convocatorias que ya estaban en la base |
+| 10 | `0b0cd7b` | Los rangos que admiten 0 rechazaban el 0 |
+| 11 | `2ee5eba` | Etapa 4.2: las 14 líneas de estadísticas de portero |
+| 12 | `91579e6` | Corrige tres formularios que mandaban un cuerpo que el backend no espera |
+| 13 | `d151597` | Deja editar la categoría de votación desde el panel |
+
+Los commits 1–3 son del 2026-09-29; del 4 al 13, del 2026-09-30. Los de documentación
+(`d77db24`, `5bb3012`, `dce0eb4`, `3680a21`) no aparecen porque no cambian el estado del
+sistema, solo este archivo.
+
+> **El número de sub-etapa no es el orden de los commits.** El bug del `0` (`0b0cd7b`) es la
+> sub-etapa 4.3, pero se subió **antes** que los porteros (4.2, `2ee5eba`), porque salió al
+> probar 4.2 y se arreglarlo no podía esperar. Para reconstruir el trabajo usa esta tabla, que
+> sí va en orden cronológico; para localizar una sub-etapa, usa el §0.
+
+### 10.3 Equivalencia: las Fases originales y las Etapas actuales
+
+Las **Fases** son el plan original, superado. Se leen al final del §5 dentro de un
+`<details>`. Esta tabla evita la confusión más probable del documento, que es que
+**el número no significa lo mismo en las dos numeraciones**:
+
+| Fase original | Qué era | En qué Etapa acabó | Estado de eso |
+|---|---|---|---|
+| **Fase 0** | Cerrar vulnerabilidades (S1, S2, S3, S9) | **Etapa 1**, salvo S9 que fue a la 3 | ✅ hecho, menos rotar la contraseña (p6) |
+| **Fase 1** | Desconectar el panel (`git mv admin _retired/`) | **Etapa 3**, pero más estrecha | ✅ los 6 controllers legacy sí se movieron; `admin/` no, a propósito |
+| **Fase 2** | Hacer la API explotable (F1, F2, F7, S5, Postman, S8) | partida: F1 y F7 a la **Etapa 1**; F2, S5 y Postman siguen abiertos | ⚠️ partly |
+| **Fase 3** | Documentar las incidencias aceptadas | No fue una etapa: es el §2, §3 y §4 de este mismo documento | ✅ documentado |
+| **Fase 4** | Reconstruir el panel sobre la API | partida: la migración de vistas a la **Etapa 2**, lo inalcanzable a la **Etapa 4** | ⚠️ vistas hechas, 4 de 9 sin hacer |
+
+> ⚠️ **Fase 1 ≠ Etapa 1.** La Fase 1 era *desconectar el panel*; la Etapa 1 es *asegurar la
+> API*. Son objetivos opuestos, y esa fue justo la razón del reordenamiento (§9.1). Si
+> buscabas algo por un número, la tabla de arriba es la que dice dónde está.
