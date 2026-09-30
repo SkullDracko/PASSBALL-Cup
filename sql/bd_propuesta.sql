@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS post_reacciones;
-DROP TABLE IF EXISTS posts;
 DROP TABLE IF EXISTS torneo_votos;
 DROP TABLE IF EXISTS torneo_categoria_candidatos;
 DROP TABLE IF EXISTS torneo_categorias_voto;
@@ -14,16 +12,18 @@ DROP TABLE IF EXISTS equipo_miembros;
 DROP TABLE IF EXISTS equipos;
 DROP TABLE IF EXISTS administradores;
 DROP TABLE IF EXISTS usuarios;
+-- Comentario para subir cambios */
 
 
 CREATE TABLE usuarios (
   id INT AUTO_INCREMENT PRIMARY KEY,
   matricula VARCHAR(20) NOT NULL UNIQUE,
   afi_usuario_id VARCHAR(50) UNIQUE,
-  nombre VARCHAR(120) NULL,
-  -- Alias público que se muestra en el portal (arriba y en el perfil)
-  alias VARCHAR(40) NULL,
-  rol ENUM('usuario','administrador') NOT NULL DEFAULT 'usuario',
+  nombre VARCHAR(100) DEFAULT '',
+  apellidop VARCHAR(100) DEFAULT '',
+  apellidom VARCHAR(100) DEFAULT '',
+  semestre INT DEFAULT NULL,
+  rol ENUM('usuario','jugador') NOT NULL DEFAULT 'usuario',
   avatar VARCHAR(255),
   jugador_activo BOOLEAN NOT NULL DEFAULT TRUE, -- Indica si el jugador puede participar en los partidos (al terminar el afiliado, debería de ponerse como 0)
   estado ENUM('activo','inactivo') NOT NULL DEFAULT 'activo', -- Sirve para habilitar o deshabilitar al usuario en el sistema
@@ -45,7 +45,7 @@ CREATE TABLE equipos (
   nombre VARCHAR(100) NOT NULL,
   logo VARCHAR(255),
   capitan_id INT NOT NULL,
-  estado ENUM('activo','inactivo') NOT NULL DEFAULT 'activo',
+  estado ENUM('activo','inactivo', 'pendiente') NOT NULL DEFAULT 'pendiente',
   fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   CONSTRAINT fk_equipos_capitan
@@ -63,8 +63,6 @@ CREATE TABLE equipo_miembros (
   jugador_id INT NOT NULL,
   fecha_union TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   fecha_salida TIMESTAMP NULL,
-  -- Posición que ocupa el jugador dentro del equipo (la del capitán es editable)
-  posicion ENUM('POR','DEF','MED','DEL') NOT NULL DEFAULT 'DEL',
   estado ENUM('activo','inactivo') NOT NULL DEFAULT 'activo',
 
   -- Permite que un jugador tenga solo una membresía activa a la vez. (Evita que un jugador esté activo en más de un equipo simultáneamente)
@@ -136,9 +134,6 @@ CREATE TABLE torneo_equipos (
 
   aprobado_por INT NULL,
 
-  -- Motivo por el que se rechazó la postulación (lo captura el administrador)
-  motivo_rechazo TEXT NULL,
-
   CONSTRAINT fk_te_torneo
     FOREIGN KEY (torneo_id)
     REFERENCES torneos(id),
@@ -167,13 +162,6 @@ CREATE TABLE torneo_rondas (
   torneo_id INT NOT NULL,
   nombre VARCHAR(50) NOT NULL,
   orden INT NOT NULL,
-  -- Permite finalizar, cancelar o reabrir rondas sin borrarlas
-  estado ENUM(
-    'programado',
-    'en_curso',
-    'finalizada',
-    'cancelada'
-  ) NOT NULL DEFAULT 'programado',
 
   CONSTRAINT fk_ronda_torneo
     FOREIGN KEY (torneo_id)
@@ -517,46 +505,4 @@ CREATE TABLE torneo_votos (
     torneo_id,
     categoria_id
   )
-);
-
--- ============================================================
--- Comunidad: publicaciones y reacciones
--- ============================================================
-
-CREATE TABLE posts (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  usuario_id INT NOT NULL,
-  titulo VARCHAR(200) NOT NULL,
-  contenido TEXT NOT NULL,
-  imagen_url VARCHAR(255) DEFAULT NULL,
-  likes INT DEFAULT 0,
-  fijado TINYINT(1) DEFAULT 0,
-  fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-  CONSTRAINT fk_posts_usuario
-    FOREIGN KEY (usuario_id)
-    REFERENCES usuarios(id),
-
-  INDEX idx_posts_fecha (fecha),
-  INDEX idx_posts_fijado (fijado)
-);
-
--- Una reacción por usuario y publicación
-CREATE TABLE post_reacciones (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  post_id INT NOT NULL,
-  usuario_id INT NOT NULL,
-  tipo ENUM('like','me_encanta','me_asombra') NOT NULL,
-  fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-  CONSTRAINT fk_reaccion_post
-    FOREIGN KEY (post_id)
-    REFERENCES posts(id)
-    ON DELETE CASCADE,
-
-  CONSTRAINT fk_reaccion_usuario
-    FOREIGN KEY (usuario_id)
-    REFERENCES usuarios(id),
-
-  UNIQUE KEY uq_reaccion_post_usuario (post_id, usuario_id)
 );

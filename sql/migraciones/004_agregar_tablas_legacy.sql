@@ -13,22 +13,6 @@
 -- apunta a `usuarios` (no a `usuarios_passball` como en el esquema viejo).
 -- Este archivo es idempotente: se puede volver a correr sin error.
 -- ---------------------------------------------------------
-
--- Tabla raíz del esquema anterior
-CREATE TABLE IF NOT EXISTS usuarios_passball (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    afi_usuario_id INT NOT NULL,
-    matricula VARCHAR(7) UNIQUE NOT NULL,
-    nombre VARCHAR(100) NOT NULL,
-    apellidoP VARCHAR(100) NOT NULL,
-    apellidoM VARCHAR(100) NOT NULL,
-    semestre INT NOT NULL,
-    rol ENUM('admin','lider','miembro') DEFAULT 'miembro',
-    avatar VARCHAR(255) DEFAULT NULL,
-    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
-    activo TINYINT(1) DEFAULT 1
-) ENGINE=InnoDB;
-
 -- Alineaciones (previa o en tiempo real)
 CREATE TABLE IF NOT EXISTS alineaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
