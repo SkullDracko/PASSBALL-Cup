@@ -8,7 +8,7 @@ CREATE DATABASE IF NOT EXISTS passballcup
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE passballcup;
+-- Sin 'USE passballcup' a proposito: el script se aplica en la base seleccionada.
 
 SET FOREIGN_KEY_CHECKS = 0;
 

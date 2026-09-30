@@ -109,49 +109,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 <i class="fa-solid fa-spinner fa-spin"></i>
                 <span>Verificando...</span>
             `;
-
-
             try {
 
-                const formData = new FormData();
+                // Autentica contra la API, no contra controllers/login.php.
+                // Así la sesión que abre el panel es la misma que exigen los
+                // endpoints de backend (mismo PHPSESSID, mismas claves).
+                await API.loginAdmin(usuario, contrasena);
 
-                formData.append("usuario", usuario);
-                formData.append("contrasena", contrasena);
+                window.location.href = "dashboard.php";
 
-
-                const res = await fetch(
-                    "controllers/login.php",
-                    {
-                        method: "POST",
-                        body: formData
-                    }
-                );
-
-
-                const data = await res.json();
-
-
-                if (data.success) {
-
-                    window.location.href =
-                        data.redirect || "dashboard.php";
-
-                    return;
-                }
-
-
-                alert(
-                    data.message ||
-                    "Error al iniciar sesión"
-                );
+                return;
 
 
             } catch (err) {
 
                 console.error("Error de login admin:", err);
 
+                // La API ya distingue "credenciales inválidas" de
+                // "administrador inactivo"; se muestra su mensaje.
                 alert(
-                    "Error de conexión. Intenta de nuevo."
+                    err.message || "Error al iniciar sesión"
                 );
 
             }

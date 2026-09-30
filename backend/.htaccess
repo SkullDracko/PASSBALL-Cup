@@ -1,4 +1,10 @@
 RewriteEngine On
+
+# Los tests escriben filas reales en la BD (S2). Defensa en el servidor, ademas
+# del guard php_sapi_name() === 'cli' que lleva cada archivo.
+RedirectMatch 403 ^/PASSBALL-Cup/backend/tests/
+RedirectMatch 403 ^/PASSBALL-Cup/backend/prueba_bd
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ index.php [QSA,L]

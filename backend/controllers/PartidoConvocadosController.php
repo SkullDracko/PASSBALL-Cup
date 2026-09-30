@@ -8,16 +8,22 @@ class PartidoConvocadosController {
 
     public function listar(array $params): void
     {
+        // Antes este listado no tenia ningun guard: cualquiera, sin sesion, se
+        // llevaba la convocatoria completa de cualquier partido con la matricula
+        // de cada jugador. Y como la matricula ES la credencial (ver S8), eso
+        // repartia una lista de credenciales validas con el equipo de cada una.
+        requireAdminAPI();
         $partidoId = $this->partidoId($params);
         $this->verificarPartido($partidoId);
         $stmt = $this->pdo->prepare('
-            SELECT pc.id, pc.partido_id, pc.jugador_id, u.matricula, pc.equipo_id,
+            SELECT pc.id, pc.partido_id, pc.jugador_id, u.matricula, u.nombre,
+                   u.apellidop, u.apellidom, pc.equipo_id,
                    e.nombre AS equipo_nombre, pc.titular, pc.posicion
             FROM partido_convocados pc
             INNER JOIN usuarios u ON u.id = pc.jugador_id
             INNER JOIN equipos e ON e.id = pc.equipo_id
             WHERE pc.partido_id = ?
-            ORDER BY pc.equipo_id, pc.posicion, pc.id
+            ORDER BY pc.equipo_id, pc.titular DESC, pc.posicion, pc.id
         ');
         $stmt->execute([$partidoId]);
         jsonResponse(true, ['convocados' => $stmt->fetchAll()]);

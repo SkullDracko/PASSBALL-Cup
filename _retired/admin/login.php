@@ -42,6 +42,9 @@ try {
         'nombre'  => $admin['nombre'],
         'usuario' => $admin['usuario'],
     ];
+    // La API exige $_SESSION['admin_id']; sin esto entrar por el panel no
+    // habilita ningun endpoint de backend (ver etapes_conexion_admin_api.md 1.9).
+    $_SESSION['admin_id'] = (int) $admin['id'];
 
     echo json_encode([
         'success' => true,

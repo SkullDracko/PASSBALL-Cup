@@ -4,7 +4,10 @@
 -- Ver sql/observaciones_simulacion.md para conflictos y decisiones tomadas
 -- =========================================================
 
-USE passballcup;
+-- Este script se ejecuta en la base que este seleccionada. Antes llevaba un
+-- 'USE passballcup;' aqui, que hacia que importarlo escribiera SIEMPRE en
+-- passballcup aunque se hubiera elegido otra base: ejecutar una prueba contra
+-- una base desechable borraba los datos de la real.
 
 -- ---------------------------------------------------------
 -- Limpieza de datos insertados previamente (orden respeta FKs)

@@ -1,4 +1,9 @@
 <?php
+// Sonda de conexión. Solo CLI: por HTTP revelaría el nombre de la base de datos.
+if (php_sapi_name() !== 'cli') {
+    http_response_code(403);
+    exit;
+}
 
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../core/db.php';

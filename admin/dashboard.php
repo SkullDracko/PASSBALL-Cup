@@ -5,7 +5,6 @@
  */
 
 require_once __DIR__ . '/controllers/auth.php';
-require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/app.php';
 
 $tituloPagina = 'Panel Admin';
@@ -23,7 +22,7 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
 
     <title><?= $tituloPagina ?> | <?= TORNEO_NOMBRE ?></title>
 
-    <link rel="icon" href="../assets/img/passball-cup.png" type="image/png">
+    <link rel="icon" href="<?= assetUrl('assets/img/passball-cup.png') ?>" type="image/png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,8 +33,10 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
-    <link rel="stylesheet" href="../assets/css/variables.css">
-    <link rel="stylesheet" href="assets/css/admin.css">
+    <link
+        rel="stylesheet"
+        href="<?= assetUrl('assets/css/variables.css') ?>">
+    <link rel="stylesheet" href="<?= assetUrl('admin/assets/css/admin.css') ?>">
 
 </head>
 
@@ -52,7 +53,7 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
         <div class="admin-sidebar-brand">
 
             <span class="admin-brand-mark">
-                <img src="../assets/img/passball-p-logo-transparent.png" alt="PASSBALL Cup">
+                <img src="<?= assetUrl('assets/img/passball-p-logo-transparent.png') ?>" alt="PASSBALL Cup">
             </span>
 
             <span>
@@ -108,7 +109,7 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
 
             <a
                 class="portal-link"
-                href="../dashboard.php"
+                href="<?= assetUrl('dashboard.php') ?>"
                 target="_blank"
                 rel="noopener"
             >
@@ -153,7 +154,7 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
                         <strong><?= htmlspecialchars($admin['nombre']) ?></strong>
                         <small>Administración</small>
                     </div>
-                    <a class="logout" href="controllers/logout.php">
+                    <a class="logout" href="<?= assetUrl('admin/controllers/logout.php') ?>">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar sesión
                     </a>
                 </div>
@@ -200,7 +201,13 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
 </div>
 
 
-<script src="assets/js/admin.js"></script>
+<!-- La API se expone antes de api.js: su base tiene que ser absoluta,
+     no relativa, para no depender de la forma de la URL. -->
+<script>window.PASSBALL_API = <?= apiUrlJs() ?>;</script>
+
+<script src="<?= assetUrl('admin/assets/js/api.js') ?>"></script>
+<script src="<?= assetUrl('admin/assets/js/views.js') ?>"></script>
+<script src="<?= assetUrl('admin/assets/js/admin.js') ?>"></script>
 
 </body>
 

@@ -12,7 +12,7 @@
 -- y la columna `nombre` agregada en schema.sql.
 -- =========================================================
 
-USE passballcup;
+-- Sin 'USE passballcup' a proposito: el script se aplica en la base seleccionada.
 
 -- ---------------------------------------------------------
 -- usuarios: 60 jugadores (6 por equipo x 10 equipos)

@@ -12,11 +12,23 @@ class PartidoPorterosController
 
     public function listar(array $params): void
     {
+        // Sin guard, igual que el listado de convocados que se corrigio en la
+        // etapa 4.1: es la nomina de un partido, con la matricula de cada
+        // portero. El agregado de torneo (EstadisticasController::porteros) si
+        // queda publico, porque es una tabla de posiciones, no un censo.
+        requireAdminAPI();
         $partidoId = $this->id($params, 'partidoId');
         $this->verificarPartido($partidoId);
+        // No se hace JOIN a equipos: partido_estadisticas_portero no guarda
+        // equipo_id, se deduce de partido_convocados, y un INNER JOIN ahi
+        // esconderia al portero que tenga stats sin estar convocado, que es
+        // justo el dato raro que hay que ver. El equipo lo resuelve el cliente,
+        // que ya tiene la convocatoria del partido en memoria.
         $stmt = $this->pdo->prepare('
-            SELECT pe.id, pe.partido_id, pe.jugador_id, u.matricula, pe.atajadas, pe.goles_recibidos
-            FROM partido_estadisticas_portero pe INNER JOIN usuarios u ON u.id = pe.jugador_id
+            SELECT pe.id, pe.partido_id, pe.jugador_id, u.matricula, u.nombre,
+                   u.apellidop, u.apellidom, pe.atajadas, pe.goles_recibidos
+            FROM partido_estadisticas_portero pe
+            INNER JOIN usuarios u ON u.id = pe.jugador_id
             WHERE pe.partido_id = ? ORDER BY pe.id
         ');
         $stmt->execute([$partidoId]);
@@ -82,7 +94,9 @@ class PartidoPorterosController
     }
     private function numero($valor, string $campo): int
     {
-        if (!filter_var($valor, FILTER_VALIDATE_INT) || (int) $valor < 0 || (int) $valor > 32767) jsonResponse(false, [], ['error' => "{$campo} debe ser un entero entre 0 y 32767"], 422);
+        // filter_var devuelve int(0) para el cero y !int(0) es true, asi que
+        // con el ! un portero con 0 atajadas o 0 goles NO se podia guardar.
+        if (filter_var($valor, FILTER_VALIDATE_INT) === false || (int) $valor < 0 || (int) $valor > 32767) jsonResponse(false, [], ['error' => "{$campo} debe ser un entero entre 0 y 32767"], 422);
         return (int) $valor;
     }
     private function verificarPartido(int $id): void

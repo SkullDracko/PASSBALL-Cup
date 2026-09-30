@@ -25,3 +25,11 @@ uploads/**
 
 .agents
 .env
+
+# Credenciales: nunca en el repositorio.
+# crear_admin.php traia una contraseña en claro y los auth_*.txt guardaban
+# notas de acceso. Se quitaron del tracking; si hacen falta, se generan
+# fuera del repo o se administran con backend/api/administradores.
+crear_admin.php
+auth_*.txt
+

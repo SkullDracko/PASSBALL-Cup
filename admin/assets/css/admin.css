@@ -1,10 +1,20 @@
 /* ============================================
    PASSBALL CUP - PANEL ADMIN
-
+  
    Los valores coinciden con assets/css/variables.css
    (el portal de usuario) para que ambos paneles
    compartan el mismo lenguaje visual.
    ============================================ */
+
+/* El atributo hidden se implementa en el navegador con una regla
+   [hidden] { display: none } que pierde contra cualquier display del
+   autor. .admin-alert declara display: flex, asi que las cajas de
+   aviso salian como una barra roja vacia en las cinco vistas pese a
+   llevar hidden. !important es justo el caso de uso para el que
+   existe: deuda de especificidad que hay que ganar siempre. */
+[hidden] {
+    display: none !important;
+    }
 
 :root {
     --admin-purple:       #7c4293;   /* = --primary        */
@@ -2616,6 +2626,15 @@ body {
     align-items: flex-start;
 }
 
+/* Complementario de .admin-row: apila en vertical en vez de en horizontal.
+   Lo usa la lista de convocados, donde cada fila lleva avatar, nombre,
+   posicion, matricula y dos botones, y no cabe en una sola linea. */
+.admin-stack-sm {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .admin-check {
     display: inline-flex;
     align-items: center;
@@ -2774,6 +2793,28 @@ body {
 }
 
 .admin-row.gap-sm { gap: 8px; }
+
+/* Etapa 4.2: campos de atajadas y goles recibidos, editables en la fila.
+   .admin-input da el fondo y el borde; esto solo los hace estrechos. */
+.admin-stat {
+    width: 68px;
+    text-align: center;
+    padding: 6px 4px;
+}
+
+/* Etiqueta solo para lectores de pantalla: los campos de estadística
+   llevan title, pero el title no es un label. */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
 
 .admin-chips {
     display: flex;
