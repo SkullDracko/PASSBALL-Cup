@@ -65,8 +65,15 @@ class PartidosController
         requireAdminAPI();
         $body = jsonBody();
         $rondaId = $this->obtenerId($body, 'ronda_id');
-        $posicion = $this->obtenerPositivo($body['posicion'] ?? null, 'posicion');
         $this->verificarRonda($rondaId);
+
+        // posicion es NOT NULL y el formulario la rotula "(auto)". Antes se
+        // exigia un entero positivo, asi que dejar el campo vacio (que es lo
+        // que el rotulo invita a hacer) rebotaba con 422. Se calcula la
+        // siguiente posicion libre dentro de la ronda.
+        $posicion = ($body['posicion'] === null || $body['posicion'] === '')
+            ? $this->siguientePosicion($rondaId)
+            : $this->obtenerPositivo($body['posicion'], 'posicion');
 
         $equipoLocal = $this->idOpcional($body['equipo_local_id'] ?? null, 'equipo_local_id');
         $equipoVisitante = $this->idOpcional($body['equipo_visitante_id'] ?? null, 'equipo_visitante_id');
@@ -259,6 +266,13 @@ class PartidosController
         }
         return (int) $valor;
     }
+    private function siguientePosicion(int $rondaId): int
+    {
+        $stmt = $this->pdo->prepare('SELECT COALESCE(MAX(posicion), 0) + 1 FROM partidos WHERE ronda_id = ?');
+        $stmt->execute([$rondaId]);
+        return (int) $stmt->fetchColumn();
+    }
+
     private function verificarRonda(int $rondaId): void
     {
         $stmt = $this->pdo->prepare('SELECT id FROM torneo_rondas WHERE id = ? LIMIT 1');

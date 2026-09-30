@@ -259,9 +259,10 @@ const API = {
         return this.post("/torneos/" + torneoId + "/categorias-voto", datos);
     },
 
-    cambiarEstadoCategoria(torneoId, categoriaId) {
+    cambiarEstadoCategoria(torneoId, categoriaId, estado) {
         return this.patch(
-            "/torneos/" + torneoId + "/categorias-voto/" + categoriaId + "/estado"
+            "/torneos/" + torneoId + "/categorias-voto/" + categoriaId + "/estado",
+            { estado }
         );
     },
 

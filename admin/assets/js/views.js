@@ -431,7 +431,8 @@ async function cargarVotaciones() {
                     <button type="button" class="admin-btn ghost mini"
                         data-accion="toggle-categoria"
                         data-torneo="${ESTADO.torneoId}"
-                        data-categoria="${cat.id}">
+                        data-categoria="${cat.id}"
+                        data-estado="${cat.estado === "abierta" ? "cerrada" : "abierta"}">
                         ${cat.estado === "abierta" ? "Cerrar" : "Abrir"}
                     </button>
                     <button type="button" class="admin-btn ghost mini danger"
@@ -542,13 +543,13 @@ async function cargarTorneo() {
                     <input type="text" id="rondaNombre" name="nombre"
                            placeholder="Ej. Octavos de final" required>
                 </div>
-                <div class="field admin-field-xs">
-                    <label for="rondaOrden">Orden</label>
-                    <input type="number" id="rondaOrden" name="orden" min="1">
-                </div>
-                <button type="submit" class="admin-btn">+ Crear ronda</button>
-            </form>
-            ${vacio("Sin rondas todavía",
+              <div class="field admin-field-xs">
+                      <label for="rondaOrden">Orden</label>
+                      <input type="number" id="rondaOrden" name="orden" min="1" required>
+                  </div>
+                  <button type="submit" class="admin-btn">+ Crear ronda</button>
+              </form>
+              ${vacio("Sin rondas todavía",
                     "Crea la primera ronda del torneo con el formulario de arriba.")}`;
         return;
     }
@@ -616,10 +617,10 @@ async function cargarTorneo() {
                 <input type="text" id="rondaNombre" name="nombre"
                        placeholder="Ej. Octavos de final" required>
             </div>
-            <div class="field admin-field-xs">
-                <label for="rondaOrden">Orden</label>
-                <input type="number" id="rondaOrden" name="orden" min="1">
-            </div>
+              <div class="field admin-field-xs">
+                  <label for="rondaOrden">Orden</label>
+                  <input type="number" id="rondaOrden" name="orden" min="1" required>
+              </div>
             <button type="submit" class="admin-btn">+ Crear ronda</button>
         </form>
         <div class="bracket">${cuerpoRondas}</div>`;
@@ -1208,7 +1209,9 @@ document.addEventListener("click", async function (e) {
                 break;
 
             case "toggle-categoria":
-                await API.cambiarEstadoCategoria(torneoId, catId);
+                // El endpoint es un set, no un toggle: exige {estado} en el
+                // cuerpo. El boton lleva el estado destino en data-estado.
+                await API.cambiarEstadoCategoria(torneoId, catId, btn.dataset.estado);
                 break;
 
             case "eliminar-categoria":
