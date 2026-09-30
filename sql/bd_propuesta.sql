@@ -1,3 +1,10 @@
+-- Las tablas de migracion_admin.sql van primero y en orden de dependencia.
+-- Si no, DROP TABLE usuarios falla con ERROR 1451 porque posts y
+-- post_reacciones la referencian, el script aborta en la linea 14 y deja
+-- la base a medias: 13 tablas borradas, usuarios intacta, datos perdidos.
+DROP TABLE IF EXISTS post_reacciones;
+DROP TABLE IF EXISTS posts;
+
 DROP TABLE IF EXISTS torneo_votos;
 DROP TABLE IF EXISTS torneo_categoria_candidatos;
 DROP TABLE IF EXISTS torneo_categorias_voto;
@@ -13,6 +20,11 @@ DROP TABLE IF EXISTS equipos;
 DROP TABLE IF EXISTS administradores;
 DROP TABLE IF EXISTS usuarios;
 
+-- Desactivar la comprobacion evita que el orden de los DROP importe y hace
+-- que este script se pueda reejecutar las veces que haga falta.
+SET FOREIGN_KEY_CHECKS = 0;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE usuarios (
   id INT AUTO_INCREMENT PRIMARY KEY,
