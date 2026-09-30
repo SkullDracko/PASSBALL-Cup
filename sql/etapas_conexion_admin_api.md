@@ -13,40 +13,61 @@
 
 ## 0. Estado de la implementación
 
-Estado: ✅ verificado · ⚠️ a medias · ⛔ bloqueado · 🟢 sin bloqueos
+Estado: ✅ verificado · ⚠️ a medias · ⛔ bloqueado · ❌ sin hacer
+
+> **Si vienes a continuar el trabajo, empieza por la [sección 0](#0-estado-de-la-implementación).**
+> Cada etapa tiene su tabla con el detalle en el [§5](#5-fases-de-ejecución).
+
+### Las cinco etapas de un vistazo
+
+| Etapa | Tema | Estado | Commits |
+|---|---|---|---|
+| **0** | Rescate de acceso: admin `id=3`, respaldo, auditoría AFIHub | ✅ | *sin commit, solo datos* |
+| **1** | API segura y fiable | ✅ salvo 1.6 | `241d5da` |
+| **2** | Conectar el panel a la API | ⚠️ falta navegador | `20462c4`, `c3885fc` |
+| **3** | Desconectar el legacy | ⚠️ falta navegador | `a1bad5f`, `9b586ef`, `9ae32fb`, `be57ab1`, `439859d` |
+| **4** | Poner en pantalla los datos que ya estaban | ⚠️ 5 de 9 | `99d308b`, `0b0cd7b`, `2ee5eba`, `91579e6`, `d151597` |
+
+**Las etapas 0 a 3 están cerradas.** La 4 es la única con código pendiente: cuatro
+funcionalidades de las que el legacy no mostraba. Tres ya tienen endpoint y solo falta el
+control en el panel; la cuarta (4.9, reacciones) no tiene endpoint. Ver §0.1.
+
+### Detalle por etapa
 
 Un commit no puede citar su propio hash, así que esta tabla solo cubre las etapas ya
-publicadas. La tabla de estado de la etapa siguiente se añade en su propio commit.
+publicadas. El estado de la etapa siguiente se añade en su propio commit.
 
-| # | Alcance | Estado | Commit | Verificado por |
-|---|---|---|---|---|
-| 0 | Rescate de acceso: admin `id=3`, respaldo, auditoría AFIHub | ✅ | *sin commit, solo datos* | curl |
-| 1 | API segura y fiable: S1, S2, S3, F1, F3, F7, §1.9 | ✅ salvo §1.6 | `241d5da` | HTTP |
-| 2.1 | `api.js`: cliente base, `credentials`, envelope `{exito,data,errores}` | ✅ | `20462c4` | node + HTTP |
-| 2.2 | Login del panel por `POST /api/admin/login` | ✅ | `20462c4` | HTTP |
-| 2.3 | Migrar **Inicio** como prueba de extremo a extremo | ✅ | `20462c4` | HTTP |
-| 2.4 | Migrar las cinco vistas restantes | ⚠️ | `c3885fc` | HTTP, **no navegador** |
-| 2.5 | `GET /api/admin/usuarios` | ✅ | `20462c4` | HTTP |
-| 2.6–2.10 | Los cinco endpoints admin-only | ✅ | `c3885fc` | HTTP 200/401 |
-| a1 | `sql/`: quitar `USE passballcup;` de los scripts seed | ✅ | `a1bad5f` | BD desechable |
-| 3.1 | Sesión del panel sobre `admin_id` | ✅ | `9b586ef` | HTTP 200/401 |
-| 3.2 | API de Comunidad admin-only + rol `administrador` | ✅ | `9ae32fb` | HTTP 200/201/404/422 |
-| 3.3 | Vista de Comunidad sin SQL (shell + `views.js`) | ⚠️ | `be57ab1` | `php -l`, `node --check`, HTTP |
-| 3.4 | Legacy movido a `_retired/` + `.htaccess` | ✅ | `439859d` | HTTP 403/404 |
-| 3.5 | Quitar el shim de doble clave de sesión | ✅ | `439859d` | HTTP 200/401/302 |
-| 3.6 | Sacar credenciales del tracking | ✅ | `439859d` | `git ls-files` |
-| 4.1 | `partido_convocados`: 84 filas en pantalla, lecturas admin-only | ✅ | `99d308b` | HTTP 200/401/404/409/422 |
-| 4.2 | `partido_estadisticas_portero`: 14 filas en pantalla, lecturas admin-only | ✅ | `2ee5eba` | HTTP 200/401/404/409/422 |
-| 4.3 | Bug: todo rango numérico rechazaba el `0` | ✅ | `0b0cd7b` | HTTP 200/422, base igual que la siembra |
-| 4.4 | Resultados completo en un navegador | ⚠️ | `2ee5eba` | **falta navegador** |
+| Etapa | # | Alcance | Estado | Commit | Verificado por |
+|---|---|---|---|---|---|
+| 0 | 0.1–0.4 | Rescate de acceso: admin `id=3`, respaldo, auditoría AFIHub | ✅ | *sin commit, solo datos* | curl |
+| 1 | 1.1–1.9 | API segura y fiable: S1, S2, S3, F1, F3, F7, §1.9 | ✅ salvo 1.6 | `241d5da` | HTTP |
+| 2 | 2.1–2.5 | `api.js`: cliente base, `credentials`, envelope, login e **Inicio** | ✅ | `20462c4` | node + HTTP |
+| 2 | 2.4 | Migrar las cinco vistas restantes | ⚠️ | `c3885fc` | HTTP, **no navegador** |
+| 2 | 2.6–2.10 | Los cinco endpoints admin-only | ✅ | `c3885fc` | HTTP 200/401 |
+| 3 | a1 | `sql/`: quitar `USE passballcup;` de los scripts seed | ✅ | `a1bad5f` | BD desechable |
+| 3 | 3.1 | Sesión del panel sobre `admin_id` | ✅ | `9b586ef` | HTTP 200/401 |
+| 3 | 3.2 | API de Comunidad admin-only + rol `administrador` | ✅ | `9ae32fb` | HTTP 200/201/404/422 |
+| 3 | 3.3 | Vista de Comunidad sin SQL (shell + `views.js`) | ⚠️ | `be57ab1` | `php -l`, `node --check`, HTTP |
+| 3 | 3.4–3.6 | Legacy a `_retired/`, shim de sesión, credenciales fuera del tracking | ✅ | `439859d` | HTTP 403/404, `git ls-files` |
+| 4 | 4.1 | `partido_convocados`: 84 filas en pantalla, lecturas admin-only | ✅ | `99d308b` | HTTP 200/401/404/409/422 |
+| 4 | 4.2 | `partido_estadisticas_portero`: 14 filas en pantalla, lecturas admin-only | ✅ | `2ee5eba` | HTTP 200/401/404/409/422 |
+| 4 | 4.3 | Bug: todo rango numérico rechazaba el `0` | ✅ | `0b0cd7b` | HTTP 200/422, base igual que la siembra |
+| 4 | 4.4 | Bug: tres formularios mandaban un cuerpo que el backend no esperaba | ✅ | `91579e6` | HTTP 200/404/422 |
+| 4 | 4.5 | Editar categoría de votación desde el panel | ✅ | `d151597` | HTTP 200/409/422 |
+| 4 | 4.6 | Editar/borrar evento desde la pantalla de resultados | ❌ | — | — |
+| 4 | 4.7 | Retirar equipo de un torneo | ❌ | — | — |
+| 4 | 4.8 | Toggles de `estado` y `jugador_activo` en Participantes | ❌ | — | — |
+| 4 | 4.9 | Reacciones de Comunidad (`post_reacciones`) | ❌ | — | — |
+| 4 | 4.10 | Todo lo anterior, en un navegador real | ⛔ | — | sin navegador en el entorno |
 
-**Por qué 2.4, 3.3 y 4.4 están en ⚠️ y no en ✅.** Los contratos se validaron leyendo los
+**Por qué 2.4, 3.3 y 4.10 están en ⚠️ y no en ✅.** Los contratos se validaron leyendo los
 controladores y probando por HTTP, no viendo la página en un navegador: este entorno no
 tiene ninguno. Para Comunidad eso significa que la API está probada de punta a punta
 (crear, listar, fijar, eliminar) pero que **el render y los clics dentro de la vista no se
 han ejecutado nunca en un navegador**. Es lo primero que debería hacer quien retome. Lo
-mismo para 4.1 y 4.2: los cuatro endpoints de cada uno están probados con sus casos de
-error, pero nadie ha visto todavía el bloque de convocatoria ni el de porteros en pantalla.
+mismo para 4.1, 4.2 y 4.5: los endpoints de cada uno están probados con sus casos de
+error, pero nadie ha visto todavía el bloque de convocatoria, el de porteros ni el
+formulario de editar categoría en pantalla.
 
 **El hallazgo del `0` (4.3) salió de probar, no de leer.** Al verificar 4.2, un `POST` de
 prueba con `goles_recibidos: 0` rebotó con un 422 que no cuadraba con lo que el código
@@ -55,16 +76,19 @@ porque `filter_var` devuelve `int(0)` y `!int(0)` es `true`. El botón «Guardar
 llevaba tiempo roto por esto y por el `?? 0` de los penales. Merece la pena revisar
 todos los demás rangos de `0..N` que se hayan añadido después.
 
-**Por qué 2.4 y 3.3 están en ⚠️ y no en ✅.** Los contratos se validaron leyendo los
-controladores y probando por HTTP, no viendo la página en un navegador: este entorno no
-tiene ninguno. Para Comunidad eso significa que la API está probada de punta a punta
-(crear, listar, fijar, eliminar) pero que **el render y los clics dentro de la vista no se
-han ejecutado nunca en un navegador**. Es lo primero que debería hacer quien retome.
+**Los contratos del cliente se auditan contra el backend, no se suponen (4.4).** Al usar el
+panel saltó un error: el botón de abrir/cerrar una categoría mandaba un `PATCH` sin cuerpo
+a un endpoint que exige `{estado}`, y el backend respondía «JSON mal formado». Antes de
+arreglarlo se revisaron las 19 acciones `data-accion` una a una contra su ruta: esa era la
+única rota, y «Aprobar postulación» y «Fijar en el canal» sí son legítimos sin cuerpo. En la
+misma revisión aparecieron los otros dos fallos de la tabla de abajo. La moraleja para
+quien siga: **un `PATCH` sin cuerpo es un 400 garantizado salvo que el backend lo acepte
+explícitamente.**
 
-**Línea de tiempo.** El documento nació en `7e58a3e`. Los tres commits de etapa son del
-2026-09-29, y `c3885fc` es la `HEAD` de `David` en el momento de escribirse esto. Los
-cuatro commits de la Etapa 3 (`a1bad5f`, `9b586ef`, `9ae32fb`, `be57ab1`, `439859d`) y
-los tres de la Etapa 4 (`99d308b`, `0b0cd7b`, `2ee5eba`) son del 2026-09-30.
+**Línea de tiempo.** El documento nació en `7e58a3e`. La Etapa 1 (`241d5da`) y la Etapa 2
+(`20462c4`, `c3885fc`) son del 2026-09-29. Los cinco commits de la Etapa 3 (`a1bad5f`,
+`9b586ef`, `9ae32fb`, `be57ab1`, `439859d`) y los cinco de la Etapa 4 (`99d308b`,
+`0b0cd7b`, `2ee5eba`, `91579e6`, `d151597`) son del 2026-09-30.
 
 ### 0.1 Cómo continuar desde aquí
 
@@ -79,43 +103,65 @@ los tres de la Etapa 4 (`99d308b`, `0b0cd7b`, `2ee5eba`) son del 2026-09-30.
 | b5 | `dashboard.php` leía `$_SESSION['admin']` | ✅ | `9b586ef` |
 | b6 | Credenciales versionadas en la raíz | ✅ | `439859d` (fuera del tracking) |
 
-**Los tres hallazgos de seguridad de §0.1 también están cerrados:** el logout ahora
-destruye la sesión completa y la API responde 401 después; el login legacy da 403; y
-`crear_admin.php`, `auth_67676767.txt` y `auth_jug003.txt` ya no están en el repo (siguen
-en disco local, ignorados por `.gitignore`).
+**Dos de los tres hallazgos de seguridad de esta sección están cerrados; el del logout no.**
+El login legacy da 403, y `crear_admin.php`, `auth_67676767.txt` y `auth_jug003.txt` ya no
+están en el repo (siguen en disco local, ignorados por `.gitignore`). El tercero —que el
+logout de la API destruya la sesión completa y con ella la del panel admin— **sigue
+abierto**, y está en S5. Destruir la sesión completa es el defecto, no la solución: lo que
+habría que hacer es borrar solo las claves de jugador.
 
-**Lo que queda abierto, en orden de utilidad:**
+**Lo que queda abierto, en orden de utilidad.** Lo primero son las cuatro funcionalidades
+de la Etapa 4 (4.6–4.9), que son las únicas con código pendiente; lo segundo es la
+verificación en navegador, que no es código sino mirar la página.
 
-1. **Probar el panel en un navegador.** Es lo único que impide marcar 2.4 y 3.3 en verde:
-   render de las siete vistas, y en Comunidad crear/fijar/eliminar en pantalla.
-2. **Rotar la contraseña de `admin_local`.** Se compartió en un canal de chat y el
-   hash llegó a estar en un archivo versionado. Aunque el archivo ya no está en el repo,
-   la contraseña está en el historial de git y debe cambiarse antes de producción.
-3. **Implementar el motivo de rechazo de postulaciones** (F2, ver §1.5). La columna
-   `torneo_equipos.motivo_rechazo` ya existe por `migracion_admin.sql`, pero el endpoint
-   `PATCH /api/torneos/{id}/equipos/{id}/rechazar` solo cambia el estado y el cliente
-   manda un `confirm()` sin motivo. Cerrar el defecto es escribir la columna y pedirla en
-   el diálogo; el esquema ya no bloquea.
-4. **Quitar `admin_passballcup` (`id=1`) o darle credencial real.** Tiene un hash
-   placeholder de 40 caracteres, así que no puede autenticarse, pero ensucia la tabla
-   `administradores` y `sql/inserts.sql` lo sigue sembrando.
-5. **Sincronizar la copia de `bd_propuesta.sql` de Descargas.** La de
-   `C:\Users\Black\Downloads\` es la que se ejecutó; no recibió el orden de borrado con
-   FKs ni el rol `administrador` que sí están en el repo.
-6. **§1.6 (AFIHub, `403 Origen no permitido`)** sigue sin resolver y sigue fuera de
-   alcance: es un bloqueo de red, no de código.
+| # | Pendiente | Tipo | Bloquea a |
+|---|---|---|---|
+| p1 | **Probar el panel en un navegador** (2.4, 3.3, 4.10) | verificación | el ✅ de esas tres filas |
+| p2 | Editar/borrar evento desde Resultados (4.6) | código | — |
+| p3 | Retirar equipo de un torneo (4.7) | código | — |
+| p4 | Toggles de `estado` y `jugador_activo` en Participantes (4.8) | código | — |
+| p5 | Reacciones de Comunidad (4.9) | código | — |
+| p6 | **Rotar la contraseña de `admin_local`** | seguridad | producción |
+| p7 | Motivo de rechazo de postulaciones (F2, ver §1.5) | código | — |
+| p8 | S5: el logout de jugador borra la sesión del panel admin | código | — |
+| p9 | Quitar `admin_passballcup` (`id=1`) o darle credencial real | limpieza | — |
+| p10 | Sincronizar la copia de `bd_propuesta.sql` de Descargas | limpieza | — |
+| p11 | §1.6 (AFIHub, `403 Origen no permitido`) | **otro equipo** | 6 endpoints |
+
+Detalles de los que no son de la Etapa 4:
+
+- **p1, navegador.** Es lo único que impide marcar 2.4, 3.3 y 4.10 en verde: el render de
+  las siete vistas y, en Comunidad, crear/fijar/eliminar en pantalla.
+- **p6, contraseña.** Se compartió en un canal de chat y el hash llegó a estar en un
+  archivo versionado. Aunque el archivo ya no está en el repo, la contraseña está en el
+  historial de git y debe cambiarse antes de producción.
+- **p7, `motivo_rechazo`.** La columna `torneo_equipos.motivo_rechazo` ya existe (`text`,
+  nullable, la creó `migracion_admin.sql`), así que no hay `ALTER TABLE` pendiente. El
+  endpoint `PATCH /api/torneos/{id}/equipos/{id}/rechazar` cambia el estado sin escribir el
+  motivo, el cliente manda un `confirm()` a secas (`views.js:1244`) y el panel tampoco
+  muestra la columna. Cerrarlo son tres cambios: leer el motivo del cuerpo, escribirlo en
+  el `UPDATE`, y pedirlo en el diálogo.
+- **p8, `admin_passballcup`.** Tiene un hash placeholder de 40 caracteres, así que no
+  puede autenticarse, pero ensucia la tabla `administradores` y `sql/inserts.sql` lo sigue
+  sembrando.
+- **p9, `bd_propuesta.sql`.** La de `C:\Users\Black\Downloads\` es la que se ejecutó; no
+  recibió el orden de borrado con FKs ni el rol `administrador` que sí están en el repo.
+- **p10, AFIHub.** Bloqueo de red, no de código: sigue fuera de alcance.
 
 ### 0.2 Leyenda de la numeración
 
-Los identificadores `2.x` y `3.x` se usan en tres sentidos distintos dentro de este
+Los identificadores `2.x`, `3.x` y `4.x` se usan en tres sentidos distintos dentro de este
 archivo, y conviene saber cuál es cuál antes de leer cualquier tabla:
 
 | Prefijo | Significado |
 |---|---|
 | `2.1`–`2.10` en el §5 | Sub-etapas **actuales** de la Etapa 2 |
-| `3.1`–`3.4` en el §5 | Sub-etapas **actuales** de la Etapa 3 |
+| `3.1`–`3.6` en el §5 | Sub-etapas **actuales** de la Etapa 3 |
+| `4.1`–`4.10` en el §5 | Sub-etapas **actuales** de la Etapa 4 |
 | `Fase 0`–`Fase 4` | Numeración **original, superada** por el reordenamiento (ver §9.1) |
+| `E0`–`E3` | Las mismas cuatro primeras etapas, con prefijo (ver §5) |
 | `§3.1`, `§3.2` | **Defectos** de la API, no etapas |
+| `p1`–`p11` en el §0.1 | Pendientes de trabajo, no etapas |
 
 ---
 
@@ -391,9 +437,11 @@ respaldo para la sintaxis 2.2). Verificado: `/_retired/admin/login.php` y
 Las dos últimas filas estaban como *inexistente* cuando se escribió esto. `migracion_admin.sql`
 ya está aplicada, así que existen y son las que usa la API de Comunidad.
 
+Conteos verificados contra la BD el 2026-09-30, después de las pruebas de la Etapa 4.
+
 | Tabla | Filas | ¿Cubierta por la API? |
 |---|---|---|
-| `usuarios` | 51 | ✅ 5 rutas |
+| `usuarios` | 52 | ✅ 5 rutas |
 | `administradores` | 2 | ✅ 6 rutas, todas con auth desde `9b586ef` |
 | `equipos` | 10 | ✅ 6 rutas |
 | `equipo_miembros` | 48 | ✅ 6 rutas |
@@ -401,21 +449,26 @@ ya está aplicada, así que existen y son las que usa la API de Comunidad.
 | `torneo_equipos` | 10 | ✅ 5 rutas |
 | `torneo_rondas` | 3 | ✅ 4 rutas |
 | `partidos` | 7 | ✅ 7 rutas |
-| `partido_convocados` | **84** | ✅ 4 rutas |
+| `partido_convocados` | **84** | ✅ 4 rutas, visibles desde `99d308b` |
 | `partido_eventos` | 43 | ✅ 4 rutas |
-| `partido_estadisticas_portero` | **14** | ✅ 4 rutas |
+| `partido_estadisticas_portero` | **14** | ✅ 4 rutas, visibles desde `2ee5eba` |
 | `torneo_categorias_voto` | 0 | ✅ 6 rutas |
 | `torneo_categoria_candidatos` | 0 | ✅ 3 rutas |
 | `torneo_votos` | 0 | ✅ 4 rutas |
-| `posts` | 0 | ✅ 4 rutas admin (`9ae32fb`) |
-| `post_reacciones` | 0 | ❌ 0 rutas - la tabla existe pero nada la lee |
+| `posts` | 1 | ✅ 4 rutas admin (`9ae32fb`) |
+| `post_reacciones` | 1 | ❌ 0 rutas — la tabla existe y nadie la lee |
 
-> **84 filas en `partido_convocados` y 14 en `partido_estadisticas_portero` ya existen en
-> la BD** y no hay ninguna UI que las muestre. La Fase 4 las hace visibles sin trabajo de datos.
+> **84 filas en `partido_convocados` y 14 en `partido_estadisticas_portero` ya estaban en
+> la BD** y ninguna UI las mostraba. La Etapa 4 (`99d308b` y `2ee5eba`) las hizo visibles
+> sin tocar los datos.
 
-> **`post_reacciones` está huérfana.** La API de Comunidad expone listar, crear, fijar y
-> eliminar, que es exactamente lo que hacía el legacy; ningún endpoint lee ni escribe
-> reacciones. Si el portal público debe poder dar like, hace falta decidirlo y construirlo.
+> **`post_reacciones` está huérfana, y hay dos contadores de «likes» que no coinciden.**
+> La API de Comunidad expone listar, crear, fijar y eliminar, que es lo que hacía el legacy;
+> **ningún endpoint lee ni escribe `post_reacciones`** (0 coincidencias en todo `backend/`).
+> La fila que hay en esa tabla la puso alguien por fuera. Lo que el panel muestra es
+> `posts.likes`, un contador desnormalizado que vive en otra tabla (`views.js:1145`). Si el
+> portal público debe poder dar like, hay que decidir cuál de los dos manda antes de
+> construir nada: migrar a `post_reacciones` y borrar `likes`, o al revés.
 
 ### 2.2 Cobertura de autenticación
 
@@ -452,19 +505,19 @@ solo módulo.** Los 8 defectos de §3.2 viven en el 84% sin probar — por eso s
 | ~~**S2**~~ ✅ | Tests alcanzables por HTTP sin autenticación — **corregido en E1.1** | `backend/tests/test_votaciones.php`, `prueba_bd.php` | 🚨 `backend/.htaccess:2` (`RewriteCond %{REQUEST_FILENAME} !-f`) deja los archivos servibles. `test_votaciones.php` **crea un admin `testadmin` en la BD** por HTTP anónimo. `prueba_bd.php` devuelve `DATABASE()` |
 | ~~**S3**~~ ✅ | `APP_DEBUG=1` por defecto, sin `.env` ni `.env.example` — **corregido en E1.4** | `backend/config/app.php:22-26` | Cualquier 500 imprime traza PDO completa **con el DSN y el nombre de la base** a un llamador anónimo. Credenciales de BD: `root` con contraseña vacía |
 | **S4** | Sin rate limiting ni lockout en login de admin | `AdminAuthController.php:8` | Permite fuerza bruta |
-| **S5** | `session_destroy()` en el logout de la API | `AuthController.php:50`, `AdminAuthController.php:56` | Destruye la sesión **completa**, incluida la del legacy. Un logout de jugador mata la sesión del panel admin |
+| **S5** | `session_destroy()` en el logout de jugador borra la sesión del panel | `AuthController.php:62`, `AdminAuthController.php:56` | **Sigue abierto.** Panel y API comparten una sola sesión PHP con dos claves (`admin_id` y `user_id`, ver `middleware/auth.php:7` y `adminAuth.php:24`). Un `session_destroy()` a secas se lleva las dos: si un jugador cierra sesión en el mismo navegador, el admin queda desconectado del panel. Lo correcto es borrar solo `$_SESSION['user_id']` y el `usuario`, y dejar `admin_id` intacto |
 | **S6** | Sin CSRF, sin `SameSite`/`Secure`/`HttpOnly` explícitos | `middleware/auth.php:5` | Todo endpoint mutante se autentica solo con cookie de sesión |
 | **S7** | `GET /api/usuarios` y `/api/usuarios/{id}` piden sesión de **jugador**, no de admin | `UsuariosController.php:19,81` | Cualquier jugador autenticado enumera todos los usuarios (matrícula, rol, estado) |
 | **S8** | Auth de jugador: **sin contraseña**, con autoaprovisionamiento | `AuthController.php:20,23,31` | La matrícula de 7 dígitos es la credencial completa. Una matrícula desconocida **crea la cuenta** (`:31`). Combinado con S7 es enumeración total |
-| **S9** | Credencial de admin en claro, en archivo trackeado y dentro del docroot | `crear_admin.php:2-3` | Usuario y contraseña accesibles por HTTP en `crear_admin.php` y presentes en el historial de git |
-| **S10** | Hash inválido y contraseña en claro sembrados en producción | `inserts.sql:98`, tabla `administradores` id=2 | §1.4 — panel inaccesible |
+| ~~**S9**~~ ✅ | Credencial de admin en claro, en archivo trackeado y dentro del docroot — **corregido en E3.6** | `crear_admin.php:2-3` | El archivo ya no está en el repo (sigue en disco local, ignorado por `.gitignore`). La contraseña está en el historial: hay que rotarla, ver p6 |
+| ~~**S10**~~ ✅ | Hash inválido y contraseña en claro sembrados en producción — **corregido en E0** | `inserts.sql:98`, tabla `administradores` id=2 | §1.4 — el panel ya no era accesible; `admin_local` tiene bcrypt válido |
 
 ### 3.2 Funcionalidad
 
 | # | Defecto | Ubicación | Impacto |
 |---|---|---|---|
 | ~~**F1**~~ ✅ | `GET /api/partidos` no se puede filtrar — **corregido en E1.5** | `PartidosController.php:25` | `$this->obtenerId(['id' => $filtros[$campo]], $campo)` pasa el array con clave `'id'` pero `obtenerId` (`:198`) busca `$campo` (`'ronda_id'`/`'equipo_id'`) → siempre `null` → **400 en todo request filtrado**. Sin filtro no hay forma de acotar a un torneo, porque **no existe filtro `torneo_id`**. El frontend no puede listar partidos por torneo |
-| **F2** | `rechazar` nunca escribe `motivo_rechazo` | `TorneoEquiposController.php:124` | El `UPDATE` pone `estado="rechazado"` y limpia `aprobado_por`, pero **nunca el motivo** — aunque el panel lo lee (`admin/partials/postulaciones.php:203`). Rechazos vía API se ven en blanco |
+| **F2** | `rechazar` nunca escribe `motivo_rechazo` | `TorneoEquiposController.php:122-127` | El `UPDATE` pone `estado="rechazado"` y limpia `aprobado_por`, pero **nunca el motivo**. La columna **sí existe** (`text`, nullable, la creó `migracion_admin.sql`), así que no hace falta `ALTER TABLE`; y el panel **tampoco la lee** — `postulaciones.php` no la menciona, y el cliente manda un `confirm()` a secas en `views.js:1244`. Cerrarlo son tres líneas: leer el motivo del cuerpo, escribirlo, y pedirlo en un diálogo |
 | ~~**F3**~~ ✅ | Router no devuelve 405 — **corregido en E1.7** | `backend/core/router.php:21-61` | `if ($rutaMetodo !== strtoupper($metodo)) continue;` descarta el método y cae en el 404 genérico. Sin cabecera `Allow` |
 | **F4** | Sin CORS, sin `OPTIONS` | `backend/` (0 coincidencias de `Access-Control`) | ⚠️ **No bloquea el panel admin**: admin y API están en el mismo origen (`localhost:80`). Sí bloquearía un frontend servido en otro origen |
 | **F5** | Sin soporte de subida de archivos | `backend/` (0 coincidencias de `$_FILES`) | `logo` y `avatar` se manejan como **string**. Un frontend **no puede subir** logo ni avatar por la API |
@@ -514,16 +567,17 @@ desconectar el legacy. Ningún momento sin sistema utilizable.
 | **E0** | Tercer admin operativo, respaldo, auditoría de AFIHub | no | sí (1 fila) | ✅ `sin commit` |
 | **E1** | API segura y fiable; sesión unificada | no | no | ✅ salvo §1.6 · `241d5da` |
 | **E2** | **Conectar el panel a la API** — queda operativo sobre backend | sí (reescribe) | no | ✅ 6 de 7 vistas · `20462c4` + `c3885fc` |
-| **E3** | Desconectar el legacy | sí | no | ⛔ bloqueada por b1–b6 |
+| **E3** | Desconectar el legacy | sí | no | ✅ · `a1bad5f` `9b586ef` `9ae32fb` `be57ab1` `439859d` |
+| **E4** | Poner en pantalla los datos que ya estaban | no | no | ⚠️ 5 de 9 · `99d308b` `0b0cd7b` `2ee5eba` `91579e6` `d151597` |
 
-> `E0`–`E3` son las mismas cuatro etapas que lasnumbered `0`–`3` del §5, con prefijo `E`.
-> El estado y los commits por sub-etapa están en el [§0](#0-estado-de-la-implementación).
+> `E0`–`E4` son las mismas cinco etapas que las numeradas `0`–`4` más abajo, con prefijo
+> `E`. El estado y los commits por sub-etapa están en el [§0](#0-estado-de-la-implementación).
 >
-> La antigua `E4` ("migrar vistas y habilitar lo inalcanzable") **ya no es una etapa**: su
-> parte de migración de vistas quedó absorbida por `E2`. Lo que sí quedó fuera —convocatorias,
-> porteros, editar rondas— son funcionalidades pendientes, no un paso del plan. Las
-> convocatorias y los porteros ya se habilitaron en la [Etapa 4](#etapa-4--poner-en-pantalla-los-datos-que-ya-estaban);
-> el resto sigue en la columna "Se habilita" del [§8](#8-cobertura-por-vista).
+> Antes de que la Etapa 4 existiera, el plan tenía una `E4` distinta ("migrar vistas y
+> habilitar lo inalcanzable") que **quedó sin efecto** al reordenar: su parte de migración
+> de vistas la absorbió la `E2`. La `E4` de la tabla de arriba es la actual: poner en
+> pantalla las tablas que la siembra ya llenaba. Para no confundir las dos, la antigua
+> quedó archivada al final de este §5 como "Fases originales".
 
 ### Etapa 0 — Rescate de acceso ✅
 
@@ -544,7 +598,7 @@ desconectar el legacy. Ningún momento sin sistema utilizable.
 | 1.3 | **Unificar `$_SESSION['admin']` y `$_SESSION['admin_id']`** | §1.9 | `middleware/adminAuth.php`, `AdminAuthController.php`, `admin/controllers/login.php` | ✅ |
 | 1.4 | `APP_DEBUG=0` + `.env.example` | S3 | `backend/config/app.php` | ✅ |
 | 1.5 | Filtro de `GET /api/partidos` + filtro `torneo_id` nuevo | F1 | `PartidosController.php:25` | ✅ |
-| 1.6 | `rechazar` escribe `motivo_rechazo` | F2 | `TorneoEquiposController.php:124` | ⛔ **bloqueada** |
+| 1.6 | `rechazar` escribe `motivo_rechazo` | F2 | `TorneoEquiposController.php:122` | ❌ sin hacer (p7) |
 | 1.7 | Router devuelve 405 con `Allow` | F3 | `backend/core/router.php:21-61` | ✅ |
 | 1.8 | `basePath` derivado de `SCRIPT_NAME` | F7 | `backend/index.php:27-38` | ✅ |
 | 1.9 | Comprobar `activo` antes de autenticar en la API | §1.9 | `AdminAuthController.php:37-41` | ✅ |
@@ -859,10 +913,31 @@ es que cada tabla de la siembra que el panel no leía, ahora se lea y se pueda e
 | 4.1 | `partido_convocados`: 84 filas visibles y editables en Resultados | `99d308b` | ✅ |
 | 4.2 | `partido_estadisticas_portero`: 14 filas visibles y editables | `2ee5eba` | ✅ |
 | 4.3 | Bug: todo rango numérico rechazaba el `0` | `0b0cd7b` | ✅ |
-| 4.4 | Editar/borrar evento desde la pantalla de resultados | — | ❌ sin hacer |
-| 4.5 | Retirar equipo de un torneo | — | ❌ sin hacer |
-| 4.6 | Toggles de `estado` y `jugador_activo` en Participantes | — | ❌ sin hacer |
-| 4.7 | Reacciones de Comunidad (`post_reacciones`) | — | ❌ sin hacer |
+| 4.4 | Bug: tres formularios mandaban un cuerpo que el backend no esperaba | `91579e6` | ✅ |
+| 4.5 | Editar categoría de votación desde el panel | `d151597` | ✅ |
+| 4.6 | Editar/borrar evento desde la pantalla de resultados | — | ❌ sin hacer |
+| 4.7 | Retirar equipo de un torneo | — | ❌ sin hacer |
+| 4.8 | Toggles de `estado` y `jugador_activo` en Participantes | — | ❌ sin hacer |
+| 4.9 | Reacciones de Comunidad (`post_reacciones`) | — | ❌ sin hacer |
+| 4.10 | Todo lo anterior, en un navegador real | — | ⛔ sin navegador |
+
+**Lo pendiente son cuatro pantallas, pero no todas igual de fácil.** Tres tienen el endpoint
+escrito y probado, y solo falta el control en `views.js`. La cuarta (4.9) no tiene endpoint
+y encima tiene una decisión de diseño pendiente. Rutas verificadas en
+`backend/routes/api.php`:
+
+| Pendiente | Endpoint | Guard | Qué falta |
+|---|---|---|---|
+| 4.6 Editar/borrar evento | `PATCH`/`DELETE /api/partidos/{partidoId}/eventos/{eventoId}` (`api.php:107-108`) | `requireAdminAPI()` | botón y diálogo en Resultados |
+| 4.7 Retirar equipo | `PATCH /api/torneos/{torneoId}/equipos/{equipoId}/retirar` (`api.php:82`) | `requireAdminAPI()` | botón y confirmación en Postulaciones |
+| 4.8 Toggles de Participantes | `PATCH /api/usuarios/{id}/estado` y `PATCH /api/usuarios/{id}/jugador-activo` (`api.php:28-29`) | `requireAdminAPI()` | los dos interruptores de la tabla |
+| 4.9 Reacciones | **no existe** | — | endpoint nuevo, y decidir qué contador manda |
+
+**4.9 no es un rato de frontend.** No hay ninguna ruta de reacciones en `api.php`, así que
+hay que escribir el endpoint. Y antes hay que resolver el conflicto de §2.1: existe
+`post_reacciones` (una fila por reacción) y también `posts.likes` (un contador), y el panel
+muestra el segundo. Hay que elegir uno; si se elige `post_reacciones`, `likes` sobra y
+habría que decidir si se borra la columna.
 
 **Criterio de salida, verificado por HTTP**
 - [x] `GET /api/partidos/1/convocados` sin sesión → **401** (antes 200 con las matrículas)
@@ -870,8 +945,10 @@ es que cada tabla de la siembra que el panel no leía, ahora se lea y se pueda e
 - [x] Convocatorias: 12 por partido, 10 titulares + 2 suplentes, las 84 filas intactas
 - [x] Porteros: 2 por partido, las 14 filas intactas
 - [x] `PATCH` de resultado, convocatoria, portero y evento, incluidos los casos de error
+- [x] Abrir/cerrar categoría manda `{estado}` y responde 200; sin cuerpo responde 400
+- [x] Editar categoría persiste nombre, modo y orden; 409 al cambiar tipo con candidatos
 - [x] Base igual que la siembra tras las pruebas: 7 partidos, 43 eventos, 84, 14
-- [ ] Todo lo anterior en un navegador — **pendiente**
+- [ ] Todo lo anterior en un navegador — **pendiente** (4.10)
 
 **El fallo del `0` (4.3) no era cosmético.** `filter_var` con `FILTER_VALIDATE_INT`
 devuelve `int(0)` para el cero, y `!int(0)` es `true`, así que el operador `!` decía
@@ -882,6 +959,37 @@ penales en `null` y el backend los pasaba por `?? 0`, con lo que el `0` recién
 arreglado lo hacía fallar igual: **el botón «Guardar resultado» no guardaba nada**,
 salvo que se tecleara un número de penales distinto de cero en los dos equipos.
 Los penales ahora aceptan entero o `null`, que es como los tiene la siembra.
+
+**Los tres formularios (4.4) fallaban por el contrato, no por el backend.** El botón de
+abrir/cerrar una categoría, los dos formularios de creación de ronda y el de partido
+mandaban algo que el backend no esperaba:
+
+| Qué | Enviaba | Qué esperaba |
+|---|---|---|
+| Abrir/cerrar categoría | `PATCH` **sin cuerpo** | `{"estado":"abierta"}` o `{"estado":"cerrada"}` |
+| Crear ronda (dos vistas) | omitía `orden` | `orden` obligatorio |
+| Crear partido | `posicion: null` | `posicion` calculada por el backend |
+
+`resultado()` y `fijarPostulacion()` sí aceptan el cuerpo vacío, y por eso
+«Aprobar postulación» y «Fijar en el canal» no se tocaron. Un `PATCH` sin cuerpo solo es
+legítimo si el backend lo acepta explícitamente. La posición de partido ahora se calcula
+sola como `MAX(posicion)+1` dentro de la ronda, que es la regla que ya usaba la siembra.
+
+**Editar categoría (4.5) es un endpoint que existía sin dueño.** `CategoriasVotoController::actualizar`
+(`PATCH /api/torneos/{torneoId}/categorias-voto/{id}`) llevaba escrito y probado desde la
+Etapa 1: acepta `nombre`, `tipo`, `modo_candidatos` y `orden`, con sus validaciones. Pero
+`api.js` no tenía método que lo llamara y la tarjeta de la categoría solo ofrecía Abrir,
+Cerrar y Eliminar. Se résumé el trabajo a un método y un formulario.
+
+Dos decisiones que conviene no deshacer:
+
+- **La clave no es editable.** `uq_torneo_categoria_clave` es por torneo y la clave se usa
+  como identificador en otras partes. El backend no la acepta en el `PATCH` y el formulario
+  lo avisa.
+- **El `tipo` se manda siempre y puede dar 409.** El backend no deja cambiar el tipo si la
+  categoría ya tiene candidatos o votos, porque los candidatos guardados quedarían con la
+  columna equivocada. Es la respuesta correcta; si algún día se quiere permitir, hay que
+  decidir antes qué pasa con esos candidatos.
 
 > **Pendiente de decisión.** `resultado()` ya persiste `estado` cuando viene en el cuerpo
 > (el selector de Estado lo mandaba y se ignoraba en silencio), pero poner `finalizado` a
@@ -1086,31 +1194,47 @@ const API = {
 
 ## 8. Cobertura por vista
 
-| Vista | Lecturas | Escrituras | Se habilita |
+Lecturas y escrituras ya migradas sobre la API, y lo que queda en cada pantalla. Los
+números entre paréntesis remiten a la sub-etapa del §5.
+
+| Vista | Lecturas | Escrituras | Pendiente |
 |---|---|---|---|
 | **Inicio** | ✅ torneos, partidos, postulaciones, estadísticas | — | — |
-| **Torneo y Rondas** | ✅ torneos, rondas, bracket, equipos | ⚠️ crear ronda, crear partido | editar/borrar ronda y partido, finalizar partido, bracket de `BracketController` |
-| **Postulaciones** | ✅ `torneos/{id}/equipos` | ⚠️ aprobar, rechazar | retirar equipo |
-| **Participantes** | ✅ `admin/usuarios` | — | toggles de `estado` y `jugador_activo`, detalle de jugador, historial de equipos |
-| **Resultados** | ✅ partidos, eventos, estadísticas, **convocatorias**, **porteros** | ⚠️ resultado, registrar evento, **convocar**, **stats de portero** | editar/borrar evento, y el bug del `0` ya corregido (`0b0cd7b`) |
-| **Votaciones** | ✅ categorías, candidatos, jugadores | ⚠️ 6 acciones | pool con `ResolverPoolCandidatos` en vez de SQL ad-hoc |
-| **Comunidad** | ✅ `admin/posts` | ⚠️ crear, fijar, eliminar | reacciones: la tabla `post_reacciones` existe y no la usa nadie |
+| **Torneo y Rondas** | ✅ torneos, rondas, bracket, equipos | ⚠️ crear ronda, crear partido | editar/borrar ronda y partido (`api.php:86-87`, ya existe), finalizar partido, bracket de `BracketController` |
+| **Postulaciones** | ✅ `torneos/{id}/equipos` | ⚠️ aprobar, rechazar | retirar equipo (**4.7**), motivo de rechazo (p7) |
+| **Participantes** | ✅ `admin/usuarios` | — | toggles de `estado` y `jugador_activo` (**4.8**, endpoints ya existen) |
+| **Resultados** | ✅ partidos, eventos, estadísticas, **convocatorias** (4.1), **porteros** (4.2) | ⚠️ resultado, registrar evento, **convocar**, **stats de portero** | editar/borrar evento (**4.6**) |
+| **Votaciones** | ✅ categorías, candidatos, jugadores | ⚠️ 6 acciones | — (editar categoría se hizo en **4.5**) |
+| **Comunidad** | ✅ `admin/posts` | ⚠️ crear, fijar, eliminar | reacciones (**4.9**): sin endpoint, y con dos contadores de «likes» en conflicto |
 
 ✅ migrado sobre la API · ⚠️ migrado y **sin probar en navegador** · ❌ fuera de alcance
-(la columna "Se habilita" lista lo que **no** quedó migrado: funciones que el legacy tenía
-y la API no expone).
+
+Lo marcado en **negrita** son las cuatro sub-etapas abiertas de la Etapa 4. Tres solo
+necesitan el control en `views.js`; 4.9 necesita endpoint. Ninguna toca el esquema. El
+detalle está en la [tabla de la Etapa 4](#etapa-4--poner-en-pantalla-los-datos-que-ya-estaban).
 
 ---
 
 ## 9. Resumen de etapas
 
-| Etapa | Alcance | Bloqueada por | Entregable | Estado |
+| Etapa | Alcance | Estado | Commits | Entregado |
 |---|---|---|---|---|
-| **0** | Admin `id=3` operativo, respaldo, auditoría AFIHub | — | Acceso restaurado | ✅ |
-| **1** | API segura y fiable: S1, S2, S3, F1, F3, F7, §1.9 | 1.6 (F2, requiere esquema) | 83 rutas usables, sesión unificada | ✅ salvo 1.6 |
-| **2** | Conectar panel a la API | — | 6 de 7 vistas sobre el backend | ✅ ver [§0](#0-estado-de-la-implementación) |
-| **3** | Desconectar el legacy | — | Panel legacy inaccesible | ✅ ver §0 |
-| **4** | Poner en pantalla los datos que ya estaban | — | 84 convocatorias + 14 líneas de portero, y el bug del `0` | ⚠️ ver §0 |
+| **0** | Admin `id=3` operativo, respaldo, auditoría AFIHub | ✅ | — | Acceso restaurado |
+| **1** | API segura y fiable: S1, S2, S3, F1, F3, F7, §1.9 | ✅ salvo 1.6 | `241d5da` | 83 rutas usables, sesión unificada |
+| **2** | Conectar panel a la API | ⚠️ falta navegador | `20462c4`, `c3885fc` | 6 de 7 vistas sobre el backend |
+| **3** | Desconectar el legacy | ⚠️ falta navegador | `a1bad5f`, `9b586ef`, `9ae32fb`, `be57ab1`, `439859d` | Panel legacy inaccesible |
+| **4** | Poner en pantalla los datos que ya estaban | ⚠️ 5 de 9 | `99d308b`, `0b0cd7b`, `2ee5eba`, `91579e6`, `d151597` | 84 convocatorias, 14 de portero, editar categoría, y 3 bugs de contrato |
+| **5** | Seguridad pendiente: S4, S5, S6, S7, S8, y decisiones de producto | ⛔ sin empezar | — | — |
+
+**Qué significa cada estado.** ✅ está hecho y verificado por HTTP. ⚠️ está hecho pero
+falta probarlo en un navegador, o la etapa quedó a medias. ❌ no se ha empezado.
+⛔ no se puede empezar sin una decisión de otro equipo.
+
+**Etapas 0 a 3: cerradas.** No queda código pendiente en ellas, solo la prueba de navegador
+(p1). **Etapa 4: lo único con código pendiente**, cuatro pantallas que ya tienen endpoint
+(4.6–4.9). **Etapa 5: no existe todavía**, son los tres endurecimientos de seguridad y las
+decisiones de producto listadas abajo; se numeró al final para que quede claro que es
+posterior, no es trabajo que ya estuviera empezado.
 
 **Corregidos en la Etapa 1:** S1 (toma de control de admin) · S2 (tests por HTTP) · S3
 (`APP_DEBUG`) · F1 (filtro de partidos, + `torneo_id`) · F3 (405 con `Allow`) · F7 (basePath) ·
@@ -1124,7 +1248,7 @@ ninguna de las dos vías reconocía a la otra.
 
 | Bloqueo | Causa | Quién decide |
 |---|---|---|
-| **F2** `motivo_rechazo` | La columna no existe; requiere `ALTER TABLE` | tú (§ Etapa 1, opción a/b) |
+| **F2** `motivo_rechazo` | No es un bloqueo de esquema: la columna ya existe. Es código sin escribir | tú (p7) |
 | **§1.6** rol `jugador` | Whitelist de `Origin` en AFIHub | equipo de AFIhub |
 | **§1.7** re-validación del rol | Diseño de producto | producto |
 | **§1.8** matrícula como credencial | Diseño de producto | producto |
