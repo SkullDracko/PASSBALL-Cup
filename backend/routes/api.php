@@ -38,6 +38,13 @@ $router->get('/api/admin/torneos/{torneoId}/categorias-voto', [AdminPanelControl
 $router->get('/api/admin/torneos/{torneoId}/candidatos-voto', [AdminPanelController::class, 'candidatosVoto']);
 $router->get('/api/admin/torneos/{torneoId}/jugadores', [AdminPanelController::class, 'jugadoresTorneo']);
 
+// Comunidad: el legacy hacia esto con formularios POST a
+// admin/controllers/comunidad.php y mensajes en la sesion.
+$router->get('/api/admin/posts', [AdminComunidadController::class, 'listar']);
+$router->post('/api/admin/posts', [AdminComunidadController::class, 'crear']);
+$router->patch('/api/admin/posts/{id}/fijado', [AdminComunidadController::class, 'toggleFijado']);
+$router->delete('/api/admin/posts/{id}', [AdminComunidadController::class, 'eliminar']);
+
 $router->get('/api/administradores', [AdministradoresController::class, 'listar']);
 $router->post('/api/administradores', [AdministradoresController::class, 'crear']);
 $router->get('/api/administradores/{id}', [AdministradoresController::class, 'detalle']);

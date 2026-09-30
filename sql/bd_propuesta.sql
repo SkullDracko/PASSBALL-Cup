@@ -34,7 +34,10 @@ CREATE TABLE usuarios (
   apellidop VARCHAR(100) DEFAULT '',
   apellidom VARCHAR(100) DEFAULT '',
   semestre INT DEFAULT NULL,
-  rol ENUM('usuario','jugador') NOT NULL DEFAULT 'usuario',
+  -- 'administrador' identifica las filas de usuarios que corresponden al
+  -- equipo organizador al publicar en Comunidad. En instalaciones viejas,
+  -- migracion_admin.sql punto 5 amplia este enum.
+  rol ENUM('usuario','jugador','administrador') NOT NULL DEFAULT 'usuario',
   avatar VARCHAR(255),
   jugador_activo BOOLEAN NOT NULL DEFAULT TRUE, -- Indica si el jugador puede participar en los partidos (al terminar el afiliado, debería de ponerse como 0)
   estado ENUM('activo','inactivo') NOT NULL DEFAULT 'activo', -- Sirve para habilitar o deshabilitar al usuario en el sistema
