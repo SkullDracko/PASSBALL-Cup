@@ -304,6 +304,26 @@ const API = {
         return this.post("/partidos/" + partidoId + "/eventos", datos);
     },
 
+    /* --- Convocatorias (partido_convocados) ---
+     * El listado exige sesion de admin: sin ella devuelve 401.
+     * Antes de tocarlo no tenia guard y era legible por cualquiera. */
+
+    convocadosDePartido(partidoId) {
+        return this.get("/partidos/" + partidoId + "/convocados");
+    },
+
+    convocarJugador(partidoId, datos) {
+        return this.post("/partidos/" + partidoId + "/convocados", datos);
+    },
+
+    actualizarConvocado(partidoId, jugadorId, datos) {
+        return this.patch("/partidos/" + partidoId + "/convocados/" + jugadorId, datos);
+    },
+
+    eliminarConvocado(partidoId, jugadorId) {
+        return this.del("/partidos/" + partidoId + "/convocados/" + jugadorId);
+    },
+
 
     /* --- Contadores --- */
 

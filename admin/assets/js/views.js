@@ -51,6 +51,26 @@ function inicial(nombre) {
 }
 
 /*
+   Etiqueta de un jugador o usuario.
+
+   Los 50 usuarios de la semilla (sql/inserts.sql) se insertan solo con
+   matricula: nombre, appellidop y appellidom vienen vacios, y el nombre real
+   esta en un comentario del propio INSERT. Por eso los selectores de este
+   panel caian en un "?" cuando la columna nombre no venia.
+
+   Aqui se compone nombre + apellidos y, si no hay nada, se cae a la matricula,
+   que al menos si existe. Devuelve texto plano: esc() lo aplica quien lo pinta.
+*/
+function etiquetaJugador(u) {
+    if (!u) return "—";
+    const nombre = String(u.nombre || "").trim();
+    const ap = String(u.apellidop || "").trim();
+    const am = String(u.apellidom || "").trim();
+    const completo = [nombre, ap, am].filter(Boolean).join(" ");
+    return completo || String(u.matricula || "—");
+}
+
+/*
    El aviso va dentro de la vista activa, no en un id único del documento.
 
    Cada partial trae su propia caja .vista-aviso. Antes todas se llamaban
@@ -610,6 +630,110 @@ async function cargarTorneo() {
    RESULTADOS
    ============================================================ */
 
+const POSICIONES = ["portero", "defensa", "mediocampo", "delantero"];
+
+/*
+   convocatoria de un partido, agrupada por equipo y separada en titulares y
+   suplentes. Las 84 filas de partido_convocados ya estaban en la base desde
+   la siembra y ninguna pantalla las mostraba.
+*/
+function pintarConvocatoria(partido, lista, miembros) {
+
+    if (!lista.length) {
+        return '<div class="mb-sm"><p class="admin-note">Sin convocatoria para este partido.</p></div>';
+    }
+
+    const porEquipo = new Map();
+    lista.forEach(c => {
+        if (!porEquipo.has(c.equipo_id)) porEquipo.set(c.equipo_id, []);
+        porEquipo.get(c.equipo_id).push(c);
+    });
+
+    const fila = (c, tipo) => `
+        <div class="admin-row gap-sm">
+            <span class="post-avatar">${inicial(etiquetaJugador(c))}</span>
+            <span class="side">${esc(etiquetaJugador(c))}</span>
+            <span class="chip-soft">${esc(c.posicion)}</span>
+            <span class="small-note">${esc(c.matricula)}</span>
+            <button type="button" class="admin-btn ghost mini"
+                    data-accion="alternar-titular"
+                    data-partido="${partido.id}" data-jugador="${c.jugador_id}"
+                    data-titular="${tipo === "titular" ? 0 : 1}">
+                ${tipo === "titular" ? "A banco" : "A titular"}
+            </button>
+            <button type="button" class="admin-btn ghost mini danger"
+                    data-accion="quitar-convocado"
+                    data-partido="${partido.id}" data-jugador="${c.jugador_id}">
+                Quitar
+            </button>
+        </div>`;
+
+    const alta = (equipoId) => {
+        const yaConvocados = new Set(
+            lista.filter(c => c.equipo_id === equipoId).map(c => c.jugador_id)
+        );
+        const disponibles = (miembros[equipoId] || []).filter(m => !yaConvocados.has(m.id));
+        if (!disponibles.length) {
+            return '<p class="admin-note">Sin miembros activos sin convocar.</p>';
+        }
+        return `
+            <form class="admin-form tight" data-accion="convocar-jugador"
+                  data-partido="${partido.id}" data-equipo="${equipoId}">
+                <div class="field admin-field-wide">
+                    <label>Jugador</label>
+                    <select name="jugador_id" required>
+                        <option value="">— Seleccionar —</option>
+                        ${disponibles.map(m =>
+                            '<option value="' + m.id + '">' +
+                            esc(etiquetaJugador(m)) + " (" + esc(m.matricula || "") +
+                            ")</option>").join("")}
+                    </select>
+                </div>
+                <div class="field admin-field-md">
+                    <label>Posición</label>
+                    <select name="posicion">
+                        ${POSICIONES.map(p => '<option value="' + p + '">' + esc(p) + "</option>").join("")}
+                    </select>
+                </div>
+                <label class="admin-check">
+                    <input type="checkbox" name="titular" value="1" checked> Titular
+                </label>
+                <button type="submit" class="admin-btn ghost">+ Convocar</button>
+            </form>`;
+    };
+
+    const bloques = [...porEquipo.entries()].map(([equipoId, filas]) => {
+        const titulares = filas.filter(c => c.titular);
+        const banco = filas.filter(c => !c.titular);
+        const nombre = (filas[0] && filas[0].equipo_nombre) || ("Equipo " + equipoId);
+        return `
+            <div class="mb-sm">
+                <div class="feed-head">
+                    <h4>${esc(nombre)}</h4>
+                    <span class="feed-count">${titulares.length} + ${banco.length}</span>
+                </div>
+                <div class="admin-stack-sm">
+                    ${titulares.length
+                        ? '<p class="small-note">Titulares</p>' + titulares.map(c => fila(c, "titular")).join("")
+                        : ""}
+                    ${banco.length
+                        ? '<p class="small-note">Suplentes</p>' + banco.map(c => fila(c, "banco")).join("")
+                        : ""}
+                </div>
+                ${alta(equipoId)}
+            </div>`;
+    }).join("");
+
+    return `
+        <div class="mb-sm">
+            <div class="feed-head">
+                <h4>Convocatoria</h4>
+                <span class="feed-count">${lista.length}</span>
+            </div>
+            ${bloques}
+        </div>`;
+}
+
 async function cargarResultados() {
 
     await cargarTorneos();
@@ -674,6 +798,14 @@ async function cargarResultados() {
         miembros[id] = d.miembros || [];
     }));
 
+    // Convocatorias: 84 filas en partido_convocados que hasta ahora no las
+    // mostraba ninguna pantalla. Se piden por partido, en paralelo.
+    const convocados = {};
+    await Promise.all(deRonda.map(async p => {
+        const d = await API.convocadosDePartido(p.id);
+        convocados[p.id] = d.convocados || [];
+    }));
+
     cont.innerHTML = deRonda.map(p => {
 
         const tieneMarcador =
@@ -709,7 +841,7 @@ async function cargarResultados() {
                         <option value="">— Seleccionar —</option>
                         ${(miembros[e.id] || []).map(j =>
                             '<option value="' + j.id + '">' +
-                            esc(j.nombre || "?") + "</option>").join("")}
+                            esc(etiquetaJugador(j)) + "</option>").join("")}
                     </select>
                 </div>
                 <div class="field admin-field-md">
@@ -788,6 +920,8 @@ async function cargarResultados() {
             ${eventosHtml ? '<div class="mb-sm small-note">' + eventosHtml + "</div>" : ""}
 
             <div class="bracket admin-row gap-sm">${formsEquipo}</div>
+
+            ${pintarConvocatoria(p, convocados[p.id] || [], miembros)}
         </div>`;
     }).join("");
 }
@@ -1013,6 +1147,17 @@ document.addEventListener("click", async function (e) {
                 if (!confirm("¿Eliminar esta publicación?")) return;
                 await API.eliminarPost(btn.dataset.post);
                 break;
+
+            case "alternar-titular":
+                await API.actualizarConvocado(btn.dataset.partido, btn.dataset.jugador, {
+                    titular: btn.dataset.titular === "1"
+                });
+                break;
+
+            case "quitar-convocado":
+                if (!confirm("¿Quitar a este jugador de la convocatoria?")) return;
+                await API.eliminarConvocado(btn.dataset.partido, btn.dataset.jugador);
+                break;
         }
 
         await recargarVistaActiva();
@@ -1084,6 +1229,16 @@ document.addEventListener("submit", async function (e) {
                     tipo: datos.tipo,
                     minuto: datos.minuto ? Number(datos.minuto) : null
                 });
+                break;
+
+            case "convocar-jugador":
+                await API.convocarJugador(form.dataset.partido, {
+                    jugador_id: Number(datos.jugador_id),
+                    equipo_id: Number(form.dataset.equipo),
+                    titular: datos.titular === "1",
+                    posicion: datos.posicion
+                });
+                aviso("Jugador convocado.", "ok");
                 break;
 
             case "crear-categoria":

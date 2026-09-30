@@ -2626,6 +2626,15 @@ body {
     align-items: flex-start;
 }
 
+/* Complementario de .admin-row: apila en vertical en vez de en horizontal.
+   Lo usa la lista de convocados, donde cada fila lleva avatar, nombre,
+   posicion, matricula y dos botones, y no cabe en una sola linea. */
+.admin-stack-sm {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .admin-check {
     display: inline-flex;
     align-items: center;
