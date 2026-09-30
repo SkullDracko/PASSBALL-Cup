@@ -444,6 +444,44 @@ async function cargarVotaciones() {
                 </div>
             </div>
 
+            <details class="mt-sm">
+                <summary class="admin-label-mini">Editar categoría</summary>
+                <form class="admin-form tight" data-accion="editar-categoria"
+                      data-torneo="${ESTADO.torneoId}" data-categoria="${cat.id}">
+                    <div class="field admin-field-lg">
+                        <label>Nombre</label>
+                        <input type="text" name="nombre" maxlength="100"
+                               value="${esc(cat.nombre)}" required>
+                    </div>
+                    <div class="field admin-field-md">
+                        <label>Tipo</label>
+                        <select name="tipo">
+                            ${["jugador", "equipo"].map(t =>
+                                '<option value="' + t + '"' +
+                                (cat.tipo === t ? " selected" : "") + ">" +
+                                esc(t) + "</option>").join("")}
+                        </select>
+                    </div>
+                    <div class="field admin-field-md">
+                        <label>Modo candidatos</label>
+                        <select name="modo_candidatos">
+                            ${["automatico", "manual"].map(m =>
+                                '<option value="' + m + '"' +
+                                (cat.modo_candidatos === m ? " selected" : "") + ">" +
+                                esc(m) + "</option>").join("")}
+                        </select>
+                    </div>
+                    <div class="field admin-field-xs">
+                        <label>Orden</label>
+                        <input type="number" name="orden" min="0"
+                               value="${cat.orden}">
+                    </div>
+                    <button type="submit" class="admin-btn ghost">Guardar</button>
+                    <p class="small-note">La clave no se edita. Cambiar el tipo
+                        falla si ya hay candidatos o votos.</p>
+                </form>
+            </details>
+
             ${listaAjustes.length ? `
             <div class="mt-sm">
                 <div class="admin-label-mini">Ajustes de candidatos</div>
@@ -1360,6 +1398,16 @@ document.addEventListener("submit", async function (e) {
                     atajadas: Number(datos.atajadas),
                     goles_recibidos: Number(datos.goles_recibidos)
                 });
+                break;
+
+            case "editar-categoria":
+                await API.actualizarCategoriaVoto(torneoId, form.dataset.categoria, {
+                    nombre: datos.nombre,
+                    tipo: datos.tipo,
+                    modo_candidatos: datos.modo_candidatos,
+                    orden: datos.orden === "" ? 0 : Number(datos.orden)
+                });
+                aviso("Categoría actualizada.", "ok");
                 break;
 
             case "crear-categoria":
