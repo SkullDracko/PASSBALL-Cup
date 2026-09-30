@@ -5,7 +5,7 @@
 > El sitio público (`index.php`, `controllers/`, `equipos/`) **queda fuera de alcance**.
 >
 > Última actualización incorpora la verificación contra la base de datos real
-> (`passballcup`, 16 tablas) y una auditoría de las 83 rutas de la API.
+> (`passballcup`, 16 tablas) y una auditoría de las 94 rutas de la API.
 >
 > **Si vienes a continuar el trabajo, empieza por la [sección 0](#0-estado-de-la-implementación).**
 
@@ -175,13 +175,23 @@ demuestra lo contrario:
 
 | Métrica | Resultado |
 |---|---|
-| Rutas registradas en `backend/routes/api.php` | **83** |
-| Rutas que resuelven a un método implementado | **83 / 83 (100%)** |
+| Rutas registradas en `backend/routes/api.php` | **94** |
+| Rutas que resuelven a un método implementado | **94 / 94 (100%)** |
 | Métodos stub / TODO / `throw new` vacío | **0** |
 | Controladores referenciados en rutas que no existen | **0** |
 | Hallazgos de inyección SQL | **0** — todas las queries usan prepared statements |
 | Servicios muertos (`FinalizarPartido`, `ResolverPoolCandidatos`, `jugadores_service`) | **0** — los 3 vivos |
 | Tablas de BD con controller | **14 / 16** |
+
+> **Por qué 94 y no 83.** La cifra de 83 era correcta cuando se hizo la auditoría, en la
+> Etapa 1. Las etapas siguientes añadieron rutas y el número se quedó viejo en el
+> documento. El desglose: la Etapa 2 añadió **6** endpoints de administración, la 3.2
+> añadió **4** de posts, y hay **1** ruta de prueba (`GET /api/test`, que es S12 y está
+> sin autenticar). 83 + 6 + 4 + 1 = 94. Las 83 originales siguen siendo las mismas; nadie
+> quitó ninguna. Nota para el que cuente: el patrón `^\$router->` marca 94, pero
+> `GET /api/test` ocupa **cuatro** líneas (`api.php:7-10`) porque el path va en la línea
+> siguiente, así que un regex que exija el path en la misma línea cuenta 93 y parece que
+> falta una ruta.
 
 La API tiene validación real (`core/validator.php` con 19 call sites, `filter_var` en cada
 id de path, whitelists de enums, validación de fechas por round-trip), autorización por
@@ -236,6 +246,13 @@ Ambas quedaron resueltas por la Etapa 3, no por el esquema solo. La vista pasó 
 > válido. Login verificado por HTTP contra `admin/controllers/login.php` (200 con contraseña
 > correcta, 401 con incorrecta). Verificado también que `password_verify` acepta la nueva
 > contraseña y rechaza otras.
+
+> ⚠️ **Sobre las rutas `admin/controllers/…` de este documento.** Se dejan tal cual
+> porque describen lo que había en su momento, y reescribirlas falsearía la historia. Pero
+> **ninguno de esos archivos está ya ahí**: los 6 controllers legacy se movieron a
+> **`_retired/admin/`** en el commit `439859d` (Etapa 2), y la carpeta `admin/` se quedó
+> solo con el panel nuevo. Si buscas uno de esos archivos, está en `_retired/admin/`. La
+> lista completa de lo que hay ahora está en el §5, sub-etapa 2.6.
 
 ```
 id | usuario           | activo | hash               | len | login
@@ -487,7 +504,7 @@ Conteos verificados contra la BD el 2026-09-30, después de las pruebas de la Et
 | Métrica | Valor |
 |---|---|
 | Controllers con pruebas | **3 de 19** (`CategoriasVoto`, `CandidatosVoto`, `Votos`) |
-| Rutas cubiertas | **13 de 83 (~16%)** |
+| Rutas cubiertas | **13 de 94 (~14%)** |
 | `composer.json` / `phpunit.xml` / CI | **ninguno** |
 
 `backend/tests/test_votaciones.php` es un buen harness de integración (50 asserts, cookie
@@ -512,6 +529,8 @@ solo módulo.** Los 8 defectos de §3.2 viven en el 84% sin probar — por eso s
 | **S8** | Auth de jugador: **sin contraseña**, con autoaprovisionamiento | `AuthController.php:20,23,31` | La matrícula de 7 dígitos es la credencial completa. Una matrícula desconocida **crea la cuenta** (`:31`). Combinado con S7 es enumeración total |
 | ~~**S9**~~ ✅ | Credencial de admin en claro, en archivo trackeado y dentro del docroot — **corregido en 3.6** | `crear_admin.php:2-3` | El archivo ya no está en el repo (sigue en disco local, ignorado por `.gitignore`). La contraseña está en el historial: hay que rotarla, ver p6 |
 | ~~**S10**~~ ✅ | Hash inválido y contraseña en claro sembrados en producción — **corregido en la Etapa 0** | `inserts.sql:98`, tabla `administradores` id=2 | §1.4 — el panel ya no era accesible; `admin_local` tiene bcrypt válido |
+| **S11** | El login de admin no renueva el id de sesión | `AdminAuthController.php:43-44` | **Session fixation.** Va de `session_start()` a `$_SESSION['admin_id']` sin `session_regenerate_id(true)`, que el login de jugador sí hace (`AuthController.php:42`). Un atacante que fije el id antes del login conserva la sesión viva. Una línea lo arregla — ver Etapa 5, punto 5.6 |
+| **S12** | `GET /api/test` es público | `TestController.php:6` | Sin `requireAdminAPI()`. Hace `SELECT 1` y responde `{"mensaje":"API funcionando correctamente"}`: no filtra datos, pero confirma por HTTP que la API y la base están vivas. Ver Etapa 5, punto 5.7 |
 
 ### 3.2 Funcionalidad
 
@@ -523,7 +542,7 @@ solo módulo.** Los 8 defectos de §3.2 viven en el 84% sin probar — por eso s
 | **F4** | Sin CORS, sin `OPTIONS` | `backend/` (0 coincidencias de `Access-Control`) | ⚠️ **No bloquea el panel admin**: admin y API están en el mismo origen (`localhost:80`). Sí bloquearía un frontend servido en otro origen |
 | **F5** | Sin soporte de subida de archivos | `backend/` (0 coincidencias de `$_FILES`) | `logo` y `avatar` se manejan como **string**. Un frontend **no puede subir** logo ni avatar por la API |
 | **F6** | Sin paginación en ningún listado | `EquiposController.php:34`, `UsuariosController.php:67`, `EstadisticasController` | Aceptable a escala de torneo; problemático cuando crezca |
-| ~~**F7**~~ ✅ | Base path hardcodeado — **corregido en 1.8** | `backend/index.php:27-38` | `substr($uri, strlen('/PASSBALL-Cup/backend'))`. Desplegar en otra carpeta o en raíz → **las 83 rutas dan 404** |
+| ~~**F7**~~ ✅ | Base path hardcodeado — **corregido en 1.8** | `backend/index.php:27-38` | `substr($uri, strlen('/PASSBALL-Cup/backend'))`. Desplegar en otra carpeta o en raíz → **las 94 rutas dan 404** |
 | **F8** | `session_start()` sin guarda | `AuthController.php:38`, `AdminAuthController.php:43` | `E_NOTICE` "session already started" si se alcanza dos veces. El resto del código sí usa la guarda `session_status()` |
 | **F9** | `requireRol()` es código muerto | `security/authorization.php:5` | 0 call sites en todo el repo |
 | **F10** | Sin versionado de API | rutas `/api/...` | Sin `/v1` no hay espacio para cambios incompatibles |
@@ -532,7 +551,12 @@ solo módulo.** Los 8 defectos de §3.2 viven en el 84% sin probar — por eso s
 
 ## 4. Defectos de la colección Postman
 
-`backend/passballcup.postman_collection.json` — 68 peticiones vs 83 rutas.
+`backend/passballcup.postman_collection.json` — **83 peticiones vs 94 rutas**.
+
+> La cifra de 68 también era vieja: la Etapa 2 y la 3.2 añadieron peticiones a la par que
+> las rutas. La cobertura real es 83 de 94, no 68 de 83. Los defectos P1 y P2 **siguen
+> abiertos**: se comprobó que el objeto raíz de la colección no tiene bloque `auth` ni
+> `variable`, así que la colección continúa sin ser ejecutable tal cual.
 
 | # | Defecto | Impacto |
 |---|---|---|
@@ -843,7 +867,7 @@ F7 eliminó la carpeta del proyecto hardcodeada del prefijo. El caso hermano se 
 abierto: Apache normaliza `SCRIPT_NAME` al caso real de la carpeta en disco
 (`/PASSBALL-Cup`) pero deja `REQUEST_URI` como lo escribió el usuario
 (`/PASSBALL-cup`). `backend/index.php` comparaba ambos con `str_starts_with`, así que al
-entrar con la capitalización cambiada el prefijo no se recortaba y **las 83 rutas**
+entrar con la capitalización cambiada el prefijo no se recortaba y **las 94 rutas**
 respondían "Ruta no encontrada". Ahora la comparación es con `strncasecmp`.
 
 Conviene distinguir dos 404 que se confunden: el de la API pesa 88 bytes
@@ -995,6 +1019,44 @@ Dos decisiones que conviene no deshacer:
 > nuevo, pero sigue abierto: o se bloquea `finalizado` en `actualizar()` y se obliga a
 > usar `PATCH /partidos/{id}/finalizar`, o se acepta y se documenta. Ver §0.
 
+### Etapa 5 — Seguridad pendiente ❌ *sin empezar*
+
+*No es una etapa que se pueda "terminar": mezcla código con decisiones de producto. Está
+numerada al final solo para que los siete puntos que quedan abiertos tengan un sitio donde
+leerse. El detalle de cada defecto está en el §3.*
+
+| # | Ítem | Qué falta | Tipo | Decidido por |
+|---|---|---|---|---|
+| 5.1 | **S4** | Rate limiting o lockout en el login de admin | código | tú |
+| 5.2 | **S5** | El logout de jugador no debe borrar la sesión del panel | código | tú |
+| 5.3 | **S6** | CSRF, y `SameSite`/`Secure`/`HttpOnly` en la cookie | config + código | tú |
+| 5.4 | **S7** | `/api/usuarios` pide sesión de jugador, no de admin | diseño | producto |
+| 5.5 | **S8** | El login de jugador no tiene contraseña y **crea la cuenta** | **diseño** | producto |
+| 5.6 | **S11** | El login de admin no renueva el id de sesión | código | tú |
+| 5.7 | **S12** | `GET /api/test` es público | código | tú |
+
+**5.6 (S11) y 5.7 (S12) no estaban en la lista S y aparecieron al escribir esta sección.**
+Los dos se encontraron mirando el código, no leyendo:
+
+- **S11, session fixation en el login de admin.** `AuthController` (jugador) llama a
+  `session_regenerate_id(true)` en la línea 42, y **`AdminAuthController` no lo hace**: va
+  directo de `session_start()` (`:43`) a escribir `$_SESSION['admin_id']` (`:44`). Si un
+  atacante fija el id de sesión antes de que el admin entre, la sesión que queda viva es la
+  suya. Es el más serio de los siete, y el más barato de arreglar: una línea.
+- **S12, `GET /api/test`.** `TestController::index` hace `SELECT 1` y responde
+  `{"mensaje":"API funcionando correctamente"}` **sin `requireAdminAPI()`**. No filtra
+  datos, pero confirma por HTTP que la API está viva y que la BD responde. En el §2 no
+  aparecía: es la ruta 94 y quedó fuera del conteo de 83.
+
+**5.5 (S8) es la única que no debería tocarse sin una decisión de producto.** El código de
+`AuthController` lo dice sin ambigüedad: una matrícula de 7 dígitos que no existe **crea la
+cuenta** y autentica (`AuthController.php:30-33`, con el comentario *"login-o-registro
+automático"*). Antes de cerrarlo hay que decidir si el portal público autentica así, porque
+cambiarlo rompe el acceso de todos los jugadores que no tengan cuenta creada por el admin.
+
+**Los puntos 5.1, 5.2, 5.3, 5.6 y 5.7 son código y no dependen de nadie.** Son los que se
+pueden encadenar. Los 5.4 y 5.5 se quedan parados hasta que producto decida.
+
 <details>
 <summary>Fases originales 0–4 (superadas por el reordenamiento)</summary>
 
@@ -1052,7 +1114,7 @@ Dos decisiones que conviene no deshacer:
 **Criterio de salida**
 - [ ] Un admin puede autenticarse en `/api/admin/login`
 - [ ] `GET /api/partidos?torneo_id=1` devuelve solo ese torneo
-- [ ] Las 83 rutas tienen request en Postman y responden algo != 404
+- [ ] Las 94 rutas tienen request en Postman y responden algo != 404
 
 ### Fase 3 — Documentar las incidencias aceptadas
 *Sin tocar la BD, por decisión explícita.*
@@ -1062,7 +1124,7 @@ Dos decisiones que conviene no deshacer:
 | 3.1 | `sql/schema.sql` contradice la BD real — es `bd_propuesta.sql` el vigente. **Marcar `schema.sql` como obsoleto o regenerarlo desde la BD** | encabezado del propio `schema.sql` |
 | 3.2 | `migracion_admin.sql` nunca aplicada: faltan `posts`, `post_reacciones`, `motivo_rechazo`. **Comunidad y el motivo de rechazo están caídos** | nota en `migracion_admin.sql` |
 | 3.3 | Los 51 usuarios son `rol='usuario'`; 6 endpoints dan 403. **Decisión pendiente:** poblar `'jugador'` o relajar `requireJugador()` | aquí + `authorization.php:40` |
-| 3.4 | Sin cobertura de pruebas en 70 de 83 rutas, sin runner ni CI | aquí |
+| 3.4 | Sin cobertura de pruebas en 83 de 94 rutas, sin runner ni CI | aquí |
 | 3.5 | Sin subida de archivos (F5) — logos y avatares son strings | aquí |
 
 ### Fase 4 — Reconstruir el panel sobre la API
@@ -1159,33 +1221,94 @@ const API = {
 
 ---
 
-## 7. Mapa de las 15 acciones del panel → endpoint
+## 7. Mapa de las 20 acciones del panel → endpoint
 
-| Vista | Acción actual (`admin/controllers/`) | Endpoint destino |
+Mapa del **código actual**, no de la migración. Cada fila se verificó contra
+`admin/assets/js/api.js` (el método que llama) y `admin/assets/js/views.js` (el
+`data-accion` que la dispara). Las rutas son relativas a `/api`.
+
+> La versión anterior de esta tabla listaba 15 acciones y apuntaba a
+> `admin/controllers/*.php`. Esos controllers ya no existen: están en `_retired/admin/`
+> y la migración se hizo en la Etapa 2. La tabla de abajo es el contrato vigente, y tiene
+> cinco filas más porque la Etapa 2 y la 3.2 añadieron acciones que el mapa viejo no
+> recogía.
+
+**Postulaciones**
+
+| Acción (`data-accion`) | Método API | Verbo + ruta |
 |---|---|---|
-| Torneo | `torneo.php:23 crear_ronda` | `POST /api/torneos/{id}/rondas` |
-| Torneo | `torneo.php:57 crear_partido` | `POST /api/partidos` |
-| Postulaciones | `postulaciones.php:44 aprobar` | `PATCH /api/torneos/{id}/equipos/{eqId}/aprobar` |
-| Postulaciones | `postulaciones.php:54 rechazar` | `PATCH /api/torneos/{id}/equipos/{eqId}/rechazar` (⚠️ F2, sin motivo) |
-| Resultados | `resultados.php:22 actualizar_partido` | `PATCH /api/partidos/{id}/resultado` — ⚠️ **ver abajo** |
-| Resultados | `resultados.php:70 agregar_gol` | `POST /api/partidos/{id}/eventos` |
-| Votaciones | `votaciones.php:23 crear_categoria` | `POST /api/torneos/{id}/categorias-voto` |
-| Votaciones | `votaciones.php:63 cambiar_estado` | `PATCH /api/torneos/{id}/categorias-voto/{catId}/estado` |
-| Votaciones | `votaciones.php:88 eliminar_categoria` | `DELETE …/categorias-voto/{catId}` — usar el cascade de la API, no el de 3 pasos |
-| Votaciones | `votaciones.php:117 agregar_candidato` | `POST …/categorias-voto/{catId}/candidatos` |
-| Votaciones | `votaciones.php:160 excluir_candidato` | `POST …/categorias-voto/{catId}/candidatos` con `ajuste:'excluir'` |
-| Votaciones | `votaciones.php:191 eliminar_candidato` | `DELETE …/categorias-voto/{catId}/candidatos/{id}` |
-| Comunidad | `comunidad.php:46 crear_post` | ✅ `POST /api/admin/posts` (`9ae32fb`) |
-| Comunidad | `comunidad.php:86 eliminar_post` | ✅ `DELETE /api/admin/posts/{id}` |
-| Comunidad | `comunidad.php:111 toggle_fijado` | ✅ `PATCH /api/admin/posts/{id}/fijado` |
+| `aprobar` | `aprobarPostulacion` | `PATCH /torneos/{id}/equipos/{eqId}/aprobar` |
+| `rechazar` | `rechazarPostulacion` | `PATCH /torneos/{id}/equipos/{eqId}/rechazar` ⚠️ **no manda `motivo_rechazo`** (F2) |
 
-> **Riesgo a resolver antes de migrar `actualizar_partido`:** el panel legacy escribe
-> `goles_local, goles_visitante, penales_local, penales_visitante, ganador_id y estado`
-> en un solo `UPDATE`. `PATCH /api/partidos/{id}/resultado` expone un subconjunto y **no
-> acepta `ganador_id`**. Hay que confirmar si el controller lo calcula o si espera que el
-> cliente lo envíe. Si no lo calcula, migrar esa acción **regresa funcionalidad**; la
-> alternativa es `PATCH /api/partidos/{id}/finalizar`, que sí propaga el ganador vía
-> `FinalizarPartido`.
+**Torneo y rondas**
+
+| Acción | Método API | Verbo + ruta |
+|---|---|---|
+| `crear-ronda` | `crearRonda` | `POST /torneos/{id}/rondas` |
+| `crear-partido` | `crearPartido` | `POST /partidos` |
+
+**Resultados y eventos**
+
+| Acción | Método API | Verbo + ruta |
+|---|---|---|
+| `guardar-resultado` | `guardarResultado` | `PATCH /partidos/{id}/resultado` ⚠️ ver abajo |
+| `registrar-evento` | `registrarEvento` | `POST /partidos/{id}/eventos` |
+
+**Convocatorias**
+
+| Acción | Método API | Verbo + ruta |
+|---|---|---|
+| `convocar-jugador` | `convocarJugador` | `POST /partidos/{id}/convocados` |
+| `alternar-titular` | `actualizarConvocado` | `PATCH /partidos/{id}/convocados/{jugadorId}` |
+| `quitar-convocado` | `eliminarConvocado` | `DELETE /partidos/{id}/convocados/{jugadorId}` |
+
+**Estadísticas de portero**
+
+| Acción | Método API | Verbo + ruta |
+|---|---|---|
+| `registrar-portero` | `registrarEstadisticaPortero` | `POST /partidos/{id}/porteros` |
+| `actualizar-portero` | `actualizarEstadisticaPortero` | `PATCH /partidos/{id}/porteros/{jugadorId}` |
+| `quitar-portero` | `eliminarEstadisticaPortero` | `DELETE /partidos/{id}/porteros/{jugadorId}` |
+
+**Votaciones** — las 6 de categorías y candidatos
+
+| Acción | Método API | Verbo + ruta |
+|---|---|---|
+| `crear-categoria` | `crearCategoriaVoto` | `POST /torneos/{id}/categorias-voto` |
+| `editar-categoria` | `actualizarCategoriaVoto` | `PATCH /torneos/{id}/categorias-voto/{catId}` |
+| `toggle-categoria` | `cambiarEstadoCategoria` | `PATCH /torneos/{id}/categorias-voto/{catId}/estado` |
+| `eliminar-categoria` | `eliminarCategoria` | `DELETE /torneos/{id}/categorias-voto/{catId}` |
+| `agregar-candidato` | `agregarCandidato` | `POST /torneos/{id}/categorias-voto/{catId}/candidatos` |
+| `quitar-candidato` | `excluirCandidato` | `DELETE /torneos/{id}/categorias-voto/{catId}/candidatos/{ajusteId}` |
+
+**Comunidad**
+
+| Acción | Método API | Verbo + ruta |
+|---|---|---|
+| *(form, sin `data-accion`)* | `crearPost` | `POST /admin/posts` |
+| `eliminar-post` | `eliminarPost` | `DELETE /admin/posts/{id}` |
+| `toggle-fijado` | `toggleFijadoPost` | `PATCH /admin/posts/{id}/fijado` |
+
+> **`crearPost` no tiene `data-accion`** porque lo dispara el `submit` del formulario
+> (`views.js:1425`), no un botón. Cuenta como acción de panel pero no aparece en el
+> selector de `data-accion`, y por eso el conteo de 20 sale de 21 llamadas de escritura.
+
+> **`excluirCandidato` usa `DELETE`, no `POST` con `ajuste:'excluir'`.** El mapa viejo
+> decía lo segundo, copiado del panel legacy. El `api.js` actual (`:289-293`) borra la fila
+> del ajuste. La API no tiene endpoint para "excluir vía POST" en esta versión.
+
+> **`guardar-resultado` y el hueco de `finalizado`.** El panel manda
+> `goles_local, goles_visitante, penales_local, penales_visitante, ganador_id y estado`.
+> `resultado()` persiste los goles, los penales y `estado`, pero poner `finalizado` a mano
+> **salta la propagación del ganador al cuadro** que hace `FinalizarPartido`. Es el
+> pendiente de decisión de §5, Etapa 4, y no lo arregla esta tabla: hay que decidir si se
+> bloquea `finalizado` en `actualizar()` o si se acepta el salto. Ver el aviso al final de
+> la Etapa 4.
+
+**Cobertura.** Estas 20 acciones cubren 20 endpoints de escritura de los 94. Los que
+quedan fuera (lecturas, conteos, listados) los consume el panel sin acción de usuario, y
+`API.estadisticas()`, `API.detalleTorneo()` y compañía no aparecen en ningún `data-accion`.
+
 
 ---
 
@@ -1217,11 +1340,11 @@ detalle está en la [tabla de la Etapa 4](#etapa-4--poner-en-pantalla-los-datos-
 | Etapa | Alcance | Estado | Commits | Entregado |
 |---|---|---|---|---|
 | **0** | Admin `id=3` operativo, respaldo, auditoría AFIHub | ✅ | — | Acceso restaurado |
-| **1** | API segura y fiable: S1, S2, S3, F1, F3, F7, §1.9 | ✅ salvo 1.6 | `241d5da` | 83 rutas usables, sesión unificada |
+| **1** | API segura y fiable: S1, S2, S3, F1, F3, F7, §1.9 | ✅ salvo 1.6 | `241d5da` | 94 rutas usables, sesión unificada |
 | **2** | Conectar panel a la API | ⚠️ falta navegador | `20462c4`, `c3885fc` | 6 de 7 vistas sobre el backend |
 | **3** | Desconectar el legacy | ⚠️ falta navegador | `a1bad5f`, `9b586ef`, `9ae32fb`, `be57ab1`, `439859d` | Panel legacy inaccesible |
 | **4** | Poner en pantalla los datos que ya estaban | ⚠️ 5 de 9 | `99d308b`, `0b0cd7b`, `2ee5eba`, `91579e6`, `d151597` | 84 convocatorias, 14 de portero, editar categoría, y 3 bugs de contrato |
-| **5** | Seguridad pendiente: S4, S5, S6, S7, S8, y decisiones de producto | ⛔ sin empezar | — | — |
+| **5** | Seguridad pendiente: S4, S5, S6, S7, S8, **S11**, **S12** | ⛔ sin empezar | — | — |
 
 **Qué significa cada estado.** ✅ está hecho y verificado por HTTP. ⚠️ está hecho pero
 falta probarlo en un navegador, o la etapa quedó a medias. ❌ no se ha empezado.
@@ -1296,7 +1419,7 @@ Estado: ✅ hecho y verificado · ⚠️ a medias · ❌ sin empezar · ⛔ bloq
 | **2** | Conectar el panel a la API | ⚠️ falta navegador | `20462c4` · `c3885fc` | HTTP |
 | **3** | Desconectar el legacy | ⚠️ falta navegador | `a1bad5f` · `9b586ef` · `9ae32fb` · `be57ab1` · `439859d` | HTTP · `php -l` |
 | **4** | Poner en pantalla los datos que ya estaban | ⚠️ 5 de 9 | `99d308b` · `0b0cd7b` · `2ee5eba` · `91579e6` · `d151597` | HTTP |
-| **5** | Seguridad pendiente: S4, S5, S6, S7, S8 | ❌ sin empezar | — | — |
+| **5** | Seguridad pendiente: S4, S5, S6, S7, S8, **S11**, **S12** | ❌ sin empezar | — | — |
 
 **Total: 4 etapas cerradas, 1 a medias (Etapa 4), 1 sin empezar (Etapa 5).**
 
