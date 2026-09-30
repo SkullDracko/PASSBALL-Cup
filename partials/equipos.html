@@ -31,10 +31,15 @@
                     <i class="fa-solid fa-users"></i>
                 </span>
 
-                <span class="registered">
-                    <i class="fa-solid fa-circle-check"></i>
-                    Equipo registrado
+                <span class="registered" id="myTeamRegistrationStatus" aria-live="polite">
+                    <i class="fa-solid fa-circle-notch" aria-hidden="true"></i>
+                    <span class="team-registration-label">Consultando estado...</span>
                 </span>
+            </div>
+
+            <div class="team-rejection-reason" id="myTeamRejectionReason" hidden>
+                <strong>Motivo del rechazo</strong>
+                <p id="myTeamRejectionReasonText"></p>
             </div>
 
             <p class="team-role" id="myTeamRole"></p>
@@ -46,8 +51,8 @@
                 <i class="fa-solid fa-arrow-right"></i>
             </a>
 
-            <span class="postulacion-badge pendiente" id="myTeamTournamentStatus">
-                Estado de postulación: pendiente de conectar
+            <span class="postulacion-badge sin-postulacion" id="myTeamTournamentStatus" aria-live="polite">
+                Sin postulación
             </span>
         </div>
     </section>

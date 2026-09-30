@@ -200,6 +200,22 @@ class EquipoMiembrosController
         e.logo,
         e.capitan_id,
         e.estado,
+        e.motivo_solicitud,
+        e.motivo_rechazo,
+        (
+            SELECT te.estado
+            FROM torneo_equipos te
+            WHERE te.equipo_id = e.id
+            ORDER BY te.fecha_solicitud DESC, te.id DESC
+            LIMIT 1
+        ) AS estado_postulacion,
+        (
+            SELECT te.motivo_rechazo
+            FROM torneo_equipos te
+            WHERE te.equipo_id = e.id
+            ORDER BY te.fecha_solicitud DESC, te.id DESC
+            LIMIT 1
+        ) AS motivo_rechazo_postulacion,
         em.fecha_union,
         COUNT(em2.id) AS total_miembros
     FROM equipo_miembros em
@@ -216,6 +232,8 @@ class EquipoMiembrosController
         e.logo,
         e.capitan_id,
         e.estado,
+        e.motivo_solicitud,
+        e.motivo_rechazo,
         em.fecha_union
     LIMIT 1
 ");

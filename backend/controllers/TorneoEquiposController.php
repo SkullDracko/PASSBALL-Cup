@@ -33,7 +33,8 @@ class TorneoEquiposController {
                 te.estado,
                 te.fecha_solicitud,
                 te.fecha_aprobacion,
-                te.aprobado_por
+                te.aprobado_por,
+                te.motivo_rechazo
             FROM torneo_equipos te
             INNER JOIN equipos e ON e.id = te.equipo_id
             WHERE ' . implode(' AND ', $where) . '
@@ -119,12 +120,22 @@ class TorneoEquiposController {
         $this->verificarTorneo($torneoId);
         $this->verificarInscripcion($torneoId, $equipoId, 'pendiente');
 
+        $body = !empty($_SERVER['CONTENT_LENGTH']) ? jsonBody() : [];
+        $motivoRechazo = trim((string) ($body['motivo_rechazo'] ?? ''));
+
+        if (mb_strlen($motivoRechazo, 'UTF-8') > 2000) {
+            jsonResponse(false, [], [
+                'error' => 'El motivo de rechazo no puede superar 2000 caracteres'
+            ], 400);
+        }
+
         $stmt = $this->pdo->prepare('
             UPDATE torneo_equipos
-            SET estado = "rechazado", fecha_aprobacion = NULL, aprobado_por = NULL
+            SET estado = "rechazado", fecha_aprobacion = CURRENT_TIMESTAMP,
+                aprobado_por = NULL, motivo_rechazo = ?
             WHERE torneo_id = ? AND equipo_id = ? AND estado = "pendiente"
         ');
-        $stmt->execute([$torneoId, $equipoId]);
+        $stmt->execute([$motivoRechazo !== '' ? $motivoRechazo : null, $torneoId, $equipoId]);
 
         if ($stmt->rowCount() === 0) {
             jsonResponse(false, [], [

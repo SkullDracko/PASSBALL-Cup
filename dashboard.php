@@ -674,6 +674,21 @@ try {
             </div>
 
 
+            <label for="motivo_solicitud">
+                Motivo para aceptar a tu equipo
+                <span>*</span>
+            </label>
+
+            <textarea
+                id="motivo_solicitud"
+                name="motivo_solicitud"
+                rows="4"
+                maxlength="2000"
+                placeholder="Escribe aquí motivos para aceptar a tu equipo."
+                required
+            ></textarea>
+
+
             <label for="logo_equipo">
                 Logo del equipo
                 <span>*</span>

@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $nombre = trim($_POST['nombre_equipo'] ?? '');
+$motivoSolicitud = trim($_POST['motivo_solicitud'] ?? '');
 
 /* -------------------------------------------
    Integrantes seleccionados (opcional)
@@ -45,6 +46,12 @@ if (count($integrantes) > MAX_MIEMBROS - 1) {
 
 if ($nombre === '') {
     $_SESSION['flash_error'] = 'El nombre del equipo es obligatorio.';
+    header("Location: ../dashboard.php#view-equipos");
+    exit;
+}
+
+if ($motivoSolicitud === '' || mb_strlen($motivoSolicitud, 'UTF-8') > 2000) {
+    $_SESSION['flash_error'] = 'El motivo es obligatorio y no puede superar 2000 caracteres.';
     header("Location: ../dashboard.php#view-equipos");
     exit;
 }
@@ -178,10 +185,10 @@ try {
 
     // 1. Insertar equipo
     $stmt = $pdo->prepare("
-        INSERT INTO equipos (nombre, logo, capitan_id, estado)
-        VALUES (?, ?, ?, 'activo')
+        INSERT INTO equipos (nombre, logo, capitan_id, estado, motivo_solicitud)
+        VALUES (?, ?, ?, 'pendiente', ?)
     ");
-    $stmt->execute([$nombre, $logoUrl, $usuario['id']]);
+    $stmt->execute([$nombre, $logoUrl, $usuario['id'], $motivoSolicitud]);
     $equipoId = $pdo->lastInsertId();
 
     // 2. Insertar al capitán como miembro activo
@@ -201,8 +208,9 @@ try {
             SELECT id, nombre
             FROM usuarios
             WHERE id IN ($placeholders)
-              AND rol = 'usuario'
+                            AND rol = 'jugador'
               AND estado = 'activo'
+                            AND jugador_activo = 1
         ");
         $stmt->execute($integrantes);
 

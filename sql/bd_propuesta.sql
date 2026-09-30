@@ -44,8 +44,11 @@ CREATE TABLE equipos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   logo VARCHAR(255),
+  descripcion VARCHAR(255),
   capitan_id INT NOT NULL,
-  estado ENUM('activo','inactivo', 'pendiente') NOT NULL DEFAULT 'pendiente',
+  estado ENUM('activo','inactivo', 'pendiente', 'rechazado') NOT NULL DEFAULT 'pendiente',
+  motivo_solicitud TEXT NULL,
+  motivo_rechazo TEXT NULL,
   fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   CONSTRAINT fk_equipos_capitan
@@ -133,6 +136,7 @@ CREATE TABLE torneo_equipos (
   fecha_aprobacion TIMESTAMP NULL,
 
   aprobado_por INT NULL,
+  motivo_rechazo TEXT NULL,
 
   CONSTRAINT fk_te_torneo
     FOREIGN KEY (torneo_id)
