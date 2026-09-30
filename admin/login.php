@@ -10,8 +10,10 @@ require_once __DIR__ . '/../config/app.php';
 |--------------------------------------------------------------------------
 | Si ya existe una sesión administrativa
 |--------------------------------------------------------------------------
+| Se comprueba admin_id, la unica clave de sesión que escribe la API.
+| Antes se miraba $_SESSION['admin'], que solo rellenaba el login legacy.
 */
-if (isset($_SESSION['admin'])) {
+if (!empty($_SESSION['admin_id'])) {
     header('Location: dashboard.php');
     exit;
 }
