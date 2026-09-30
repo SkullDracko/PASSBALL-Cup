@@ -9,6 +9,11 @@ $router->get(
     [TestController::class, 'index']
 );
 
+$router->get(
+    '/api/test/jugador',
+    [TestController::class, 'jugador']
+);
+
 // --- auth / admin-auth ---
 $router->post('/api/auth/login', [AuthController::class, 'login']); 
 $router->post('/api/auth/logout', [AuthController::class, 'logout']);
