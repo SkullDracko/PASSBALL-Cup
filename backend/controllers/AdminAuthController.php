@@ -41,7 +41,7 @@ class AdminAuthController {
         }
 
         session_start();
-        setAdminSession((int) $admin['id']);
+        $_SESSION['admin_id'] = (int) $admin['id'];
 
         unset($admin['contrasena']);
 

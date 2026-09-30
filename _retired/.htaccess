@@ -1,0 +1,17 @@
+# Stack legacy retirado. No debe servirse nada de aqui.
+#
+# Los archivos se conservan por si hay que consultar como funcionaba el
+# panel antes de la migracion a la API, pero no son parte de la aplicacion:
+# los sirve backend/ y admin/ exclusively.
+#
+# Apache 2.4 (el de XAMPP y el de Hostinger) usa mod_authz_core, asi que
+# Require all denied. La sintaxis 2.2 (Order allow,deny) daria 500.
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
