@@ -636,18 +636,24 @@ const POSICIONES = ["portero", "defensa", "mediocampo", "delantero"];
    convocatoria de un partido, agrupada por equipo y separada en titulares y
    suplentes. Las 84 filas de partido_convocados ya estaban en la base desde
    la siembra y ninguna pantalla las mostraba.
+
+   Los bloques se generan desde los dos equipos del partido, no desde los
+   equipos que aparecen en la lista: si se vacia una convocatoria entera
+   quedan dos equipos sin bloque, y sin bloque no hay formulario de alta, y
+   el partido ya no se puede reconstruir desde el panel.
 */
 function pintarConvocatoria(partido, lista, miembros) {
-
-    if (!lista.length) {
-        return '<div class="mb-sm"><p class="admin-note">Sin convocatoria para este partido.</p></div>';
-    }
 
     const porEquipo = new Map();
     lista.forEach(c => {
         if (!porEquipo.has(c.equipo_id)) porEquipo.set(c.equipo_id, []);
         porEquipo.get(c.equipo_id).push(c);
     });
+
+    const equipos = [
+        { id: partido.equipo_local_id, nombre: partido.equipo_local_nombre },
+        { id: partido.equipo_visitante_id, nombre: partido.equipo_visitante_nombre }
+    ].filter(e => e.id);
 
     const fila = (c, tipo) => `
         <div class="admin-row gap-sm">
@@ -702,25 +708,25 @@ function pintarConvocatoria(partido, lista, miembros) {
             </form>`;
     };
 
-    const bloques = [...porEquipo.entries()].map(([equipoId, filas]) => {
+    const bloques = equipos.map(eq => {
+        const filas = porEquipo.get(eq.id) || [];
         const titulares = filas.filter(c => c.titular);
         const banco = filas.filter(c => !c.titular);
-        const nombre = (filas[0] && filas[0].equipo_nombre) || ("Equipo " + equipoId);
         return `
             <div class="mb-sm">
                 <div class="feed-head">
-                    <h4>${esc(nombre)}</h4>
+                    <h4>${esc(eq.nombre || ("Equipo " + eq.id))}</h4>
                     <span class="feed-count">${titulares.length} + ${banco.length}</span>
                 </div>
                 <div class="admin-stack-sm">
                     ${titulares.length
                         ? '<p class="small-note">Titulares</p>' + titulares.map(c => fila(c, "titular")).join("")
-                        : ""}
+                        : '<p class="admin-note">Sin titulares.</p>'}
                     ${banco.length
                         ? '<p class="small-note">Suplentes</p>' + banco.map(c => fila(c, "banco")).join("")
                         : ""}
                 </div>
-                ${alta(equipoId)}
+                ${alta(eq.id)}
             </div>`;
     }).join("");
 
@@ -730,7 +736,89 @@ function pintarConvocatoria(partido, lista, miembros) {
                 <h4>Convocatoria</h4>
                 <span class="feed-count">${lista.length}</span>
             </div>
+            ${lista.length ? "" : '<p class="admin-note">Sin convocatoria para este partido.</p>'}
             ${bloques}
+        </div>`;
+}
+
+/*
+   estadisticas de portero del partido. Las 14 filas de
+   partido_estadisticas_portero tampoco las mostraba nadie.
+
+   El backend solo acepta a alguien que este en partido_convocados con
+   posicion "portero" (verificarPorteroConvocado), asi que el selector de
+   alta se arma con esa misma lista en vez de con los miembros del equipo: si
+   se ofreciera a un defensa, el POST rebotaria con 422.
+*/
+function pintarPorteros(partido, lista, convocados) {
+
+    const nombreDe = (fila) =>
+        etiquetaJugador(convocados.find(c => c.jugador_id === fila.jugador_id) || fila);
+
+    const filas = lista.map(pk => `
+        <div class="admin-row gap-sm">
+            <span class="post-avatar">${inicial(nombreDe(pk))}</span>
+            <span class="side">${esc(nombreDe(pk))}</span>
+            <span class="small-note">${esc(pk.matricula)}</span>
+            <form class="admin-row gap-sm" data-accion="actualizar-portero"
+                  data-partido="${partido.id}" data-jugador="${pk.jugador_id}">
+                <label class="sr-only" for="atajadas-${partido.id}-${pk.jugador_id}">Atajadas</label>
+                <input class="admin-input admin-stat" type="number" min="0" max="32767"
+                       id="atajadas-${partido.id}-${pk.jugador_id}"
+                       name="atajadas" value="${pk.atajadas}" title="Atajadas">
+                <label class="sr-only" for="goles-${partido.id}-${pk.jugador_id}">Goles recibidos</label>
+                <input class="admin-input admin-stat" type="number" min="0" max="32767"
+                       id="goles-${partido.id}-${pk.jugador_id}"
+                       name="goles_recibidos" value="${pk.goles_recibidos}" title="Goles recibidos">
+                <button type="submit" class="admin-btn ghost mini">Guardar</button>
+            </form>
+            <button type="button" class="admin-btn ghost mini danger"
+                    data-accion="quitar-portero"
+                    data-partido="${partido.id}" data-jugador="${pk.jugador_id}">
+                Quitar
+            </button>
+        </div>`).join("");
+
+    const conStats = new Set(lista.map(pk => pk.jugador_id));
+    const sinStats = convocados
+        .filter(c => c.posicion === "portero" && !conStats.has(c.jugador_id));
+
+    const altaReal = sinStats.length === 0
+        ? '<p class="admin-note">Todos los porteros convocados tienen estadísticas.</p>'
+        : `<p class="admin-note">Porteros convocados sin estadísticas: ${sinStats.map(c =>
+            esc(etiquetaJugador(c))).join(", ")}</p>`;
+
+    return `
+        <div class="mb-sm">
+            <div class="feed-head">
+                <h4>Porteros</h4>
+                <span class="feed-count">${lista.length}</span>
+            </div>
+            ${lista.length ? '<div class="admin-stack-sm">' + filas + "</div>" : ""}
+            ${altaReal}
+            ${sinStats.length ? `
+            <form class="admin-form tight" data-accion="registrar-portero"
+                  data-partido="${partido.id}">
+                <div class="field admin-field-wide">
+                    <label>Portero</label>
+                    <select name="jugador_id" required>
+                        <option value="">— Seleccionar —</option>
+                        ${sinStats.map(c =>
+                            '<option value="' + c.jugador_id + '">' +
+                            esc(etiquetaJugador(c)) + " (" + esc(c.matricula) +
+                            ")</option>").join("")}
+                    </select>
+                </div>
+                <div class="field admin-field-sm">
+                    <label>Atajadas</label>
+                    <input type="number" name="atajadas" min="0" max="32767" value="0" required>
+                </div>
+                <div class="field admin-field-sm">
+                    <label>Goles recibidos</label>
+                    <input type="number" name="goles_recibidos" min="0" max="32767" value="0" required>
+                </div>
+                <button type="submit" class="admin-btn ghost">+ Registrar stats</button>
+            </form>` : ""}
         </div>`;
 }
 
@@ -804,6 +892,13 @@ async function cargarResultados() {
     await Promise.all(deRonda.map(async p => {
         const d = await API.convocadosDePartido(p.id);
         convocados[p.id] = d.convocados || [];
+    }));
+
+    // 14 filas en partido_estadisticas_portero, tampoco mostradas hasta ahora.
+    const porteros = {};
+    await Promise.all(deRonda.map(async p => {
+        const d = await API.porterosDePartido(p.id);
+        porteros[p.id] = d.porteros || [];
     }));
 
     cont.innerHTML = deRonda.map(p => {
@@ -922,6 +1017,8 @@ async function cargarResultados() {
             <div class="bracket admin-row gap-sm">${formsEquipo}</div>
 
             ${pintarConvocatoria(p, convocados[p.id] || [], miembros)}
+
+            ${pintarPorteros(p, porteros[p.id] || [], convocados[p.id] || [])}
         </div>`;
     }).join("");
 }
@@ -1158,6 +1255,11 @@ document.addEventListener("click", async function (e) {
                 if (!confirm("¿Quitar a este jugador de la convocatoria?")) return;
                 await API.eliminarConvocado(btn.dataset.partido, btn.dataset.jugador);
                 break;
+
+            case "quitar-portero":
+                if (!confirm("¿Quitar las estadísticas de este portero?")) return;
+                await API.eliminarEstadisticaPortero(btn.dataset.partido, btn.dataset.jugador);
+                break;
         }
 
         await recargarVistaActiva();
@@ -1239,6 +1341,22 @@ document.addEventListener("submit", async function (e) {
                     posicion: datos.posicion
                 });
                 aviso("Jugador convocado.", "ok");
+                break;
+
+            case "registrar-portero":
+                await API.registrarEstadisticaPortero(form.dataset.partido, {
+                    jugador_id: Number(datos.jugador_id),
+                    atajadas: Number(datos.atajadas),
+                    goles_recibidos: Number(datos.goles_recibidos)
+                });
+                aviso("Estadística registrada.", "ok");
+                break;
+
+            case "actualizar-portero":
+                await API.actualizarEstadisticaPortero(form.dataset.partido, Number(form.dataset.jugador), {
+                    atajadas: Number(datos.atajadas),
+                    goles_recibidos: Number(datos.goles_recibidos)
+                });
                 break;
 
             case "crear-categoria":

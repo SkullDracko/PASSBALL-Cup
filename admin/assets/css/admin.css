@@ -2794,6 +2794,28 @@ body {
 
 .admin-row.gap-sm { gap: 8px; }
 
+/* Etapa 4.2: campos de atajadas y goles recibidos, editables en la fila.
+   .admin-input da el fondo y el borde; esto solo los hace estrechos. */
+.admin-stat {
+    width: 68px;
+    text-align: center;
+    padding: 6px 4px;
+}
+
+/* Etiqueta solo para lectores de pantalla: los campos de estadística
+   llevan title, pero el title no es un label. */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 .admin-chips {
     display: flex;
     flex-wrap: wrap;

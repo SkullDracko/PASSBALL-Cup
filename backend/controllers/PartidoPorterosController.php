@@ -12,6 +12,11 @@ class PartidoPorterosController
 
     public function listar(array $params): void
     {
+        // Sin guard, igual que el listado de convocados que se corrigio en la
+        // etapa 4.1: es la nomina de un partido, con la matricula de cada
+        // portero. El agregado de torneo (EstadisticasController::porteros) si
+        // queda publico, porque es una tabla de posiciones, no un censo.
+        requireAdminAPI();
         $partidoId = $this->id($params, 'partidoId');
         $this->verificarPartido($partidoId);
         // No se hace JOIN a equipos: partido_estadisticas_portero no guarda

@@ -324,6 +324,26 @@ const API = {
         return this.del("/partidos/" + partidoId + "/convocados/" + jugadorId);
     },
 
+    /* --- Estadisticas de portero (partido_estadisticas_portero) ---
+     * El alta exige que el jugador este convocado con posicion "portero";
+     * lo valida PartidoPorterosController::verificarPorteroConvocado. */
+
+    porterosDePartido(partidoId) {
+        return this.get("/partidos/" + partidoId + "/porteros");
+    },
+
+    registrarEstadisticaPortero(partidoId, datos) {
+        return this.post("/partidos/" + partidoId + "/porteros", datos);
+    },
+
+    actualizarEstadisticaPortero(partidoId, jugadorId, datos) {
+        return this.patch("/partidos/" + partidoId + "/porteros/" + jugadorId, datos);
+    },
+
+    eliminarEstadisticaPortero(partidoId, jugadorId) {
+        return this.del("/partidos/" + partidoId + "/porteros/" + jugadorId);
+    },
+
 
     /* --- Contadores --- */
 
