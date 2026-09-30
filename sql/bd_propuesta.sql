@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS equipo_miembros;
 DROP TABLE IF EXISTS equipos;
 DROP TABLE IF EXISTS administradores;
 DROP TABLE IF EXISTS usuarios;
+-- Comentario para subir cambios */
 
 
 CREATE TABLE usuarios (
