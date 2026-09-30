@@ -35,6 +35,25 @@ publicadas. La tabla de estado de la etapa siguiente se añade en su propio comm
 | 3.4 | Legacy movido a `_retired/` + `.htaccess` | ✅ | `439859d` | HTTP 403/404 |
 | 3.5 | Quitar el shim de doble clave de sesión | ✅ | `439859d` | HTTP 200/401/302 |
 | 3.6 | Sacar credenciales del tracking | ✅ | `439859d` | `git ls-files` |
+| 4.1 | `partido_convocados`: 84 filas en pantalla, lecturas admin-only | ✅ | `99d308b` | HTTP 200/401/404/409/422 |
+| 4.2 | `partido_estadisticas_portero`: 14 filas en pantalla, lecturas admin-only | ✅ | `2ee5eba` | HTTP 200/401/404/409/422 |
+| 4.3 | Bug: todo rango numérico rechazaba el `0` | ✅ | `0b0cd7b` | HTTP 200/422, base igual que la siembra |
+| 4.4 | Resultados completo en un navegador | ⚠️ | `2ee5eba` | **falta navegador** |
+
+**Por qué 2.4, 3.3 y 4.4 están en ⚠️ y no en ✅.** Los contratos se validaron leyendo los
+controladores y probando por HTTP, no viendo la página en un navegador: este entorno no
+tiene ninguno. Para Comunidad eso significa que la API está probada de punta a punta
+(crear, listar, fijar, eliminar) pero que **el render y los clics dentro de la vista no se
+han ejecutado nunca en un navegador**. Es lo primero que debería hacer quien retome. Lo
+mismo para 4.1 y 4.2: los cuatro endpoints de cada uno están probados con sus casos de
+error, pero nadie ha visto todavía el bloque de convocatoria ni el de porteros en pantalla.
+
+**El hallazgo del `0` (4.3) salió de probar, no de leer.** Al verificar 4.2, un `POST` de
+prueba con `goles_recibidos: 0` rebotó con un 422 que no cuadraba con lo que el código
+prometía. La causa era `!filter_var(...)`, que trata el cero como «no es un entero»
+porque `filter_var` devuelve `int(0)` y `!int(0)` es `true`. El botón «Guardar resultado»
+llevaba tiempo roto por esto y por el `?? 0` de los penales. Merece la pena revisar
+todos los demás rangos de `0..N` que se hayan añadido después.
 
 **Por qué 2.4 y 3.3 están en ⚠️ y no en ✅.** Los contratos se validaron leyendo los
 controladores y probando por HTTP, no viendo la página en un navegador: este entorno no
@@ -44,8 +63,8 @@ han ejecutado nunca en un navegador**. Es lo primero que debería hacer quien re
 
 **Línea de tiempo.** El documento nació en `7e58a3e`. Los tres commits de etapa son del
 2026-09-29, y `c3885fc` es la `HEAD` de `David` en el momento de escribirse esto. Los
-cuatro commits de la Etapa 3 (`a1bad5f`, `9b586ef`, `9ae32fb`, `be57ab1`, `439859d`) son
-del 2026-09-30.
+cuatro commits de la Etapa 3 (`a1bad5f`, `9b586ef`, `9ae32fb`, `be57ab1`, `439859d`) y
+los tres de la Etapa 4 (`99d308b`, `0b0cd7b`, `2ee5eba`) son del 2026-09-30.
 
 ### 0.1 Cómo continuar desde aquí
 
@@ -502,8 +521,9 @@ desconectar el legacy. Ningún momento sin sistema utilizable.
 >
 > La antigua `E4` ("migrar vistas y habilitar lo inalcanzable") **ya no es una etapa**: su
 > parte de migración de vistas quedó absorbida por `E2`. Lo que sí quedó fuera —convocatorias,
-> porteros, editar rondas— son funcionalidades pendientes, no un paso del plan; están
-> listadas en la columna "Se habilita" del [§8](#8-cobertura-por-vista).
+> porteros, editar rondas— son funcionalidades pendientes, no un paso del plan. Las
+> convocatorias y los porteros ya se habilitaron en la [Etapa 4](#etapa-4--poner-en-pantalla-los-datos-que-ya-estaban);
+> el resto sigue en la columna "Se habilita" del [§8](#8-cobertura-por-vista).
 
 ### Etapa 0 — Rescate de acceso ✅
 
@@ -824,6 +844,52 @@ aplicarle un 410 habría tumbado el panel en producción.
 > Las rutas relativas de `_retired/admin/` (`../../config/database.php`) siguen resolviendo
 > desde un nivel más arriba, así que el código se conserva legible como referencia.
 
+### Etapa 4 — Poner en pantalla los datos que ya estaban
+
+*Ejecutada a medias. Ver la tabla de estado en §0.*
+
+La «Fase 4» original (reconstruir todo el panel sobre la API) quedó sin efecto cuando el
+plan se reordenó: las Etapas 2 y 3 ya lo hicieron. Lo que sí quedó pendiente era otro
+cosido con el mismo nombre, y es lo que esta etapa cubre: **la base tenía datos que
+ninguna pantalla podía mostrar**. El criterio de esta etapa no es escribir código nuevo,
+es que cada tabla de la siembra que el panel no leía, ahora se lea y se pueda editar.
+
+| # | Acción | Commit | Estado |
+|---|---|---|---|
+| 4.1 | `partido_convocados`: 84 filas visibles y editables en Resultados | `99d308b` | ✅ |
+| 4.2 | `partido_estadisticas_portero`: 14 filas visibles y editables | `2ee5eba` | ✅ |
+| 4.3 | Bug: todo rango numérico rechazaba el `0` | `0b0cd7b` | ✅ |
+| 4.4 | Editar/borrar evento desde la pantalla de resultados | — | ❌ sin hacer |
+| 4.5 | Retirar equipo de un torneo | — | ❌ sin hacer |
+| 4.6 | Toggles de `estado` y `jugador_activo` en Participantes | — | ❌ sin hacer |
+| 4.7 | Reacciones de Comunidad (`post_reacciones`) | — | ❌ sin hacer |
+
+**Criterio de salida, verificado por HTTP**
+- [x] `GET /api/partidos/1/convocados` sin sesión → **401** (antes 200 con las matrículas)
+- [x] `GET /api/partidos/1/porteros` sin sesión → **401** (antes 200 con las matrículas)
+- [x] Convocatorias: 12 por partido, 10 titulares + 2 suplentes, las 84 filas intactas
+- [x] Porteros: 2 por partido, las 14 filas intactas
+- [x] `PATCH` de resultado, convocatoria, portero y evento, incluidos los casos de error
+- [x] Base igual que la siembra tras las pruebas: 7 partidos, 43 eventos, 84, 14
+- [ ] Todo lo anterior en un navegador — **pendiente**
+
+**El fallo del `0` (4.3) no era cosmético.** `filter_var` con `FILTER_VALIDATE_INT`
+devuelve `int(0)` para el cero, y `!int(0)` es `true`, así que el operador `!` decía
+«no es un entero» justo en el único entero que el rango solía admitir. Afectaba a
+`obtenerNoNegativo` (goles y penales), `numero` (atajadas y goles recibidos) y
+`validarMinuto`. Encima de eso, el formulario de resultados mandaba los
+penales en `null` y el backend los pasaba por `?? 0`, con lo que el `0` recién
+arreglado lo hacía fallar igual: **el botón «Guardar resultado» no guardaba nada**,
+salvo que se tecleara un número de penales distinto de cero en los dos equipos.
+Los penales ahora aceptan entero o `null`, que es como los tiene la siembra.
+
+> **Pendiente de decisión.** `resultado()` ya persiste `estado` cuando viene en el cuerpo
+> (el selector de Estado lo mandaba y se ignoraba en silencio), pero poner `finalizado` a
+> mano **sigue saltándose la propagación del ganador al cuadro** que hace
+> `FinalizarPartido`. Ese hueco ya existía en `PATCH /partidos/{id}`, así que no es
+> nuevo, pero sigue abierto: o se bloquea `finalizado` en `actualizar()` y se obliga a
+> usar `PATCH /partidos/{id}/finalizar`, o se acepta y se documenta. Ver §0.
+
 <details>
 <summary>Fases originales 0–4 (superadas por el reordenamiento)</summary>
 
@@ -902,7 +968,7 @@ aplicarle un 410 habría tumbado el panel en producción.
 | 4.2 | Login del panel vía `API.post('/admin/login')`; eliminar la autenticación duplicada |
 | 4.3 | Migrar vistas de menor a mayor riesgo: **Inicio** (read-only) → **Participantes** → **Postulaciones** → **Votaciones** → **Torneo** → **Resultados** |
 | 4.4 | Migrar las 13 acciones de escritura con endpoint equivalente. **Comunidad queda fuera** — no hay API y no se va a construir |
-| 4.5 | Habilitar lo hoy inalcanzable: finalizar partido (propaga ganador), CRUD de participantes, **convocatorias (84 filas ya en BD)**, **porteros (14 filas)**, editar/borrar rondas y partidos, estadísticas |
+| 4.5 | Habilitar lo hoy inalcanzable: finalizar partido (propaga ganador), CRUD de participantes, **convocatorias (84 filas ya en BD)**, **porteros (14 filas)**, editar/borrar rondas y partidos, estadísticas — *hecho en la [Etapa 4](#etapa-4--poner-en-pantalla-los-datos-que-ya-estaban) solo para convocatorias y porteros; el resto sigue pendiente* |
 
 **Criterio de salida**
 - [ ] Cero `$pdo->` en `admin/partials/`
@@ -1026,7 +1092,7 @@ const API = {
 | **Torneo y Rondas** | ✅ torneos, rondas, bracket, equipos | ⚠️ crear ronda, crear partido | editar/borrar ronda y partido, finalizar partido, bracket de `BracketController` |
 | **Postulaciones** | ✅ `torneos/{id}/equipos` | ⚠️ aprobar, rechazar | retirar equipo |
 | **Participantes** | ✅ `admin/usuarios` | — | toggles de `estado` y `jugador_activo`, detalle de jugador, historial de equipos |
-| **Resultados** | ✅ partidos, eventos, estadísticas | ⚠️ resultado, registrar evento | **convocatorias (84 filas)**, **porteros (14 filas)**, editar/borrar evento |
+| **Resultados** | ✅ partidos, eventos, estadísticas, **convocatorias**, **porteros** | ⚠️ resultado, registrar evento, **convocar**, **stats de portero** | editar/borrar evento, y el bug del `0` ya corregido (`0b0cd7b`) |
 | **Votaciones** | ✅ categorías, candidatos, jugadores | ⚠️ 6 acciones | pool con `ResolverPoolCandidatos` en vez de SQL ad-hoc |
 | **Comunidad** | ✅ `admin/posts` | ⚠️ crear, fijar, eliminar | reacciones: la tabla `post_reacciones` existe y no la usa nadie |
 
@@ -1044,6 +1110,7 @@ y la API no expone).
 | **1** | API segura y fiable: S1, S2, S3, F1, F3, F7, §1.9 | 1.6 (F2, requiere esquema) | 83 rutas usables, sesión unificada | ✅ salvo 1.6 |
 | **2** | Conectar panel a la API | — | 6 de 7 vistas sobre el backend | ✅ ver [§0](#0-estado-de-la-implementación) |
 | **3** | Desconectar el legacy | — | Panel legacy inaccesible | ✅ ver §0 |
+| **4** | Poner en pantalla los datos que ya estaban | — | 84 convocatorias + 14 líneas de portero, y el bug del `0` | ⚠️ ver §0 |
 
 **Corregidos en la Etapa 1:** S1 (toma de control de admin) · S2 (tests por HTTP) · S3
 (`APP_DEBUG`) · F1 (filtro de partidos, + `torneo_id`) · F3 (405 con `Allow`) · F7 (basePath) ·
@@ -1063,7 +1130,8 @@ ninguna de las dos vías reconocía a la otra.
 | **§1.8** matrícula como credencial | Diseño de producto | producto |
 
 **Riesgo por etapa:** 0 nula · 1 media (toca auth) · 2 alta (reescribe el panel) ·
-3 baja (reversible) · 4 alta.
+3 baja (reversible) · 4 media (solo habilita lo que ya existía, pero toca
+validación compartida por varias vistas).
 
 ### Bloqueos que requieren decisión de otro equipo
 
