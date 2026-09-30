@@ -969,7 +969,8 @@ document.addEventListener("click", async function (e) {
                 break;
 
             case "rechazar":
-                // Sin motivo: la columna motivo_rechazo no existe (F2).
+                // Sin motivo: la columna ya existe pero la API no la escribe
+                // todavia. Pendiente, ver sql/etapas_conexion_admin_api.md.
                 if (!confirm("¿Rechazar esta postulación?")) return;
                 await API.rechazarPostulacion(torneoId, btn.dataset.equipo);
                 aviso("Equipo rechazado.", "ok");

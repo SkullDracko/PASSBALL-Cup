@@ -211,9 +211,11 @@ const API = {
         );
     },
 
-    // El motivo NO se puede guardar: torneo_equipos no tiene la columna
-    // motivo_rechazo (defecto F2). La API solo cambia el estado.
-    rechazarPostulacion(torneoId, equipoId) {
+  // La columna torneo_equipos.motivo_rechazo ya existe (la agrega
+  // sql/migracion_admin.sql, que cierra el defecto F2 de esquema), pero este
+  // endpoint todavia no la escribe: solo cambia el estado. Enviar el motivo
+  // sigue pendiente, ver sql/etapas_conexion_admin_api.md.
+  rechazarPostulacion(torneoId, equipoId) {
         return this.patch(
             "/torneos/" + torneoId + "/equipos/" + equipoId + "/rechazar"
         );

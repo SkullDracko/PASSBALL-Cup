@@ -5,7 +5,7 @@
 > El sitio público (`index.php`, `controllers/`, `equipos/`) **queda fuera de alcance**.
 >
 > Última actualización incorpora la verificación contra la base de datos real
-> (`passballcup`, 14 tablas) y una auditoría de las 83 rutas de la API.
+> (`passballcup`, 16 tablas) y una auditoría de las 83 rutas de la API.
 >
 > **Si vienes a continuar el trabajo, empieza por la [sección 0](#0-estado-de-la-implementación).**
 
@@ -28,51 +28,63 @@ publicadas. La tabla de estado de la etapa siguiente se añade en su propio comm
 | 2.4 | Migrar las cinco vistas restantes | ⚠️ | `c3885fc` | HTTP, **no navegador** |
 | 2.5 | `GET /api/admin/usuarios` | ✅ | `20462c4` | HTTP |
 | 2.6–2.10 | Los cinco endpoints admin-only | ✅ | `c3885fc` | HTTP 200/401 |
-| 3.1 | `git mv admin _retired/admin` | ⛔ b1, b2 | — | — |
-| 3.2 | `_retired/.htaccess` con `Require all denied` | ⛔ depende de 3.1 | — | — |
-| 3.3 | `.htaccess` raíz con `RedirectMatch 410` | ⛔ depende de 3.1 | — | — |
-| 3.4 | `git mv crear_admin.php _retired/` | 🟢 | — | — |
+| a1 | `sql/`: quitar `USE passballcup;` de los scripts seed | ✅ | `a1bad5f` | BD desechable |
+| 3.1 | Sesión del panel sobre `admin_id` | ✅ | `9b586ef` | HTTP 200/401 |
+| 3.2 | API de Comunidad admin-only + rol `administrador` | ✅ | `9ae32fb` | HTTP 200/201/404/422 |
+| 3.3 | Vista de Comunidad sin SQL (shell + `views.js`) | ⚠️ | `be57ab1` | `php -l`, `node --check`, HTTP |
+| 3.4 | Legacy movido a `_retired/` + `.htaccess` | ✅ | `439859d` | HTTP 403/404 |
+| 3.5 | Quitar el shim de doble clave de sesión | ✅ | `439859d` | HTTP 200/401/302 |
+| 3.6 | Sacar credenciales del tracking | ✅ | `439859d` | `git ls-files` |
 
-**Por qué 2.4 está en ⚠️ y no en ✅.** Las lecturas se verificaron por HTTP, y dos
-escrituras (crear ronda y crear categoría) se probaron creando y borrando el registro. Pero
-**el render de las seis vistas y las escrituras completas nunca se probaron en un
-navegador**, porque este entorno no tiene ninguno. Los contratos se validaron leyendo los
-controladores, no viéndolos funcionar. Es lo primero que debería hacer quien retome.
-
-**3.4 no depende de 3.1**, así que se puede sacar ya. No es obvious al leer los pasos en
-orden, que es el orden natural en que seffee el documento.
+**Por qué 2.4 y 3.3 están en ⚠️ y no en ✅.** Los contratos se validaron leyendo los
+controladores y probando por HTTP, no viendo la página en un navegador: este entorno no
+tiene ninguno. Para Comunidad eso significa que la API está probada de punta a punta
+(crear, listar, fijar, eliminar) pero que **el render y los clics dentro de la vista no se
+han ejecutado nunca en un navegador**. Es lo primero que debería hacer quien retome.
 
 **Línea de tiempo.** El documento nació en `7e58a3e`. Los tres commits de etapa son del
-2026-09-29, y `c3885fc` es la `HEAD` de `David` en el momento de escribirse esto.
+2026-09-29, y `c3885fc` es la `HEAD` de `David` en el momento de escribirse esto. Los
+cuatro commits de la Etapa 3 (`a1bad5f`, `9b586ef`, `9ae32fb`, `be57ab1`, `439859d`) son
+del 2026-09-30.
 
 ### 0.1 Cómo continuar desde aquí
 
-**La Etapa 3 no se puede ejecutar tal como está escrita.** Estos seis bloqueos están
-verificados contra el código, no supuestos:
+**Los seis bloqueos que impedían la Etapa 3 están resueltos.** Estado de cada uno:
 
-| # | Bloqueo | Dónde |
-|---|---|---|
-| b1 | **Comunidad sigue en legacy**: consulta SQL directa y tres formularios con `action="controllers/comunidad.php"`, y la tabla `posts` no existe. Mover `admin/` la deja rota | `admin/partials/comunidad.php:19, 78, 148, 156` |
-| b2 | `dashboard.php` mantiene el `require` de `database.php` **solo** para alimentar a Comunidad | `admin/dashboard.php:8` |
-| b3 | `admin/controllers/login.php` sigue siendo un endpoint HTTP público aunque esté huérfano: escribe `$_SESSION['admin']` y `admin_id` | `admin/controllers/login.php:34, 40, 47` |
-| b4 | No existe `.htaccess` en la raíz ni en `admin/`, solo en `backend/`: los pasos 3.2 y 3.3 hay que crearlos de cero | — |
-| b5 | `dashboard.php` depende de `$_SESSION['admin']` para pintar nombre, inicial y usuario | `admin/dashboard.php:12, 139, 147, 155` |
-| b6 | Credenciales quemadas en el repo | `crear_admin.php`, `auth_67676767.txt`, `auth_jug003.txt` |
+| # | Bloqueo | Estado | Resuelto en |
+|---|---|---|---|
+| b1 | Comunidad con SQL directo y la tabla `posts` inexistente | ✅ | `9ae32fb` (API) + `be57ab1` (vista) |
+| b2 | `dashboard.php` requería `database.php` solo por Comunidad | ✅ | `be57ab1` |
+| b3 | Login legacy alcanzable por HTTP, con escritura de dos claves | ✅ | `439859d` (movido a `_retired/`, ahora 403) |
+| b4 | Faltaban los `.htaccess` de bloqueo | ✅ | `439859d` (`_retired/.htaccess`) |
+| b5 | `dashboard.php` leía `$_SESSION['admin']` | ✅ | `9b586ef` |
+| b6 | Credenciales versionadas en la raíz | ✅ | `439859d` (fuera del tracking) |
 
-**Hallazgos de seguridad abiertos**, a resolver antes de poner esto en producción:
+**Los tres hallazgos de seguridad de §0.1 también están cerrados:** el logout ahora
+destruye la sesión completa y la API responde 401 después; el login legacy da 403; y
+`crear_admin.php`, `auth_67676767.txt` y `auth_jug003.txt` ya no están en el repo (siguen
+en disco local, ignorados por `.gitignore`).
 
-1. **"Cerrar sesión" no destruye la sesión de la API.** `logout.php` solo hace
-   `unset($_SESSION['admin'])`, pero `requireAdminAPI()` lee `admin_id` **primero**, y esa
-   clave la deja puesta `setAdminSession()`. La sesión sobrevive contra los 37 endpoints
-   protegidos. El arreglo es apuntar el enlace del panel a `POST /api/admin/logout`, que sí
-   hace `session_destroy()`.
-   (`admin/controllers/logout.php:7` · `backend/middleware/adminAuth.php:47, 19`)
-2. El endpoint de login legacy del punto b3 sigue alcanzable por HTTP.
-3. Los tres archivos del punto b6 llevan credenciales dentro y están versionados.
+**Lo que queda abierto, en orden de utilidad:**
 
-**Lo que queda sin verificar**, en orden de utilidad: render de las seis vistas, y las
-seis escrituras (aprobar, rechazar, crear ronda, crear partido, guardar resultado,
-registrar evento).
+1. **Probar el panel en un navegador.** Es lo único que impide marcar 2.4 y 3.3 en verde:
+   render de las siete vistas, y en Comunidad crear/fijar/eliminar en pantalla.
+2. **Rotar la contraseña de `admin_local`.** Se compartió en un canal de chat y el
+   hash llegó a estar en un archivo versionado. Aunque el archivo ya no está en el repo,
+   la contraseña está en el historial de git y debe cambiarse antes de producción.
+3. **Implementar el motivo de rechazo de postulaciones** (F2, ver §1.5). La columna
+   `torneo_equipos.motivo_rechazo` ya existe por `migracion_admin.sql`, pero el endpoint
+   `PATCH /api/torneos/{id}/equipos/{id}/rechazar` solo cambia el estado y el cliente
+   manda un `confirm()` sin motivo. Cerrar el defecto es escribir la columna y pedirla en
+   el diálogo; el esquema ya no bloquea.
+4. **Quitar `admin_passballcup` (`id=1`) o darle credencial real.** Tiene un hash
+   placeholder de 40 caracteres, así que no puede autenticarse, pero ensucia la tabla
+   `administradores` y `sql/inserts.sql` lo sigue sembrando.
+5. **Sincronizar la copia de `bd_propuesta.sql` de Descargas.** La de
+   `C:\Users\Black\Downloads\` es la que se ejecutó; no recibió el orden de borrado con
+   FKs ni el rol `administrador` que sí están en el repo.
+6. **§1.6 (AFIHub, `403 Origen no permitido`)** sigue sin resolver y sigue fuera de
+   alcance: es un bloqueo de red, no de código.
 
 ### 0.2 Leyenda de la numeración
 
@@ -128,24 +140,30 @@ la BD real, aunque parezca estar escribiendo columnas inexistidas.
 
 **Consecuencia práctica:** ninguna corrección de esquema es necesaria. Se documenta y ya.
 
-### 1.3 `sql/migracion_admin.sql` nunca se aplicó
+### 1.3 `sql/migracion_admin.sql` no se había aplicado — **resuelto**
 
-Faltan 3 objetos que los scripts declaran crear:
+Este diagnóstico era correcto cuando se escribió. **La migración ya está aplicada** en
+`passballcup`, junto con el `enum` de `usuarios.rol` ampliado a tres valores. Estado real:
 
 | Objeto | ¿Existe en BD? | Quién lo usa |
 |---|---|---|
-| Tabla `posts` | ❌ no | `admin/partials/comunidad.php:14`, `admin/controllers/comunidad.php:63,97,122` |
-| Tabla `post_reacciones` | ❌ no | `controllers/reaccionar.php:37-67`, `partials/comunidad.php:19-21,65,106` |
-| Columna `torneo_equipos.motivo_rechazo` | ❌ no | `admin/controllers/postulaciones.php:58` (escribe), `admin/partials/postulaciones.php:203` (lee) |
+| Tabla `posts` | ✅ sí | `backend/controllers/AdminComunidadController.php` |
+| Tabla `post_reacciones` | ✅ sí | *nadie todavía* (§2.1) |
+| Columna `torneo_equipos.motivo_rechazo` | ✅ sí | el panel la lee; la API aún no la escribe (F2) |
+| `usuarios.rol` = `ENUM('usuario','jugador','administrador')` | ✅ sí | marca a los admins para que no acaben en un equipo |
 
-Dos funcionalidades están **rotas hoy, silenciosamente**:
+Dos funcionalidades estaban **rotas y en silencio** mientras la migración no se aplicaba:
 
-1. **Vista Comunidad** — consulta una tabla que no existe.
-2. **Rechazar postulación con motivo** — el panel escribe una columna que no existe.
+1. **Vista Comunidad** — consultaba una tabla que no existía.
+2. **Rechazar postulación con motivo** — el panel escribía una columna que no existía.
 
-> Esto resuelve la pregunta de qué hacer con Comunidad: **no hay nada que mover ni que
-> preservar.** La funcionalidad no está "pendiente de migrar", está caída.
+Ambas quedaron resueltas por la Etapa 3, no por el esquema solo. La vista pasó a consumir
+`GET /api/admin/posts` (`be57ab1`) y el motivo sigue pendiente de que la API lo escriba
+(F2, §0.1).
 
+> **El script sigue siendo obligatorio** en instalaciones nuevas o recreadas:
+> `bd_propuesta.sql` deja 14 tablas y `migracion_admin.sql` es la que agrega las 2 de
+> comunidad. Si se resetea la base, hay que correr los dos en orden.
 ### 1.4 Ningún administrador podía iniciar sesión — **resuelto**
 
 > **Actualización:** se creó un tercer administrador (`id=3`, `admin_local`) con hash bcrypt
@@ -306,45 +324,58 @@ Para un torneo escolar puede ser aceptable, pero conviene que sea una decisión 
 Combinado con S7 (`GET /api/usuarios` pide sesión de jugador, no de admin) la enumeración
 es total. No se modifica sin acuerdo explícito.
 
-### 1.9 Conflicto de claves de sesión — bloquea la Etapa 1
+### 1.9 Conflicto de claves de sesión — **resuelto en `9b586ef` y `439859d`**
 
-Este no estaba detectado y **condiciona toda la conexión panel ↔ API**:
+Este no estaba detectado y **condicionaba toda la conexión panel ↔ API**:
 
 | | Clave | Forma | Lo escribe |
 |---|---|---|---|
-| Panel legacy | `$_SESSION['admin']` | array `{id, nombre, usuario}` | `admin/controllers/login.php:40` |
+| Panel legacy | `$_SESSION['admin']` | array `{id, nombre, usuario}` | `admin/controllers/login.php:40` (retirado) |
 | API | `$_SESSION['admin_id']` | int | `AdminAuthController.php:44` |
 
-`admin/controllers/auth.php:12` exige `$_SESSION['admin']`.
-`backend/middleware/adminAuth.php:7` exige `$_SESSION['admin_id']`.
+`admin/controllers/auth.php` exigía `$_SESSION['admin']` y
+`backend/middleware/adminAuth.php` exigía `$_SESSION['admin_id']`. **Ninguno reconocía al
+otro**: autenticar contra la API no abría el panel, y entrar por el panel no habilitaba
+ningún endpoint. `setAdminSession()` mantenía las dos sincronizadas a mano, lo que además
+hacía que el logout del panel dejara viva la clave que la API mira.
 
-**Ninguno reconoce al otro.** Autenticar contra la API no abre el panel, y entrar por el
-panel no habilita ningún endpoint. Cualquier migración de vistas empieza por resolver esto.
-Ver E1.3.
+**Estado actual:** queda una sola clave, `$_SESSION['admin_id']`. `admin/controllers/auth.php`
+la lee y busca el nombre en la base; `adminAuth.php` la lee y devuelve 401 si no está;
+`AdminAuthController` la escribe. `setAdminSession()` ya no existe.
 
-Además, `AdminAuthController.php:31` **no comprueba `activo`** antes de `password_verify`, a
-diferencia de `admin/controllers/login.php:34` que sí lo hace. La API permite entrar a un
-admin desactivado; el panel no.
+Además, `AdminAuthController` **no comprobaba `activo`** antes de `password_verify`, a
+diferencia del login del panel, que sí lo hacía. **Corregido:** ahora devuelve 403 con
+*"El administrador está inactivo"*.
 
-### 1.10 `git mv` a `_retired/` no desconecta nada
+Verificado por HTTP: login 200, `/api/admin/me` 200, dashboard 200; tras logout 401 y 302.
+
+
+### 1.10 `git mv` a `_retired/` no desconecta nada — **resuelto en `439859d`**
 
 El plan original era mover `admin/` a `_retired/`. **Eso no corta el acceso**: `_retired/`
 sigue dentro del docroot de XAMPP, y el panel seguiría respondiendo en
 `http://localhost/PASSBALL-Cup/_retired/admin/dashboard.php`.
 
 El `git mv` ordena el código pero no desactiva nada. **Debe acompañarse de una regla de
-denegar**, o el corte es cosmético. Ver Fase 1.
+denegar**, o el corte es cosmético.
+
+**Estado actual:** `_retired/.htaccess` lleva `Require all denied` (con un `IfModule` de
+respaldo para la sintaxis 2.2). Verificado: `/_retired/admin/login.php` y
+`/_retired/.htaccess` devuelven **403**, no 404. Ver §5, Etapa 3.
 
 ---
 
 ## 2. Inventario verificado
 
-### 2.1 Base de datos `passballcup` (14 tablas)
+### 2.1 Base de datos `passballcup` (16 tablas)
+
+Las dos últimas filas estaban como *inexistente* cuando se escribió esto. `migracion_admin.sql`
+ya está aplicada, así que existen y son las que usa la API de Comunidad.
 
 | Tabla | Filas | ¿Cubierta por la API? |
 |---|---|---|
 | `usuarios` | 51 | ✅ 5 rutas |
-| `administradores` | 2 | ✅ 6 rutas (⚠️ 5 sin auth) |
+| `administradores` | 2 | ✅ 6 rutas, todas con auth desde `9b586ef` |
 | `equipos` | 10 | ✅ 6 rutas |
 | `equipo_miembros` | 48 | ✅ 6 rutas |
 | `torneos` | 1 | ✅ 5 rutas |
@@ -357,22 +388,26 @@ denegar**, o el corte es cosmético. Ver Fase 1.
 | `torneo_categorias_voto` | 0 | ✅ 6 rutas |
 | `torneo_categoria_candidatos` | 0 | ✅ 3 rutas |
 | `torneo_votos` | 0 | ✅ 4 rutas |
-| `posts` | — inexistente | ❌ 0 rutas |
-| `post_reacciones` | — inexistente | ❌ 0 rutas |
+| `posts` | 0 | ✅ 4 rutas admin (`9ae32fb`) |
+| `post_reacciones` | 0 | ❌ 0 rutas - la tabla existe pero nada la lee |
 
 > **84 filas en `partido_convocados` y 14 en `partido_estadisticas_portero` ya existen en
 > la BD** y no hay ninguna UI que las muestre. La Fase 4 las hace visibles sin trabajo de datos.
+
+> **`post_reacciones` está huérfana.** La API de Comunidad expone listar, crear, fijar y
+> eliminar, que es exactamente lo que hacía el legacy; ningún endpoint lee ni escribe
+> reacciones. Si el portal público debe poder dar like, hace falta decidirlo y construirlo.
 
 ### 2.2 Cobertura de autenticación
 
 | Categoría | Rutas | Estado |
 |---|---|---|
-| Protegidas con `requireAdminAPI()` | 37 | ✅ correcto |
+| Protegidas con `requireAdminAPI()` | 37 + 4 de Comunidad | ✅ correcto |
 | Sesión de jugador (`requireAuthAPI()`) | 11 | ⚠️ 2 de estas son superficies de admin |
 | `requireJugador()` / `requireCapitan()` | 6 | ❌ 403 para todos (§1.5) |
 | Lecturas públicas intencionadas | 21 | ✅ aceptable |
-| Logins | 2 | ✅ |
-| **Sin auth, no deberían tenerlo** | **6** | 🚨 **crítico** |
+| Logins | 1 (API) | ✅ el legacy se retiró en `439859d` |
+| **Sin auth, no deberían tenerlo** | **0** | ✅ los 6 eran controllers legacy |
 
 ### 2.3 Cobertura de pruebas
 
@@ -543,7 +578,8 @@ como **"no toca la BD"**. Opciones:
 | **(b)** Dejar F2 documentado | El motivo de rechazo sigue sin persistirse por API |
 
 > Nota: el panel legacy **tampoco** puede escribir el motivo hoy, por el mismo motivo. El
-> archivo `sql/migracion_admin.sql` la declaraba pero nunca se aplicó (§1.3). No es una
+> archivo `sql/migracion_admin.sql` la declaraba pero no se había aplicado (§1.3, ya
+resuelto: la columna existe desde que se corrió la migración). No es una
 > regresión de la Etapa 1: es una columna que nunca existió.
 
 ### Etapa 2 — Conectar el panel a la API
@@ -576,7 +612,8 @@ Verificado por HTTP contra Apache (`http://localhost/PASSBALL-Cup`), no solo por
 | `inicio.php` con `$pdo->` | 0 apariciones |
 
 `admin/controllers/login.php` queda sin referencias desde el HTML y el JS. El archivo
-sigue en disco hasta E3.3, junto con `admin/assets/js/login.js`, que ya estaba huérfano.
+quedó en disco hasta la Etapa 3, junto con `admin/assets/js/login.js`, que ya estaba
+huérfano. Los dos se movieron a `_retired/admin/` en `439859d` y ahora devuelven 403.
 
 #### 2.4 — las cinco vistas restantes
 
@@ -621,7 +658,8 @@ legacy pedía un motivo con `prompt()` y lo guardaba. Se quitó la columna y el 
 antes que dejar un formulario que pide un motivo para descartarlo. Con F2 resuelto,
 `TorneoEquiposController::rechazar` necesita un parámetro `motivo`.
 
-**Comunidad sigue sin tabla.** `posts` no existe en el esquema y sigue fuera de las
+**Comunidad seguía sin tabla al cierre de la Etapa 2** *(resuelto en la Etapa 3: `9ae32fb`
++ `be57ab1`)*. `posts` no existía en el esquema y quedaba fuera de las
 vistas de 2.4; el aviso que se añadió en 2.3 es ahora su estado permanente, no
 temporal.
 
@@ -660,7 +698,8 @@ Verificado por HTTP contra Apache (`http://localhost/PASSBALL-Cup`), no solo por
 | `inicio.php` con `$pdo->` | 0 apariciones |
 
 `admin/controllers/login.php` queda sin referencias desde el HTML y el JS. El archivo
-sigue en disco hasta E3.3, junto con `admin/assets/js/login.js`, que ya estaba huérfano.
+quedó en disco hasta la Etapa 3, junto con `admin/assets/js/login.js`, que ya estaba
+huérfano. Los dos se movieron a `_retired/admin/` en `439859d` y ahora devuelven 403.
 
 #### Dos bloqueos que aparecieron al ejecutar 2.3
 
@@ -752,22 +791,38 @@ cargar el cliente, de modo que la base no depende de cómo se escriba la URL. Lo
 sigue con rutas relativas.
 
 ### Etapa 3 — Desconectar el legacy
-*Solo después de que la Etapa 2 esté completa.*
+*Ejecutada. Ver la tabla de estado en §0.*
 
-| # | Acción |
-|---|---|
-| 3.1 | `git mv admin _retired/admin` |
-| 3.2 | **`_retired/.htaccess` con `Require all denied`** — sin esto no desconecta (§1.10) |
-| 3.3 | `.htaccess` raíz: `RedirectMatch 410 ^/PASSBALL-Cup/admin/` |
-| 3.4 | `git mv crear_admin.php _retired/crear_admin.php` (S9) |
+El plan original era mover `admin/` entero a `_retired/`. **Eso no se hizo, y es
+intencionado:** `admin/` no es legacy, es el panel actual, y ya no corre SQL propio (§2). Lo
+legacy eran seis controllers y un JS de login que quedaban huérfanos, más el login legacy
+que seguía siendo un endpoint público. Moverlos basta y deja el panel donde debe estar.
 
-**Criterio de salida**
-- [ ] `GET /admin/dashboard.php` → 410 o 404
-- [ ] `GET /_retired/admin/dashboard.php` → **denegado**
-- [ ] `admin/` sigue versionado como referencia
+| # | Acción | Commit | Estado |
+|---|---|---|---|
+| 3.1 | Sesión del panel sobre `admin_id`, login por API, logout completo | `9b586ef` | ✅ |
+| 3.2 | API de Comunidad admin-only + rol `administrador` | `9ae32fb` | ✅ |
+| 3.3 | Vista de Comunidad como shell + `views.js`, sin `database.php` | `be57ab1` | ⚠️ sin navegador |
+| 3.4 | `git mv` de los 6 controllers + `login.js` a `_retired/admin/` | `439859d` | ✅ |
+| 3.5 | **`_retired/.htaccess` con `Require all denied`** — sin esto no desconecta (§1.10) | `439859d` | ✅ |
+| 3.6 | Fuera `crear_admin.php` y los `auth_*.txt`, con `.gitignore` que los bloquea | `439859d` | ✅ |
+| 3.7 | Quitar `setAdminSession()` y el shim de doble clave | `439859d` | ✅ |
 
-> Las rutas relativas de `_retired/admin/` (`../../config/database.php`) siguen resolviendo,
-> así que el código se conserva funcional como referencia.
+**No se hizo el paso 3.3 original** (`.htaccess` raíz con `RedirectMatch 410`): tras mover
+los controllers, `admin/` solo contiene el panel que debe seguir sirviéndose, así que
+aplicarle un 410 habría tumbado el panel en producción.
+
+**Criterio de salida, verificado por HTTP**
+- [x] `GET /admin/controllers/login.php` → **404** (ya no existe)
+- [x] `GET /_retired/admin/login.php` → **403** (denegado, no 404: el archivo sigue ahí)
+- [x] `GET /_retired/.htaccess` → **403**
+- [x] `GET /admin/dashboard.php` sin sesión → **302** a `login.php`
+- [x] `GET /admin/dashboard.php` con sesión → **200**, siete vistas
+- [x] `POST /api/admin/logout` y `logout.php` → sesión destruida, `/api/admin/me` da **401**
+- [x] `admin/` sigue versionado como referencia, junto a `partials/` y `assets/`
+
+> Las rutas relativas de `_retired/admin/` (`../../config/database.php`) siguen resolviendo
+> desde un nivel más arriba, así que el código se conserva legible como referencia.
 
 <details>
 <summary>Fases originales 0–4 (superadas por el reordenamiento)</summary>
@@ -874,14 +929,14 @@ escribe. El transporte es la cookie `PHPSESSID`, **no** un header `Authorization
 
 → **`credentials: 'include'` es obligatorio** en cada `fetch`.
 
-**Conflicto de claves de sesión** (a resolver en la Fase 4, no antes):
+**Ya no hay conflicto de claves.** La sesión vive en una sola:
 
-| | Clave | Forma |
-|---|---|---|
-| Panel legacy | `$_SESSION['admin']` | array `{id, nombre, usuario}` |
-| API | `$_SESSION['admin_id']` | int |
+| | Clave | Forma | Quién la escribe |
+|---|---|---|---|
+| Panel y API | `$_SESSION['admin_id']` | int | `AdminAuthController` (login por API) |
 
-Hoy no se reconocen entre sí. En la Fase 4 el panel deja de usar su propia clave.
+`admin/controllers/login.php` se retiró en `439859d`, así que ya no hay un segundo
+escritor. Ver §1.9.
 
 ### 6.3 Envelope de respuesta
 
@@ -940,7 +995,7 @@ const API = {
 | Torneo | `torneo.php:23 crear_ronda` | `POST /api/torneos/{id}/rondas` |
 | Torneo | `torneo.php:57 crear_partido` | `POST /api/partidos` |
 | Postulaciones | `postulaciones.php:44 aprobar` | `PATCH /api/torneos/{id}/equipos/{eqId}/aprobar` |
-| Postulaciones | `postulaciones.php:54 rechazar` | `PATCH /api/torneos/{id}/equipos/{eqId}/rechazar` (⚠️ F2) |
+| Postulaciones | `postulaciones.php:54 rechazar` | `PATCH /api/torneos/{id}/equipos/{eqId}/rechazar` (⚠️ F2, sin motivo) |
 | Resultados | `resultados.php:22 actualizar_partido` | `PATCH /api/partidos/{id}/resultado` — ⚠️ **ver abajo** |
 | Resultados | `resultados.php:70 agregar_gol` | `POST /api/partidos/{id}/eventos` |
 | Votaciones | `votaciones.php:23 crear_categoria` | `POST /api/torneos/{id}/categorias-voto` |
@@ -949,9 +1004,9 @@ const API = {
 | Votaciones | `votaciones.php:117 agregar_candidato` | `POST …/categorias-voto/{catId}/candidatos` |
 | Votaciones | `votaciones.php:160 excluir_candidato` | `POST …/categorias-voto/{catId}/candidatos` con `ajuste:'excluir'` |
 | Votaciones | `votaciones.php:191 eliminar_candidato` | `DELETE …/categorias-voto/{catId}/candidatos/{id}` |
-| Comunidad | `comunidad.php:46 crear_post` | ❌ sin endpoint **y sin tabla** (§1.3) — fuera de alcance |
-| Comunidad | `comunidad.php:86 eliminar_post` | ❌ ídem |
-| Comunidad | `comunidad.php:111 toggle_fijado` | ❌ ídem |
+| Comunidad | `comunidad.php:46 crear_post` | ✅ `POST /api/admin/posts` (`9ae32fb`) |
+| Comunidad | `comunidad.php:86 eliminar_post` | ✅ `DELETE /api/admin/posts/{id}` |
+| Comunidad | `comunidad.php:111 toggle_fijado` | ✅ `PATCH /api/admin/posts/{id}/fijado` |
 
 > **Riesgo a resolver antes de migrar `actualizar_partido`:** el panel legacy escribe
 > `goles_local, goles_visitante, penales_local, penales_visitante, ganador_id y estado`
@@ -973,7 +1028,7 @@ const API = {
 | **Participantes** | ✅ `admin/usuarios` | — | toggles de `estado` y `jugador_activo`, detalle de jugador, historial de equipos |
 | **Resultados** | ✅ partidos, eventos, estadísticas | ⚠️ resultado, registrar evento | **convocatorias (84 filas)**, **porteros (14 filas)**, editar/borrar evento |
 | **Votaciones** | ✅ categorías, candidatos, jugadores | ⚠️ 6 acciones | pool con `ResolverPoolCandidatos` en vez de SQL ad-hoc |
-| **Comunidad** | ❌ | ❌ | — sin API y sin tabla |
+| **Comunidad** | ✅ `admin/posts` | ⚠️ crear, fijar, eliminar | reacciones: la tabla `post_reacciones` existe y no la usa nadie |
 
 ✅ migrado sobre la API · ⚠️ migrado y **sin probar en navegador** · ❌ fuera de alcance
 (la columna "Se habilita" lista lo que **no** quedó migrado: funciones que el legacy tenía
@@ -988,7 +1043,7 @@ y la API no expone).
 | **0** | Admin `id=3` operativo, respaldo, auditoría AFIHub | — | Acceso restaurado | ✅ |
 | **1** | API segura y fiable: S1, S2, S3, F1, F3, F7, §1.9 | 1.6 (F2, requiere esquema) | 83 rutas usables, sesión unificada | ✅ salvo 1.6 |
 | **2** | Conectar panel a la API | — | 6 de 7 vistas sobre el backend | ✅ ver [§0](#0-estado-de-la-implementación) |
-| **3** | Desconectar el legacy | b1–b6 | Panel legacy inaccesible | ⛔ bloqueada |
+| **3** | Desconectar el legacy | — | Panel legacy inaccesible | ✅ ver §0 |
 
 **Corregidos en la Etapa 1:** S1 (toma de control de admin) · S2 (tests por HTTP) · S3
 (`APP_DEBUG`) · F1 (filtro de partidos, + `torneo_id`) · F3 (405 con `Allow`) · F7 (basePath) ·
