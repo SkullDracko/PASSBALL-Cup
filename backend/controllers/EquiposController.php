@@ -199,9 +199,7 @@ $sql = "
         )));
     }
 
-    // Mismo criterio que controllers/buscarUsuarios.php: sólo usuarios
-    // 'usuario' activos. Si más adelante se quiere invitar a un rol 'jugador',
-    // hay que quitar ese filtro en ambos lados a la vez.
+    // Los integrantes disponibles deben ser jugadores activos habilitados.
     private function insertarIntegrantes(int $equipoId, array $ids): void
     {
         $ph = implode(',', array_fill(0, count($ids), '?'));
@@ -209,8 +207,9 @@ $sql = "
         $stmt = $this->pdo->prepare("
             SELECT id FROM usuarios
             WHERE id IN ($ph)
-              AND rol = 'usuario'
+              AND rol = 'jugador'
               AND estado = 'activo'
+              AND jugador_activo = 1
         ");
         $stmt->execute($ids);
 

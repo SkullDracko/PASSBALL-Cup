@@ -110,6 +110,7 @@ class UsuariosController
             FROM usuarios u
             WHERE u.rol = 'jugador'
               AND u.estado = 'activo'
+              AND u.jugador_activo = 1
               AND u.id <> ?
               AND (u.nombre LIKE ? OR u.matricula LIKE ?)
             ORDER BY u.nombre ASC
