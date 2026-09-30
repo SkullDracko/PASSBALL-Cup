@@ -133,7 +133,9 @@ class PartidoEventosController
     }
     private function validarMinuto($minuto): void
     {
-        if ($minuto !== null && (!filter_var($minuto, FILTER_VALIDATE_INT) || (int) $minuto < 0 || (int) $minuto > 255)) jsonResponse(false, [], ['error' => 'El minuto debe ser un entero entre 0 y 255'], 422);
+        // Mismo detalle que en el resto de rangos: el minuto 0 es valido y con
+        // el ! filter_var lo rechazaba.
+        if ($minuto !== null && (filter_var($minuto, FILTER_VALIDATE_INT) === false || (int) $minuto < 0 || (int) $minuto > 255)) jsonResponse(false, [], ['error' => 'El minuto debe ser un entero entre 0 y 255'], 422);
     }
     private function noEncontrado(): void
     {
