@@ -308,6 +308,24 @@ const API = {
     votosResumen(torneoId) {
         return this.get("/admin/votos-resumen" +
             (torneoId ? "?torneo_id=" + torneoId : ""));
+    },
+
+    /* --- Comunidad (AdminComunidadController) --- */
+
+    listarPosts() {
+        return this.get("/admin/posts");
+    },
+
+    crearPost(datos) {
+        return this.post("/admin/posts", datos);
+    },
+
+    toggleFijadoPost(postId) {
+        return this.patch("/admin/posts/" + postId + "/fijado");
+    },
+
+    eliminarPost(postId) {
+        return this.del("/admin/posts/" + postId);
     }
 };
 

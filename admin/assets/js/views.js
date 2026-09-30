@@ -77,6 +77,13 @@ function vacio(titulo, texto) {
            esc(texto) + '</p></div>';
 }
 
+/* Convierte saltos de linea en <br>. El texto va ya escapado con esc(), asi
+   que los <br> son los unicos que se inyectan. El legacy lo hacia con el
+   nl2br() de PHP al renderizar el partial. */
+function nl2br(texto) {
+    return String(texto).replace(/\r\n|\r|\n/g, "<br>");
+}
+
 
 /* ------------------------------------------------------------
    Selector de torneo, compartido por las cuatro vistas
@@ -787,6 +794,105 @@ async function cargarResultados() {
 
 
 /* ============================================================
+   COMUNIDAD
+   ============================================================
+   La ultima vista que quedaba fuera de la API. El partial hacia SQL
+   directo y el POST lo recogia admin/controllers/comunidad.php, que
+   avisaba con $_SESSION['flash_*'].
+
+   La tabla posts la crea sql/migracion_admin.sql, no bd_propuesta.sql.
+   Si no esta, AdminComunidadController responde 503 con un mensaje que
+   lo dice, y se muestra tal cual en vez de un error generico.
+   ============================================================ */
+
+function tiempoRelativo(fecha) {
+
+    if (!fecha) return "";
+
+    const d = new Date(String(fecha).replace(" ", "T"));
+    if (isNaN(d.getTime())) return "";
+
+    const seg = Math.floor((Date.now() - d.getTime()) / 1000);
+
+    if (seg < 60)    return "Hace un momento";
+    if (seg < 3600)  return "Hace " + Math.floor(seg / 60) + " min";
+    if (seg < 86400) return "Hace " + Math.floor(seg / 3600) + " h";
+    if (seg < 604800) return "Hace " + Math.floor(seg / 86400) + " d";
+
+    return d.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+async function cargarComunidad() {
+
+    const cont = porId("view-comunidad");
+    if (!cont) return;
+
+    const lista = cont.querySelector("[data-comunidad-lista]");
+    const total = cont.querySelector("[data-comunidad-total]");
+
+    const d = await API.listarPosts();
+    const posts = d.posts || [];
+
+    if (total) total.textContent = String(posts.length);
+
+    if (!lista) return;
+
+    if (!posts.length) {
+        lista.innerHTML = vacio(
+            "No hay publicaciones",
+            "Usa el formulario para publicar la primera novedad."
+        );
+        return;
+    }
+
+    lista.innerHTML = posts.map(p => {
+
+        const autor = esc(p.autor || "—");
+        const fijado = p.fijado ? " pinned" : "";
+
+        const imagen = p.imagen_url
+            ? '<div class="post-media"><img src="' + esc(p.imagen_url) +
+              '" alt="Imagen de la publicación"></div>'
+            : "";
+
+        const pin = p.fijado
+            ? '<span class="post-pin"><i class="fa-solid fa-thumbtack"></i> FIJADO</span>'
+            : "";
+
+        return '<article class="post' + fijado + '">' +
+            '<span class="post-avatar">' + inicial(p.autor) + '</span>' +
+            '<div class="post-body">' +
+                '<div class="post-meta">' +
+                    '<strong>' + autor + '</strong>' +
+                    '<span class="dot">&bull;</span>' +
+                    '<span class="post-time">' + esc(tiempoRelativo(p.fecha)) + '</span>' +
+                    pin +
+                '</div>' +
+                '<h4 class="post-title">' + esc(p.titulo) + '</h4>' +
+                '<p class="post-text">' + nl2br(esc(p.contenido)) + '</p>' +
+                imagen +
+                '<div class="post-foot">' +
+                    '<span class="post-likes"><i class="fa-solid fa-thumbs-up"></i> ' +
+                        (Number(p.likes) || 0) + '</span>' +
+                    '<div class="post-acts">' +
+                        '<button type="button" class="admin-btn ghost mini" ' +
+                            'data-accion="toggle-fijado" data-post="' + p.id + '">' +
+                            '<i class="fa-solid fa-thumbtack"></i> ' +
+                            (p.fijado ? "Desfijar" : "Fijar") +
+                        '</button>' +
+                        '<button type="button" class="admin-btn ghost mini danger" ' +
+                            'data-accion="eliminar-post" data-post="' + p.id + '">' +
+                            'Eliminar</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</article>';
+
+    }).join("");
+}
+
+
+/* ============================================================
    CARGA DE VISTAS
    ============================================================ */
 
@@ -795,7 +901,8 @@ const VISTAS = {
     "view-postulaciones": cargarPostulaciones,
     "view-votaciones":    cargarVotaciones,
     "view-torneo":        cargarTorneo,
-    "view-resultados":    cargarResultados
+    "view-resultados":    cargarResultados,
+    "view-comunidad":     cargarComunidad
 };
 
 /* Limpia el aviso de una vista concreta. Se usa al (re)cargarla para que
@@ -896,6 +1003,15 @@ document.addEventListener("click", async function (e) {
             case "quitar-candidato":
                 await API.excluirCandidato(torneoId, catId, btn.dataset.ajuste);
                 break;
+
+            case "toggle-fijado":
+                await API.toggleFijadoPost(btn.dataset.post);
+                break;
+
+            case "eliminar-post":
+                if (!confirm("¿Eliminar esta publicación?")) return;
+                await API.eliminarPost(btn.dataset.post);
+                break;
         }
 
         await recargarVistaActiva();
@@ -977,6 +1093,15 @@ document.addEventListener("submit", async function (e) {
                     modo_candidatos: datos.modo_candidatos,
                     orden: datos.orden ? Number(datos.orden) : 0,
                     abierta: datos.abierta === "1"
+                });
+                break;
+
+            case "crear-post":
+                await API.crearPost({
+                    titulo: datos.titulo,
+                    contenido: datos.contenido,
+                    imagen_url: datos.imagen_url || "",
+                    fijado: datos.fijado === "1"
                 });
                 break;
         }
