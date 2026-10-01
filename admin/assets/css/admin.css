@@ -4030,3 +4030,637 @@ select:disabled {
     88%  { transform: translate(182px)  scaleX(0.7);  opacity: 0.45; }
     100% { transform: translate(208px)  scaleX(0.85); opacity: 0.5; }
 }
+
+/* ============================================
+   OVERLAY GABY — Diseño limpio (v2)
+   Reestiliza el render de views.js (Torneo + Resultados).
+   Solo CSS; no toca partials, JS ni API.
+   ============================================ */
+
+/* Selector de torneo */
+#torneoBody [data-torneo-select],
+#resultadosBody [data-torneo-select] {
+    width: 280px;
+    max-width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #ded6e9;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2b2340;
+    background: #fff;
+    outline: none;
+}
+#torneoBody [data-torneo-select]:focus,
+#resultadosBody [data-torneo-select]:focus {
+    border-color: #7c4293;
+    box-shadow: 0 0 0 3px rgba(124,66,147,.12);
+}
+
+/* Contenedor de la vista Torneo */
+#torneoBody { margin-top: 16px; }
+
+/* Form "Crear ronda" — barra limpia en tarjeta */
+#torneoBody > .admin-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px;
+    background: #fff;
+    border: 1px solid #ede7f4;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(47, 30, 80, .05);
+    padding: 16px 18px;
+    margin-bottom: 18px;
+}
+#torneoBody > .admin-form .field { margin: 0; }
+#torneoBody > .admin-form label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6f5d9c;
+    margin-bottom: 5px;
+}
+#torneoBody > .admin-form input,
+#torneoBody > .admin-form select {
+    padding: 9px 12px;
+    border: 1px solid #ded6e9;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #2b2340;
+    background: #fff;
+    outline: none;
+}
+#torneoBody > .admin-form input:focus,
+#torneoBody > .admin-form select:focus {
+    border-color: #7c4293;
+    box-shadow: 0 0 0 3px rgba(124, 66, 147, .12);
+}
+
+/* Bracket: columnas de rondas */
+#torneoBody .bracket { gap: 16px; align-items: flex-start; }
+#torneoBody .round-col {
+    position: relative;
+    flex: 1 1 300px;
+    min-width: 300px;
+    max-width: 360px;
+    background: #fff;
+    border: 1px solid #ede7f4;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(47, 30, 80, .05);
+    padding: 14px;
+    overflow: visible;
+}
+
+/* Cabecera de ronda — sobria, sin banda de gradiente */
+#torneoBody .round-col h3 {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0;
+    padding: 2px 46px 12px 0;
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #2f1e50;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#torneoBody .round-col h3::before {
+    content: "";
+    width: 4px;
+    height: 18px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #7c4293, #b96fc8);
+    flex-shrink: 0;
+}
+#torneoBody .round-col .round-order {
+    position: absolute;
+    top: 15px;
+    right: 14px;
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #7a6b85;
+    background: #f3eef8;
+    border: 1px solid #e6dcf2;
+    padding: 2px 9px;
+    border-radius: 999px;
+}
+
+/* Tarjeta de partido — ligera, con hover suave */
+#torneoBody .match-card {
+    background: #fff;
+    border: 1px solid #f0ebf6;
+    border-radius: 12px;
+    padding: 11px 12px;
+    margin-bottom: 9px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+#torneoBody .match-card:hover {
+    border-color: #d9cde8;
+    box-shadow: 0 6px 18px rgba(47, 30, 80, .06);
+}
+#torneoBody .match-card .vs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+#torneoBody .match-card .vs .teamx {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #3a2f4f;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#torneoBody .match-card .vs .teamx.text-right { text-align: right; }
+#torneoBody .match-card .vs .score {
+    flex-shrink: 0;
+    min-width: 46px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 900;
+    color: #2f1e50;
+    background: #f3eef8;
+    border-radius: 10px;
+    padding: 4px 10px;
+}
+#torneoBody .match-card .vs .faint {
+    flex-shrink: 0;
+    min-width: 46px;
+    text-align: center;
+    color: #b9aed0;
+    font-size: 13px;
+    font-weight: 700;
+}
+#torneoBody .match-card .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 9px;
+    padding-top: 8px;
+    border-top: 1px solid #f0ebf6;
+    color: #8a7fa0;
+    font-size: 11.5px;
+}
+#torneoBody .match-card .meta .chip { margin-left: auto; }
+
+/* Form "Agregar partido" — 2 columnas, botón sólido */
+#torneoBody .round-add-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 6px;
+    padding-top: 12px;
+    border-top: 1px solid #ede7f4;
+}
+#torneoBody .round-add-form select,
+#torneoBody .round-add-form input {
+    width: 100%;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid #ded6e9;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: #2b2340;
+    background: #fff;
+    outline: none;
+}
+#torneoBody .round-add-form select:focus,
+#torneoBody .round-add-form input:focus {
+    border-color: #7c4293;
+    box-shadow: 0 0 0 3px rgba(124, 66, 147, .12);
+}
+#torneoBody .round-add-form .admin-btn {
+    margin: 0;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #7c4293, #5c2f73);
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(124, 66, 147, .22);
+}
+#torneoBody .round-add-form .admin-btn:hover {
+    background: linear-gradient(135deg, #8a4ba2, #6a3684);
+}
+
+/* ==== RESULTADOS ==== */
+#resultadosBody .admin-card {
+    padding: 20px;
+    border: 1px solid #ede7f4;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(47, 30, 80, .05);
+}
+
+/* Cabecera: marcador centrado */
+#resultadosBody .admin-card-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #ede7f4;
+}
+#resultadosBody .admin-scoreline {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 0;
+}
+#resultadosBody .admin-scoreline .side {
+    font-size: 16px;
+    font-weight: 800;
+    color: #2f1e50;
+}
+#resultadosBody .admin-scoreline .side.away { text-align: right; }
+#resultadosBody .admin-score {
+    min-width: 78px;
+    font-size: 19px;
+    background: linear-gradient(135deg, #2f1e50, #543b67);
+    border-radius: 12px;
+    box-shadow: none;
+}
+#resultadosBody .admin-card-head > .chip { flex-shrink: 0; }
+
+/* Form "Guardar resultado": rejilla compacta de 4 columnas */
+#resultadosBody form[data-accion="guardar-resultado"] {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px 12px;
+    align-items: end;
+    margin-bottom: 16px;
+}
+#resultadosBody form[data-accion="guardar-resultado"] .field {
+    margin: 0;
+    max-width: none;
+}
+#resultadosBody form[data-accion="guardar-resultado"] .field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6f5d9c;
+}
+#resultadosBody form[data-accion="guardar-resultado"] .field input,
+#resultadosBody form[data-accion="guardar-resultado"] .field select { background: #fff; }
+#resultadosBody form[data-accion="guardar-resultado"] .admin-field-wide,
+#resultadosBody form[data-accion="guardar-resultado"] .admin-field-md {
+    grid-column: span 2;
+}
+#resultadosBody form[data-accion="guardar-resultado"] .admin-btn { grid-column: 1 / -1; }
+
+/* Eventos: chips en fila */
+#resultadosBody .mb-sm.small-note {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+#resultadosBody .mb-sm.small-note .chip-soft { flex: 0 0 auto; }
+
+/* "Registrar evento": dos columnas suaves */
+#resultadosBody .bracket {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    overflow: visible;
+    margin-bottom: 18px;
+}
+#resultadosBody form[data-accion="registrar-evento"] {
+    margin: 0;
+    padding: 14px;
+    background: #faf8fd;
+    border: 1px solid #eee8f5;
+    border-radius: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 10px;
+    align-items: end;
+    min-width: 0;
+}
+#resultadosBody form[data-accion="registrar-evento"] .field {
+    margin: 0;
+    max-width: none;
+}
+#resultadosBody form[data-accion="registrar-evento"] .field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6f5d9c;
+}
+#resultadosBody form[data-accion="registrar-evento"] .field input,
+#resultadosBody form[data-accion="registrar-evento"] .field select { background: #fff; }
+#resultadosBody form[data-accion="registrar-evento"] .field.admin-field-full { grid-column: 1 / -1; }
+#resultadosBody form[data-accion="registrar-evento"] .admin-btn {
+    grid-column: 1 / -1;
+    margin: 0;
+}
+
+/* Convocatoria / Porteros — filas sin cajón, hover suave */
+#resultadosBody .mb-sm + .mb-sm { margin-top: 18px; }
+#resultadosBody .feed-head { margin-bottom: 10px; }
+#resultadosBody .feed-head h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 800;
+    color: #2f1e50;
+}
+#resultadosBody .feed-count {
+    min-width: 24px;
+    height: 24px;
+    font-size: 11.5px;
+}
+#resultadosBody .admin-stack-sm > .admin-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    transition: background .15s ease;
+}
+#resultadosBody .admin-stack-sm > .admin-row:hover { background: #faf8fd; }
+#resultadosBody .admin-stack-sm > .admin-row .post-avatar {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    font-size: 12px;
+}
+#resultadosBody .admin-stack-sm > .admin-row .side {
+    flex: 1;
+    min-width: 0;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #3a2f4f;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#resultadosBody .admin-stack-sm > .admin-row .small-note { font-size: 11.5px; color: #8a7fa0; }
+#resultadosBody .admin-stack-sm > .admin-row .chip-soft { flex-shrink: 0; }
+
+/* Inputs de porteros: claros (heredaban fondo oscuro del login) */
+#resultadosBody .admin-input {
+    background: #fff;
+    border-color: #ded6e9;
+    color: #2b2340;
+}
+#resultadosBody .admin-input:focus {
+    background: #fff;
+    border-color: #7c4293;
+    box-shadow: 0 0 0 3px rgba(124, 66, 147, .12);
+}
+#resultadosBody .admin-stat { width: 64px; }
+#resultadosBody .admin-btn.mini { padding: 5px 10px; white-space: nowrap; }
+
+@media (max-width: 720px) {
+    #resultadosBody form[data-accion="guardar-resultado"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #resultadosBody .bracket { grid-template-columns: 1fr; }
+    #torneoBody .round-add-form { grid-template-columns: 1fr; }
+}
+
+/* ============================================
+   OVERLAY GABY — v3
+   Form "Agregar partido" etiquetado + listado de
+   convocatoria tipo rosters (maneja etiquetas que añade
+   un script aditivo; el markup original sigue intacto).
+   ============================================ */
+
+/* Form "Agregar partido" → MODAL
+   El form inline de views.js se reemplaza (script overlay) por este botón
+   que abre el modal; la estructura del modal reutiliza la estética prod-. */
+#torneoBody .round-col .round-add-form {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+#torneoBody .gby-add-btn {
+    width: 100%;
+    margin: 6px 0 0;
+    padding: 10px;
+    border: 1.5px dashed #cfc2dd;
+    border-radius: 12px;
+    background: transparent;
+    color: #7c4293;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+}
+#torneoBody .gby-add-btn:hover {
+    background: #faf7fd;
+    border-color: #7c4293;
+}
+
+/* Modal "Agregar partido" (reusa la estética prod-dialog existente) */
+.gby-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: none;
+    place-items: center;
+    padding: 20px;
+    background: rgba(47, 30, 80, 0.55);
+    backdrop-filter: blur(3px);
+}
+.gby-modal.abierto { display: grid; }
+.gby-modal .prod-dialog {
+    width: 100%;
+    max-width: 560px;
+    max-height: 92vh;
+    overflow: auto;
+}
+.gby-modal .prod-head h3 { margin: 0; }
+.gby-modal .prod-body {
+    padding: 20px;
+    display: grid;
+    gap: 14px;
+}
+.gby-modal .prod-body label {
+    display: grid;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #6f5d9c;
+}
+.gby-modal .prod-body select,
+.gby-modal .prod-body input {
+    padding: 11px 12px;
+    border: 1.5px solid #d9cde8;
+    border-radius: 10px;
+}
+.gby-modal .prod-body select:focus,
+.gby-modal .prod-body input:focus {
+    border-color: var(--admin-purple);
+    box-shadow: 0 0 0 3px rgba(124, 66, 147, 0.12);
+}
+.gby-modal .prod-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 4px;
+}
+.gby-modal .prod-btn { cursor: pointer; }
+.gby-modal .prod-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+/* --- Pulido interior del modal: quita la caja admin-form heredada y
+       estructura el form con secciones + footer propio --- */
+.gby-modal .prod-dialog > form[data-accion="crear-partido"] {
+    display: block;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    gap: 0;
+}
+.gby-modal .prod-head h3 { font-size: 15px; flex: 1; letter-spacing: .2px; }
+.gby-modal .prod-body { padding: 22px 24px; gap: 16px; }
+.gby-modal .prod-body select,
+.gby-modal .prod-body input { min-height: 42px; }
+.gby-modal .prod-body select option { color: #3c3150; }
+.gby-modal .prod-body select option:disabled { color: #b9accf; }
+.gby-modal .prod-sec {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 2px 0 0;
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .9px;
+    color: #7c4293;
+}
+.gby-modal .prod-sec::after { content: ""; flex: 1; height: 1px; background: #f0ebf6; }
+.gby-modal .prod-foot {
+    align-items: center;
+    padding: 16px 24px 20px;
+    border-top: 1px solid #f1ecf7;
+    background: #fcfafd;
+}
+.gby-modal .prod-foot .prod-btn { padding: 11px 20px; }
+
+/* Convocatoria: cada jugador como ficha con dorsal (matrícula) primero */
+#resultadosBody .admin-stack-sm { gap: 6px; }
+#resultadosBody .admin-stack-sm > p.small-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 2px;
+    font-size: 10.5px;
+    font-weight: 800;
+    color: #7c4293;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+}
+#resultadosBody .admin-stack-sm > p.small-note::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #f0ebf6;
+}
+#resultadosBody .admin-stack-sm > .admin-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    transition: background .15s ease, border-color .15s ease;
+}
+#resultadosBody .admin-stack-sm > .admin-row:hover {
+    background: #faf8fd;
+    border-color: #eee8f5;
+}
+#resultadosBody .admin-stack-sm > .admin-row .small-note {
+    order: -1;
+    flex: 0 0 auto;
+    min-width: 27px;
+    height: 26px;
+    padding: 0 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2f1e50, #543b67);
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 800;
+    border-radius: 7px;
+    font-variant-numeric: tabular-nums;
+}
+#resultadosBody .admin-stack-sm > .admin-row .post-avatar { order: 0; }
+#resultadosBody .admin-stack-sm > .admin-row .side { order: 1; }
+#resultadosBody .admin-stack-sm > .admin-row .chip-soft {
+    order: 2;
+    flex-shrink: 0;
+    font-size: 10.5px;
+    padding: 2px 8px;
+}
+#resultadosBody .admin-stack-sm > .admin-row .admin-btn.mini { order: 3; }
+
+/* Form "Convocar jugador": panel compacto para cada equipo */
+#resultadosBody form[data-accion="convocar-jugador"] {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 10px;
+    align-items: end;
+    margin-top: 10px;
+    padding: 12px;
+    background: #faf8fd;
+    border: 1px solid #eee8f5;
+    border-radius: 12px;
+}
+#resultadosBody form[data-accion="convocar-jugador"] .field {
+    margin: 0;
+    max-width: none;
+}
+#resultadosBody form[data-accion="convocar-jugador"] .field label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6f5d9c;
+}
+#resultadosBody form[data-accion="convocar-jugador"] .field input,
+#resultadosBody form[data-accion="convocar-jugador"] .field select {
+    background: #fff;
+}
+#resultadosBody form[data-accion="convocar-jugador"] .field.admin-field-wide {
+    grid-column: 1 / -1;
+}
+#resultadosBody form[data-accion="convocar-jugador"] .admin-check {
+    justify-self: start;
+    align-self: center;
+}
+#resultadosBody form[data-accion="convocar-jugador"] .admin-btn {
+    grid-column: 2;
+    margin: 0;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #7c4293, #5c2f73);
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 2px 8px rgba(124, 66, 147, .22);
+}
+#resultadosBody form[data-accion="convocar-jugador"] .admin-btn:hover {
+    background: linear-gradient(135deg, #8a4ba2, #6a3684);
+}
+
+@media (max-width: 720px) {
+    #resultadosBody form[data-accion="convocar-jugador"] { grid-template-columns: 1fr; }
+    #resultadosBody form[data-accion="convocar-jugador"] .admin-field-wide,
+    #resultadosBody form[data-accion="convocar-jugador"] .admin-btn { grid-column: 1 / -1; }
+}
+
