@@ -17,7 +17,7 @@ DROP TABLE IF EXISTS torneo_equipos;
 DROP TABLE IF EXISTS torneos;
 DROP TABLE IF EXISTS equipo_miembros;
 DROP TABLE IF EXISTS equipos;
-DROP TABLE IF EXISTS administradores;
+/* DROP TABLE IF EXISTS administradores; */
 DROP TABLE IF EXISTS usuarios;
 -- Comentario para subir cambios */
 
@@ -46,7 +46,7 @@ CREATE TABLE usuarios (
 );
 
 -- Tabla independiente de usuarios: el módulo de administración maneja su propio acceso
-CREATE TABLE administradores (
+CREATE TABLE IF NOT EXISTS administradores (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   usuario VARCHAR(50) NOT NULL UNIQUE,

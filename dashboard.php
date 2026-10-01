@@ -542,9 +542,10 @@ try {
             <div
                 class="dashboard-view"
                 id="view-resultados"
+                data-api-base="backend/api"
             >
 
-                <?php include __DIR__ . '/partials/resultados.php'; ?>
+                <?php include __DIR__ . '/partials/resultados.html'; ?>
 
             </div>
 
@@ -840,7 +841,7 @@ try {
 
 <script src="assets/js/votos.js"></script>
 
-<script src="assets/js/resultados.js"></script>
+<script src="assets/js/resultados-api.js"></script>
 
 <script src="assets/js/comunidad.js"></script>
 

@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function () {
         clearBoard();
         board.style.setProperty('--bracket-round-count', String(validRounds.length));
 
-        var championRoundIndex = tournament.estado === 'finalizado' ? validRounds.length - 1 : -1;
+        var lastRoundIndex = validRounds.length - 1;
 
         validRounds.forEach(function (round, roundIndex) {
             var matches = Array.isArray(round.partidos) ? round.partidos.slice() : [];
@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         match.ganador_id !== undefined && String(match.ganador_id) === String(local.id));
                     var visitorWinner = Boolean(visitor && match.ganador_id !== null &&
                         match.ganador_id !== undefined && String(match.ganador_id) === String(visitor.id));
-                    var isFinal = roundIndex === championRoundIndex;
+                    var isFinal = roundIndex === lastRoundIndex;
 
                     addTeamRow(
                         teams,

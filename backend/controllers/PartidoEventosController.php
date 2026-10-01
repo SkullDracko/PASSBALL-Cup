@@ -27,7 +27,14 @@ class PartidoEventosController
             $values[] = $this->id($filtros, $campo);
         }
         $stmt = $this->pdo->prepare('
-            SELECT pe.*, u.matricula, e.nombre AS equipo_nombre, a.matricula AS asistencia_matricula
+            SELECT
+                pe.*,
+                u.nombre AS jugador_nombre,
+                u.matricula,
+                u.avatar AS jugador_avatar,
+                e.nombre AS equipo_nombre,
+                a.nombre AS asistencia_nombre,
+                a.matricula AS asistencia_matricula
             FROM partido_eventos pe INNER JOIN usuarios u ON u.id = pe.jugador_id
             INNER JOIN equipos e ON e.id = pe.equipo_id LEFT JOIN usuarios a ON a.id = pe.asistencia_jugador_id
             WHERE ' . implode(' AND ', $where) . ' ORDER BY pe.minuto, pe.id
