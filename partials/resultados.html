@@ -1,0 +1,54 @@
+<section class="resultados-view" aria-labelledby="results-title">
+    <header class="resultados-header">
+        <div class="resultados-header__copy">
+            <p class="resultados-eyebrow">PASSBALL Cup · Marcadores protegidos</p>
+            <h1 id="results-title">Resultados</h1>
+            <p class="resultados-header__description">Todos los partidos del torneo, con el marcador oculto hasta que decidas verlo.</p>
+        </div>
+
+        <div class="resultados-tournament-picker">
+            <label for="results-tournament">Torneo</label>
+            <select id="results-tournament" aria-describedby="results-feedback" disabled>
+                <option value="">Cargando torneos...</option>
+            </select>
+        </div>
+    </header>
+
+    <p class="resultados-feedback" id="results-feedback" role="status" aria-live="polite">
+        Selecciona un torneo para consultar sus partidos.
+    </p>
+
+    <button class="resultados-retry" id="results-retry" type="button" hidden>
+        Reintentar
+    </button>
+
+    <section class="resultados-list" id="results-list" aria-label="Partidos del torneo" aria-busy="false"></section>
+    <p class="resultados-empty" id="results-empty" hidden></p>
+
+    <dialog class="resultados-events-modal" id="results-events-modal" aria-labelledby="results-events-title">
+        <div class="resultados-events-modal__panel">
+            <header class="resultados-events-modal__header">
+                <div class="resultados-events-modal__heading">
+                    <p class="resultados-events-modal__eyebrow">Detalle del encuentro</p>
+                    <h2 id="results-events-title">Eventos del partido</h2>
+                    <p class="resultados-events-modal__matchup" id="results-events-matchup"></p>
+                </div>
+                <button class="resultados-events-modal__close" id="results-events-close" type="button" aria-label="Cerrar eventos del partido" title="Cerrar">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            <p class="resultados-events-feedback" id="results-events-feedback" role="status" aria-live="polite"></p>
+            <button class="resultados-retry resultados-retry--events" id="results-events-retry" type="button" hidden>
+                Reintentar carga de eventos
+            </button>
+            <ol
+                class="resultados-event-list"
+                id="results-event-list"
+                aria-label="Eventos registrados"
+                data-default-avatar="assets/img/avatar-placeholder.svg"
+            ></ol>
+            <p class="resultados-events-empty" id="results-events-empty" hidden></p>
+        </div>
+    </dialog>
+</section>
