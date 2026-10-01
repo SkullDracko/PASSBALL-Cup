@@ -7,6 +7,12 @@
 require_once __DIR__ . '/controllers/auth.php';
 require_once __DIR__ . '/../config/app.php';
 
+// El panel es dinámico (scripts/cache-busting por filemtime): nunca debe
+// servirse una copia vieja del HTML, o el usuario seguiría viendo la
+// versión anterior del menú aún cambiando de sección.
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+
 $tituloPagina = 'Panel Admin';
 $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8');
 ?>
@@ -30,7 +36,7 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
 
     <link
         rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        href="../assets/css/fa/all.min.css"
     >
 
     <link
@@ -41,6 +47,13 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
 </head>
 
 <body>
+
+<div class="pb-loader" id="pbLoader" role="status" aria-label="Cargando">
+    <div class="pb-ball-wrap">
+        <i class="pb-ball" aria-hidden="true">⚽</i>
+        <div class="pb-shadow"></div>
+    </div>
+</div>
 
 <div class="admin-shell" id="adminShell">
 
@@ -208,6 +221,189 @@ $inicialAdmin = mb_strtoupper(mb_substr($admin['nombre'], 0, 1, 'UTF-8'), 'UTF-8
 <script src="<?= assetUrl('admin/assets/js/api.js') ?>"></script>
 <script src="<?= assetUrl('admin/assets/js/views.js') ?>"></script>
 <script src="<?= assetUrl('admin/assets/js/admin.js') ?>"></script>
+
+<!-- Overlay GABY: convierte el form inline "Agregar partido" (que views.js
+     genera sin labels) en un MODAL. No altera la lógica: el form conserva su
+     data-accion / data-ronda / data-torneo, por lo que el submit delegado de
+     views.js sigue funcionando igual. -->
+<script>
+(function () {
+    var modal = null;
+    if (window && !window.__gbyLog) window.__gbyLog = [];
+    var campoConfig = [
+        ["equipo_local_id", "Local"],
+        ["equipo_visitante_id", "Visitante"]
+    ];
+
+    function label(par, el) {
+        var lab = document.createElement("label");
+        var sp = document.createElement("span");
+        sp.textContent = par[1];
+        lab.appendChild(sp);
+        lab.appendChild(el);
+        return lab;
+    }
+
+    function construirModalPartido() {
+        modal = document.createElement("div");
+        modal.className = "gby-modal";
+
+        var dialog = document.createElement("div");
+        dialog.className = "prod-dialog";
+
+        var head = document.createElement("div");
+        head.className = "prod-head";
+        var h3 = document.createElement("h3");
+        h3.textContent = "Agregar partido";
+        var chip = document.createElement("span");
+        chip.className = "prod-round";
+        var x = document.createElement("button");
+        x.type = "button";
+        x.className = "prod-x";
+        x.setAttribute("aria-label", "Cerrar");
+        x.textContent = "×";
+        x.addEventListener("click", cerrar);
+        head.appendChild(h3);
+        head.appendChild(chip);
+        head.appendChild(x);
+
+        dialog.appendChild(head);
+        modal.appendChild(dialog);
+        modal.addEventListener("click", function (ev) {
+            if (ev.target === modal) cerrar();
+        });
+        document.body.appendChild(modal);
+    }
+
+    function armadas(form) {
+        var cuerpo = document.createElement("div");
+        cuerpo.className = "prod-body";
+
+        function sec(txt) {
+            var s = document.createElement("span");
+            s.className = "prod-sec";
+            s.textContent = txt;
+            return s;
+        }
+
+        var grid = document.createElement("div");
+        grid.className = "prod-grid2";
+        campoConfig.forEach(function (par) {
+            var el = form.querySelector('[name="' + par[0] + '"]');
+            if (el) {
+                if (el.tagName === "SELECT" && el.options && el.options[0]) {
+                    el.options[0].disabled = true;
+                }
+                grid.appendChild(label(par, el));
+            }
+        });
+
+        cuerpo.appendChild(sec("Equipos"));
+        cuerpo.appendChild(grid);
+
+        var fecha = form.querySelector('[name="fecha_hora"]');
+        var cancha = form.querySelector('[name="cancha"]');
+        var pos = form.querySelector('[name="posicion"]');
+
+        var gp = document.createElement("div");
+        gp.className = "prod-grid2";
+        if (cancha) gp.appendChild(label(["cancha", "Cancha"], cancha));
+        if (pos) gp.appendChild(label(["posicion", "Posición (auto)"], pos));
+
+        if (fecha || gp.children.length) cuerpo.appendChild(sec("Detalles"));
+        if (fecha) cuerpo.appendChild(label(["fecha_hora", "Fecha y hora"], fecha));
+        if (gp.children.length) cuerpo.appendChild(gp);
+
+        var foot = document.createElement("div");
+        foot.className = "prod-foot";
+        var cancelar = document.createElement("button");
+        cancelar.type = "button";
+        cancelar.className = "prod-btn ghost";
+        cancelar.textContent = "Cancelar";
+        cancelar.addEventListener("click", cerrar);
+        var guardar = form.querySelector('[type="submit"]');
+        if (guardar) {
+            guardar.textContent = "Guardar partido";
+            guardar.classList.remove("admin-btn");
+            guardar.classList.add("prod-btn");
+        }
+        foot.appendChild(cancelar);
+        if (guardar) foot.appendChild(guardar);
+
+        form.appendChild(cuerpo);
+        form.appendChild(foot);
+    }
+
+    function cerrar() {
+        if (!modal) return;
+        modal.classList.remove("abierto");
+        var form = modal.querySelector("form");
+        if (form) form.reset();
+    }
+
+    function preparar(form) {
+        if (form.dataset.gbyListo === "1") return;
+        form.dataset.gbyListo = "1";
+
+        if (!modal) construirModalPartido();
+        var col = form.closest(".round-col");
+        if (!col) return;
+
+        armadas(form);
+
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "gby-add-btn";
+        btn.textContent = "+ Agregar partido";
+        btn.dataset.ronda = form.dataset.ronda;
+        btn._gbyForm = form;
+
+        // 1º: el botón ocupa el lugar del form en la card.
+        col.replaceChild(btn, form);
+
+        // 2º: mover el form al dialogo del modal (después del replace, o el
+        // form deja de ser hijo de la card y replaceChild lanza NotFoundError).
+        var dialog = modal.querySelector(".prod-dialog");
+        var viejo = modal.querySelector("form");
+        if (viejo && viejo !== form) dialog.replaceChild(form, viejo);
+        else dialog.appendChild(form);
+    }
+
+    function abrirPartido(btn) {
+        if (!modal) return;
+        var form = btn._gbyForm || document.querySelector(".round-add-form");
+        if (!form) return;
+        form.dataset.ronda = btn.dataset.ronda;
+        var col = btn.closest(".round-col");
+        var ro = col ? col.querySelector(".round-order") : null;
+        modal.querySelector(".prod-round").textContent =
+            ro ? ro.textContent : "Ronda " + btn.dataset.ronda;
+        modal.classList.add("abierto");
+    }
+
+    function barrer() {
+        var lista = document.querySelectorAll(".round-add-form");
+        window.__gbyLog.push("barrer forms=" + lista.length);
+        Array.prototype.forEach.call(lista, preparar);
+    }
+
+    // Delegado, igual que los submit de views.js: sobrevive a cualquier
+    // re-render de la vista sin necesidad de religar por nodo.
+    document.addEventListener("click", function (ev) {
+        var btn = ev.target.closest ? ev.target.closest(".gby-add-btn") : null;
+        if (btn) {
+            ev.preventDefault();
+            abrirPartido(btn);
+        }
+    });
+
+    var obs = new MutationObserver(barrer);
+    obs.observe(document.body, { childList: true, subtree: true });
+    barrer();
+
+    if (window.console) console.log("[GABY] overlay modal listo");
+})();
+</script>
 
 </body>
 

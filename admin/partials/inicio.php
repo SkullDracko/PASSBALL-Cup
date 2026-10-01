@@ -22,9 +22,7 @@
 <li><strong id="statEquipos">—</strong><span>Equipos</span></li>
 <li><strong id="statPendientes">—</strong><span>Pendientes</span></li>
 </ul>
-<a class="torneo-card-action" href="#view-torneo">
-        Gestionar <i class="fa-solid fa-arrow-right"></i>
-</a>
+
 </section>
 <div class="metric-grid">
 <div class="metric-card">
