@@ -5,72 +5,80 @@
     hidden
 ></div>
 
-<div class="equipos-heading">
-    <h1>Equipos</h1>
-    <p>Registra tu equipo para participar en el torneo.</p>
-</div>
 
-<section class="my-team-card" id="myTeamLoading" role="status">
-    <div class="my-team-info">
-        <h2>Cargando tu equipo...</h2>
-        <p class="team-role">Consultando la información de tu cuenta.</p>
-    </div>
-</section>
-
-<section class="my-team-card" id="myTeamCard" hidden>
-    <div class="my-team-logo" id="myTeamLogo"></div>
-
-    <div class="my-team-info">
-        <h2 id="myTeamName"></h2>
-
-        <div class="team-meta">
-            <span class="participants" id="myTeamMembers">
-                <i class="fa-solid fa-users"></i>
-              
-            </span>
-
-            <span class="registered">
-                <i class="fa-solid fa-circle-check"></i>
-                Equipo registrado
-            </span>
-        </div>
-
-        <p class="team-role" id="myTeamRole"></p>
-    </div>
-
-    <div class="my-team-action">
-        <a href="#" class="btn-purple" id="myTeamDetail">
-            Ver mi equipo
-            <i class="fa-solid fa-arrow-right"></i>
-        </a>
-
-        <span class="postulacion-badge pendiente" id="myTeamTournamentStatus">
-            Estado de postulación: pendiente de conectar
-        </span>
-    </div>
-</section>
-
-<section class="team-actions" id="teamActions" hidden>
-    <div class="section-title">
-        <h2>Gestiona</h2>
+<!-- Sección personal: solo para jugadores activos habilitados. -->
+<div id="playerTeamsSection" hidden>
+    <div class="equipos-heading">
+        <h1>Equipos</h1>
         <p>Registra tu equipo para participar en el torneo.</p>
     </div>
 
-    <div class="action-buttons">
-        <button type="button" class="action-card" id="openRegister">
-            <div class="action-icon orange">
-                <i class="fa-solid fa-plus"></i>
+    <section class="my-team-card" id="myTeamLoading" role="status">
+        <div class="my-team-info">
+            <h2>Cargando tu equipo...</h2>
+            <p class="team-role">Consultando la información de tu cuenta.</p>
+        </div>
+    </section>
+
+    <section class="my-team-card" id="myTeamCard" hidden>
+        <div class="my-team-logo" id="myTeamLogo"></div>
+
+        <div class="my-team-info">
+            <h2 id="myTeamName"></h2>
+
+            <div class="team-meta">
+                <span class="participants" id="myTeamMembers">
+                    <i class="fa-solid fa-users"></i>
+                </span>
+
+                <span class="registered" id="myTeamRegistrationStatus" aria-live="polite">
+                    <i class="fa-solid fa-circle-notch" aria-hidden="true"></i>
+                    <span class="team-registration-label">Consultando estado...</span>
+                </span>
             </div>
 
-            <div class="action-text">
-                <h3>Registrar equipo</h3>
-                <p>Crea un nuevo equipo y conviértete en líder.</p>
+            <div class="team-rejection-reason" id="myTeamRejectionReason" hidden>
+                <strong>Motivo del rechazo</strong>
+                <p id="myTeamRejectionReasonText"></p>
             </div>
 
-            <i class="fa-solid fa-arrow-right action-arrow orange-arrow"></i>
-        </button>
-    </div>
-</section>
+            <p class="team-role" id="myTeamRole"></p>
+        </div>
+
+        <div class="my-team-action">
+            <a href="#" class="btn-purple" id="myTeamDetail">
+                Ver mi equipo
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+
+            <span class="postulacion-badge sin-postulacion" id="myTeamTournamentStatus" aria-live="polite">
+                Sin postulación
+            </span>
+        </div>
+    </section>
+
+    <section class="team-actions" id="teamActions" hidden>
+        <div class="section-title">
+            <h2>Gestiona</h2>
+            <p>Registra tu equipo para participar en el torneo.</p>
+        </div>
+
+        <div class="action-buttons">
+            <button type="button" class="action-card" id="openRegister">
+                <div class="action-icon orange">
+                    <i class="fa-solid fa-plus"></i>
+                </div>
+
+                <div class="action-text">
+                    <h3>Registrar equipo</h3>
+                    <p>Crea un nuevo equipo y conviértete en líder.</p>
+                </div>
+
+                <i class="fa-solid fa-arrow-right action-arrow orange-arrow"></i>
+            </button>
+        </div>
+    </section>
+</div>
 
 <section class="available-section">
     <div class="available-header">
@@ -90,6 +98,8 @@
             >
         </div>
     </div>
+
+    <!-- Apartado visible por usuarios -->
 
     <div class="teams-grid" id="teamsGrid" aria-live="polite">
         <p id="teamsLoading" role="status">Cargando equipos...</p>

@@ -20,6 +20,25 @@ function esCapitanDe($pdo, $usuarioId, $equipoId): bool {
     return (bool) $stmt->fetch();
 }
 
+function requireJugadorActivoLegacy($pdo, $usuarioId): void {
+    $stmt = $pdo->prepare(
+        "SELECT rol, estado, jugador_activo FROM usuarios WHERE id = ? LIMIT 1"
+    );
+    $stmt->execute([$usuarioId]);
+    $jugador = $stmt->fetch();
+
+    if (
+        !$jugador
+        || $jugador['rol'] !== 'jugador'
+        || $jugador['estado'] !== 'activo'
+        || !(bool) $jugador['jugador_activo']
+    ) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Se requiere un jugador activo']);
+        exit;
+    }
+}
+
 switch ($action) {
 
     // =============================
@@ -151,6 +170,7 @@ switch ($action) {
     // UNIRSE A UN EQUIPO
     // =============================
     case 'unirse':
+        requireJugadorActivoLegacy($pdo, (int) $usuario['id']);
         $equipoId = (int)($_POST['equipo_id'] ?? 0);
 
         if ($equipoId <= 0) {
@@ -204,6 +224,7 @@ switch ($action) {
     // SALIR DE UN EQUIPO
     // =============================
     case 'salir':
+        requireJugadorActivoLegacy($pdo, (int) $usuario['id']);
         $stmt = $pdo->prepare("SELECT id FROM equipo_miembros WHERE jugador_id = ? AND estado = 'activo'");
         $stmt->execute([$usuario['id']]);
         $membresia = $stmt->fetch();

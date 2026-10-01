@@ -68,6 +68,7 @@ $sql = "
         $body = requestBody();
 
         $nombre = trim((string) ($body['nombre'] ?? ''));
+        $motivoSolicitud = trim((string) ($body['motivo_solicitud'] ?? ''));
 
         if (mb_strlen($nombre, 'UTF-8') < 3) {
             jsonResponse(false, [], [
@@ -78,6 +79,12 @@ $sql = "
         if (mb_strlen($nombre, 'UTF-8') > 100) {
             jsonResponse(false, [], [
                 'error' => 'El nombre no puede exceder 100 caracteres'
+            ], 400);
+        }
+
+        if ($motivoSolicitud === '' || mb_strlen($motivoSolicitud, 'UTF-8') > 2000) {
+            jsonResponse(false, [], [
+                'error' => 'El motivo es obligatorio y no puede superar 2000 caracteres'
             ], 400);
         }
 
@@ -136,10 +143,10 @@ $sql = "
             $this->pdo->beginTransaction();
 
             $stmt = $this->pdo->prepare("
-                INSERT INTO equipos (nombre, logo, capitan_id, estado)
-                VALUES (?, ?, ?, 'activo')
+                INSERT INTO equipos (nombre, logo, capitan_id, estado, motivo_solicitud)
+                VALUES (?, ?, ?, 'pendiente', ?)
             ");
-            $stmt->execute([$nombre, $logoUrl, $capitanId]);
+            $stmt->execute([$nombre, $logoUrl, $capitanId, $motivoSolicitud]);
             $equipoId = (int) $this->pdo->lastInsertId();
 
             $stmt = $this->pdo->prepare("
@@ -183,25 +190,10 @@ $sql = "
     |--------------------------------------------------------------------------
     */
 
-    // Antes se usaba requireJugador(), que exige usuarios.rol = 'jugador'.
-    // El flujo legacy (controllers/auth.php → registrarEquipo.php) sólo pedía
-    // sesión activa, y equipo_miembros.jugador_id referencia usuarios.id, así
-    // que 11 de los 71 usuarios registrados (rol 'usuario') se quedarían sin
-    // poder crear su equipo. Se replica el criterio legacy para que la
-    // migración no rompa ese caso.
+    // Sólo jugadores activos pueden crear equipos.
     private function capitanActual(): int
     {
-        $usuarioId = requireAuthAPI();
-
-        $stmt = $this->pdo->prepare('SELECT estado FROM usuarios WHERE id = ? LIMIT 1');
-        $stmt->execute([$usuarioId]);
-        $usuario = $stmt->fetch();
-
-        if (!$usuario || $usuario['estado'] !== 'activo') {
-            jsonResponse(false, [], ['error' => 'Usuario no autorizado'], 403);
-        }
-
-        return $usuarioId;
+        return requireJugador();
     }
 
     private function normalizarIntegrantes($raw): array
@@ -214,9 +206,7 @@ $sql = "
         )));
     }
 
-    // Mismo criterio que controllers/buscarUsuarios.php: sólo usuarios
-    // 'usuario' activos. Si más adelante se quiere invitar a un rol 'jugador',
-    // hay que quitar ese filtro en ambos lados a la vez.
+    // Los integrantes disponibles deben ser jugadores activos habilitados.
     private function insertarIntegrantes(int $equipoId, array $ids): void
     {
         $ph = implode(',', array_fill(0, count($ids), '?'));
@@ -224,8 +214,9 @@ $sql = "
         $stmt = $this->pdo->prepare("
             SELECT id FROM usuarios
             WHERE id IN ($ph)
-              AND rol = 'usuario'
+              AND rol = 'jugador'
               AND estado = 'activo'
+              AND jugador_activo = 1
         ");
         $stmt->execute($ids);
 
@@ -331,7 +322,8 @@ $sql = "
         $id = $this->obtenerId($params);
 
         $stmt = $this->pdo->prepare('
-            SELECT id, nombre, logo, capitan_id, estado, fecha_creacion
+            SELECT id, nombre, logo, capitan_id, estado, motivo_solicitud,
+                   motivo_rechazo, fecha_creacion
             FROM equipos
             WHERE id = ?
             LIMIT 1
@@ -431,12 +423,29 @@ $sql = "
         $body = jsonBody();
 
         $estado = trim((string) ($body['estado'] ?? ''));
-        requerirEnum($estado, ['activo', 'inactivo'], 'estado');
+        requerirEnum($estado, ['activo', 'inactivo', 'pendiente', 'rechazado'], 'estado');
+        $motivoRechazo = trim((string) ($body['motivo_rechazo'] ?? ''));
+
+        if (mb_strlen($motivoRechazo, 'UTF-8') > 2000) {
+            jsonResponse(false, [], [
+                'error' => 'El motivo de rechazo no puede superar 2000 caracteres'
+            ], 400);
+        }
+
+        if ($estado === 'rechazado' && $motivoRechazo === '') {
+            jsonResponse(false, [], [
+                'error' => 'Debes indicar el motivo del rechazo'
+            ], 400);
+        }
 
         $stmt = $this->pdo->prepare(
-            'UPDATE equipos SET estado = ? WHERE id = ?'
+            'UPDATE equipos SET estado = ?, motivo_rechazo = ? WHERE id = ?'
         );
-        $stmt->execute([$estado, $id]);
+        $stmt->execute([
+            $estado,
+            $estado === 'rechazado' ? $motivoRechazo : null,
+            $id
+        ]);
 
         $this->verificarExistencia($id);
 

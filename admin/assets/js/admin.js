@@ -39,6 +39,12 @@ setTimeout(pbHideLoader, pbMinShow);
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    // Los datos de Inicio los pide api.js a backend/api.
+    if (typeof cargarInicio === 'function') {
+        cargarInicio();
+    }
+
+
     var shell  = document.getElementById('adminShell');
     var burger = document.getElementById('adminBurger');
     var title  = document.getElementById('adminTitle');
@@ -79,6 +85,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (window.innerWidth <= 860) {
             closeSidebar();
+        }
+
+        // Las vistas de la Etapa 2.4 piden sus datos a la API la primera vez
+        // que se abren, no todas al cargar la página.
+        if (typeof cargarVista === 'function') {
+            cargarVista(targetId);
         }
 
     }

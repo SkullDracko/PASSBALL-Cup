@@ -3,7 +3,7 @@
 // Consulta el endpoint de AFIHub que verifica si una matrícula está
 // inscrita en la actividad de fútbol (afi_id fijo).
 
-const AFI_ID_FUTBOL = 330; // <-- ajusta si cambia
+const AFI_ID_FUTBOL = 30; // afi_id real de "PASSBALL Torneo Relámpago Fútbol Rápido" (330 era el fecha_id, no el afi_id)
 
 /**
  * Devuelve los datos del estudiante si está inscrito en la AFI de fútbol,
@@ -14,12 +14,7 @@ const AFI_ID_FUTBOL = 330; // <-- ajusta si cambia
  */
 function datosJugadorSiEstaInscrito(string $matricula): ?array
 {
-    // ---- AJUSTA según el entorno ----
-    $baseUrl = 'http://localhost/AFIhub/controllers/publico_verificar_inscripcion.php';
-
-    // Producción (descomenta al desplegar, comenta la de arriba):
-    // $baseUrl = 'https://passballcup.encuestapassword2026.com/api/publico_verificar_inscripcion.php';
-    // -----------------------------------
+    $baseUrl = $_ENV['AFI_BASE_URL'];
 
     $url = $baseUrl . '?' . http_build_query([
         'afi_id'    => AFI_ID_FUTBOL,
@@ -32,10 +27,12 @@ function datosJugadorSiEstaInscrito(string $matricula): ?array
         CURLOPT_CONNECTTIMEOUT => 3,
         CURLOPT_TIMEOUT        => 5,
         CURLOPT_FAILONERROR    => false,
-        // El endpoint valida el header Origin contra su whitelist.
-        // Debe coincidir con $baseUrl de arriba: local -> local, producción -> producción.
+        // El endpoint valida el header Origin contra su whitelist y, además,
+        // requiere X-Api-Key: un secreto compartido, ya que Origin es
+        // trivialmente falsificable desde una llamada servidor-a-servidor.
         CURLOPT_HTTPHEADER     => [
-            'Origin: http://localhost', // en producción: 'Origin: https://passballcup.encuestapassword2026.com'
+            'Origin: ' . $_ENV['AFI_ORIGIN'],
+            'X-Api-Key: ' . $_ENV['AFI_API_KEY'],
         ],
     ]);
 

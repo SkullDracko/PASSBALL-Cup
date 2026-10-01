@@ -452,6 +452,7 @@ $avatarUsuario = $usuario['avatar'] ?? null;
                         <?php if ($logoUrl !== ''): ?>
 
                             <img
+                                id="equipoLogo"
                                 src="<?= htmlspecialchars($logoUrl) ?>"
                                 alt="Logo <?= htmlspecialchars($equipo['nombre']) ?>"
                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
@@ -459,7 +460,7 @@ $avatarUsuario = $usuario['avatar'] ?? null;
 
                         <?php endif; ?>
 
-                        <div class="team-logo-fallback" <?= $logoUrl !== '' ? '' : 'style="display:flex;"' ?>>
+                        <div id="equipoLogoFallback" class="team-logo-fallback" <?= $logoUrl !== '' ? '' : 'style="display:flex;"' ?>>
                             <?= htmlspecialchars(mb_strtoupper(mb_substr($equipo['nombre'], 0, 1, 'UTF-8'), 'UTF-8')) ?>
                         </div>
 
@@ -471,7 +472,7 @@ $avatarUsuario = $usuario['avatar'] ?? null;
                             PASSBALL CUP
                         </span>
 
-                        <h1>
+                        <h1 id="equipoNombre">
                             <?= htmlspecialchars($equipo['nombre']) ?>
                         </h1>
 
@@ -890,7 +891,7 @@ $avatarUsuario = $usuario['avatar'] ?? null;
 
                                     <?php if (!$jugador['lider']): ?>
 
-                                        <button class="icon-btn" title="Eliminar" onclick="removePlayer(<?= $jugador['id'] ?>)">
+                                        <button class="icon-btn" title="Eliminar" onclick="removePlayer(<?= $jugador['jugador_id'] ?>)">
                                             <i class="fa-solid fa-xmark"></i>
                                         </button>
 
@@ -1214,51 +1215,10 @@ function msg(text, ok) {
     msg._t = setTimeout(() => { el.className = 'team-msg'; }, 4000);
 }
 
-function api(action, data, cb) {
-    const body = new URLSearchParams(data);
-    body.append('action', action);
-
-    fetch('../controllers/equiposController.php', {
-        method: 'POST',
-        body: body
-    })
-    .then(r => r.json())
-    .then(cb)
-    .catch(() => msg('Error de conexión. Intenta de nuevo.', false));
-}
-
-function unirse(id) {
-    if (!confirm('¿Quieres unirte a este equipo?')) return;
-    api('unirse', { equipo_id: id }, d => {
-        msg(d.message, d.success);
-        if (d.success) setTimeout(() => location.reload(), 900);
-    });
-}
-
-function salirEquipo() {
-    if (!confirm('¿Salir de tu equipo actual?')) return;
-    api('salir', {}, d => {
-        msg(d.message, d.success);
-        if (d.success) setTimeout(() => location.reload(), 900);
-    });
-}
-
-/* =============================================================
-     AGREGAR JUGADOR
-     POST /api/equipos/{equipoId}/miembros  →  { jugador_id }
-     GET  /api/usuarios/buscar?q=…        →  candidatos
-     El tab Gestionar sólo se renderiza para el capitán, y la API
-     vuelve a validarlo con requireCapitanOAdmin().
-   ============================================================= */
-
-<?php if ($es_lider): ?>
-
 const API_BASE = '../backend/api';
 const EQUIPO_ID = <?= (int) $equipo['id'] ?>;
+const JUGADOR_ID = <?= (int) $usuario['id'] ?>;
 const EQUIPO_LLENO = <?= $equipoLleno ? 'true' : 'false' ?>;
-
-const inputAgregar = document.getElementById('agregarBusqueda');
-const boxAgregar = document.getElementById('agregarResultados');
 
 function apiRequest(url, options) {
     return fetch(url, Object.assign({ credentials: 'same-origin' }, options))
@@ -1274,6 +1234,90 @@ function apiRequest(url, options) {
             return payload.data || {};
         }));
 }
+
+apiRequest(API_BASE + '/equipos/' + EQUIPO_ID)
+    .then(({ equipo }) => {
+        if (!equipo) return;
+
+        const nombre = document.getElementById('equipoNombre');
+        const logo = document.getElementById('equipoLogo');
+        const fallback = document.getElementById('equipoLogoFallback');
+
+        if (equipo.nombre && nombre) {
+            nombre.textContent = equipo.nombre;
+            document.title = equipo.nombre + ' | PASSBALL Cup';
+        }
+
+        if (fallback && equipo.nombre) {
+            fallback.textContent = equipo.nombre.trim().charAt(0).toLocaleUpperCase('es');
+        }
+
+        if (equipo.logo && logo) {
+            logo.src = /^(https?:)?\/\//i.test(equipo.logo)
+                ? equipo.logo
+                : '../' + equipo.logo;
+            logo.alt = 'Logo ' + (equipo.nombre || 'del equipo');
+            logo.style.display = '';
+        } else if (logo && fallback) {
+            logo.remove();
+            fallback.style.display = 'flex';
+        }
+    })
+    .catch(() => {});
+
+function unirse(id) {
+    if (!confirm('¿Quieres unirte a este equipo?')) return;
+
+    apiRequest(API_BASE + '/equipos/' + id + '/miembros', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jugador_id: JUGADOR_ID })
+    })
+        .then(data => {
+            msg(data.mensaje || 'Te uniste al equipo.', true);
+            setTimeout(() => location.reload(), 900);
+        })
+        .catch(error => msg(error.message, false));
+}
+
+function salirEquipo() {
+    if (!confirm('¿Salir de tu equipo actual?')) return;
+
+    apiRequest(API_BASE + '/equipos/' + EQUIPO_ID + '/miembros/' + JUGADOR_ID + '/salida', {
+        method: 'PATCH'
+    })
+        .then(data => {
+            msg(data.mensaje || 'Saliste del equipo.', true);
+            setTimeout(() => location.reload(), 900);
+        })
+        .catch(error => msg(error.message, false));
+}
+
+function removePlayer(jugadorId) {
+    if (!confirm('¿Eliminar a este jugador del equipo?')) return;
+
+    apiRequest(API_BASE + '/equipos/' + EQUIPO_ID + '/miembros/' + jugadorId, {
+        method: 'DELETE'
+    })
+        .then(data => {
+            msg(data.mensaje || 'Jugador eliminado del equipo.', true);
+            setTimeout(() => location.reload(), 900);
+        })
+        .catch(error => msg(error.message, false));
+}
+
+/* =============================================================
+     AGREGAR JUGADOR
+     POST /api/equipos/{equipoId}/miembros  →  { jugador_id }
+     GET  /api/usuarios/buscar?q=…        →  candidatos
+     El tab Gestionar sólo se renderiza para el capitán, y la API
+     vuelve a validarlo con requireCapitanOAdmin().
+   ============================================================= */
+
+<?php if ($es_lider): ?>
+
+const inputAgregar = document.getElementById('agregarBusqueda');
+const boxAgregar = document.getElementById('agregarResultados');
 
 if (inputAgregar && boxAgregar) {
 

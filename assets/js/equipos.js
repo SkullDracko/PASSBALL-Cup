@@ -149,23 +149,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function cargarMiEquipo() {
         let loading = document.getElementById('myTeamLoading');
+        let playerSection = document.getElementById('playerTeamsSection');
         let currentUserId;
 
         solicitarApi('backend/api/auth/me')
             .then(function (data) {
-                currentUserId = data.usuario && data.usuario.id;
+                let usuario = data.usuario;
+                currentUserId = usuario && usuario.id;
 
                 if (!currentUserId) {
                     throw new Error('No se pudo identificar al usuario actual.');
                 }
+
+                let esJugadorHabilitado = usuario.rol === 'jugador'
+                    && usuario.estado === 'activo'
+                    && Number(usuario.jugador_activo) === 1;
+
+                if (playerSection) playerSection.hidden = !esJugadorHabilitado;
+                if (!esJugadorHabilitado) return null;
 
                 return solicitarApi(
                     'backend/api/jugadores/' + encodeURIComponent(currentUserId) + '/equipo-actual'
                 );
             })
             .then(function (data) {
+                if (!data) return;
+
                 let team = data.equipo;
-                console.log("Esta es la info del endpoint equipo-actual:", team);
                 let actions = document.getElementById('teamActions');
 
                 if (loading) loading.hidden = true;
@@ -181,15 +191,77 @@ document.addEventListener('DOMContentLoaded', function () {
                 let members = document.getElementById('myTeamMembers');
                 let role = document.getElementById('myTeamRole');
                 let detail = document.getElementById('myTeamDetail');
-                let estado = document.getElementById('myTeamTournamentStatus');
-                
+                let registrationStatus = document.getElementById('myTeamRegistrationStatus');
+                let rejectionReason = document.getElementById('myTeamRejectionReason');
+                let rejectionReasonText = document.getElementById('myTeamRejectionReasonText');
+                let tournamentStatus = document.getElementById('myTeamTournamentStatus');
 
                 if (card) card.hidden = false;
                 if (name) name.textContent = team.nombre || 'Equipo sin nombre';
                 if (logo) crearLogoEquipo(logo, team, 'no-logo');
                 if (members) members.appendChild(document.createTextNode(' Participantes: ' + (team.total_miembros || 0)));
                 if (detail) detail.href = 'equipos/detalle.php?id=' + encodeURIComponent(team.id);
-                if (estado) estado.textContent = 'Estado en torneo: ' + (team.estado || 'Desconocido');
+                if (registrationStatus) {
+                    let status = String(team.estado || '').toLocaleLowerCase();
+                    let applicationStatus = String(team.estado_postulacion || '').toLocaleLowerCase();
+                    let teamRejected = status === 'rechazado';
+                    let applicationRejected = applicationStatus === 'rechazado';
+                    let pending = status === 'pendiente';
+                    let inactive = status === 'inactivo' || teamRejected;
+                    let hasRejection = teamRejected || applicationRejected;
+                    let statusLabel = registrationStatus.querySelector('.team-registration-label');
+                    let statusIcon = registrationStatus.querySelector('i');
+
+                    registrationStatus.classList.toggle('pendiente', pending);
+                    registrationStatus.classList.toggle('inactivo', inactive);
+
+                    if (statusLabel) {
+                        statusLabel.textContent = pending
+                            ? 'Equipo pendiente de aceptación'
+                            : (inactive
+                                ? 'Equipo inactivo'
+                                : (status === 'activo' ? 'Equipo registrado' : 'Estado del equipo desconocido'));
+                    }
+
+                    if (statusIcon) {
+                        statusIcon.className = pending
+                            ? 'fa-solid fa-clock'
+                            : (inactive
+                                ? 'fa-solid fa-circle-xmark'
+                                : 'fa-solid fa-circle-check');
+                    }
+
+                    if (rejectionReason) {
+                        rejectionReason.hidden = !hasRejection;
+                    }
+
+                    if (rejectionReasonText && hasRejection) {
+                        let reason = teamRejected
+                            ? team.motivo_rechazo
+                            : team.motivo_rechazo_postulacion;
+                        rejectionReasonText.textContent = reason || 'Sin motivo registrado.';
+                    }
+                }
+
+                if (tournamentStatus) {
+                    let applicationStatus = String(team.estado_postulacion || '').toLocaleLowerCase();
+                    let applicationLabels = {
+                        pendiente: 'Estado de postulación: Pendiente',
+                        aprobado: 'Estado de postulación: Aprobada',
+                        rechazado: 'Estado de postulación: Rechazada',
+                        retirado: 'Estado de postulación: Retirada'
+                    };
+                    let applicationClasses = ['pendiente', 'aprobado', 'rechazado', 'retirado', 'sin-postulacion'];
+
+                    applicationClasses.forEach(function (className) {
+                        tournamentStatus.classList.remove(className);
+                    });
+                    tournamentStatus.classList.add(applicationLabels[applicationStatus]
+                        ? applicationStatus
+                        : 'sin-postulacion');
+                    tournamentStatus.textContent = applicationLabels[applicationStatus]
+                        || 'Sin postulación';
+                }
                 if (role) {
                     let roleIcon = document.createElement('i');
                     roleIcon.className = 'fa-solid fa-star';
@@ -703,10 +775,16 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
 
             let nombre = document.getElementById('nombre_equipo').value.trim();
+            let motivoSolicitud = document.getElementById('motivo_solicitud').value.trim();
             let archivo = document.getElementById('logo_equipo').files[0];
 
             if (nombre.length < 3) {
                 mostrarErrorRegister('El nombre debe tener al menos 3 caracteres.');
+                return;
+            }
+
+            if (!motivoSolicitud) {
+                mostrarErrorRegister('Escribe el motivo para que acepten a tu equipo.');
                 return;
             }
 
@@ -718,6 +796,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let fd = new FormData();
 
             fd.append('nombre', nombre);
+            fd.append('motivo_solicitud', motivoSolicitud);
             fd.append('logo', archivo);
 
             miembrosHidden.querySelectorAll('input[name="integrantes[]"]')

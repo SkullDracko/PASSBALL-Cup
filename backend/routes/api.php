@@ -9,6 +9,11 @@ $router->get(
     [TestController::class, 'index']
 );
 
+$router->get(
+    '/api/test/jugador',
+    [TestController::class, 'jugador']
+);
+
 // --- auth / admin-auth ---
 $router->post('/api/auth/login', [AuthController::class, 'login']); 
 $router->post('/api/auth/logout', [AuthController::class, 'logout']);
@@ -27,6 +32,23 @@ $router->get('/api/usuarios/{id}', [UsuariosController::class, 'detalle']);
 $router->patch('/api/usuarios/{id}', [UsuariosController::class, 'actualizarAvatar']);
 $router->patch('/api/usuarios/{id}/estado', [UsuariosController::class, 'cambiarEstado']);
 $router->patch('/api/usuarios/{id}/jugador-activo', [UsuariosController::class, 'cambiarJugadorActivo']);
+
+// Lecturas que el panel admin necesita y la API no expone para admin.
+// Las de jugador exigian requireAuthAPI (401) y el conteo de votos no
+// existia. Todas con requireAdminAPI.
+$router->get('/api/admin/usuarios', [AdminUsuariosController::class, 'listar']);
+$router->get('/api/admin/votos-resumen', [AdminPanelController::class, 'votosResumen']);
+$router->get('/api/admin/equipos/{equipoId}/miembros', [AdminPanelController::class, 'miembrosEquipo']);
+$router->get('/api/admin/torneos/{torneoId}/categorias-voto', [AdminPanelController::class, 'categoriasVoto']);
+$router->get('/api/admin/torneos/{torneoId}/candidatos-voto', [AdminPanelController::class, 'candidatosVoto']);
+$router->get('/api/admin/torneos/{torneoId}/jugadores', [AdminPanelController::class, 'jugadoresTorneo']);
+
+// Comunidad: el legacy hacia esto con formularios POST a
+// admin/controllers/comunidad.php y mensajes en la sesion.
+$router->get('/api/admin/posts', [AdminComunidadController::class, 'listar']);
+$router->post('/api/admin/posts', [AdminComunidadController::class, 'crear']);
+$router->patch('/api/admin/posts/{id}/fijado', [AdminComunidadController::class, 'toggleFijado']);
+$router->delete('/api/admin/posts/{id}', [AdminComunidadController::class, 'eliminar']);
 
 $router->get('/api/administradores', [AdministradoresController::class, 'listar']);
 $router->post('/api/administradores', [AdministradoresController::class, 'crear']);

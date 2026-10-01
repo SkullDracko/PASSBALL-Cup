@@ -10,8 +10,10 @@ require_once __DIR__ . '/../config/app.php';
 |--------------------------------------------------------------------------
 | Si ya existe una sesión administrativa
 |--------------------------------------------------------------------------
+| Se comprueba admin_id, la unica clave de sesión que escribe la API.
+| Antes se miraba $_SESSION['admin'], que solo rellenaba el login legacy.
 */
-if (isset($_SESSION['admin'])) {
+if (!empty($_SESSION['admin_id'])) {
     header('Location: dashboard.php');
     exit;
 }
@@ -27,7 +29,7 @@ $error = $_GET['error'] ?? '';
 
     <title>Acceso Administrativo | <?= TORNEO_NOMBRE ?></title>
 
-    <link rel="icon" type="image/png" href="../assets/img/passball-cup.png">
+    <link rel="icon" type="image/png" href="<?= assetUrl('assets/img/passball-cup.png') ?>">
 
     <!-- Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,7 +43,7 @@ $error = $_GET['error'] ?? '';
           href="../assets/css/fa/all.min.css">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="assets/css/admin-login.css">
+    <link rel="stylesheet" href="<?= assetUrl('admin/assets/css/admin-login.css') ?>">
 </head>
 
 <body>
@@ -68,7 +70,7 @@ $error = $_GET['error'] ?? '';
         <div class="institutional-logos">
 
             <img
-                src="../assets/img/facmed.png"
+                src="<?= assetUrl('assets/img/facmed.png') ?>"
                 alt="Facultad de Medicina"
                 class="logo-facmed"
             >
@@ -76,7 +78,7 @@ $error = $_GET['error'] ?? '';
             <span class="logo-divider"></span>
 
             <img
-                src="../assets/img/medprev.png"
+                src="<?= assetUrl('assets/img/medprev.png') ?>"
                 alt="Medicina Preventiva y Salud Pública"
                 class="logo-medprev"
             >
@@ -84,7 +86,7 @@ $error = $_GET['error'] ?? '';
             <span class="logo-divider"></span>
 
             <img
-                src="../assets/img/password.png"
+                src="<?= assetUrl('assets/img/password.png') ?>"
                 alt="PASSWORD"
                 class="logo-password"
             >
@@ -99,7 +101,7 @@ $error = $_GET['error'] ?? '';
         <div class="passball-logo">
 
             <img
-                src="../assets/img/passball-cup.png"
+                src="<?= assetUrl('assets/img/passball-cup.png') ?>"
                 alt="PASSBALL Cup"
             >
 
@@ -268,7 +270,7 @@ $error = $_GET['error'] ?? '';
 
             <!-- Volver -->
 
-            <a href="../login.php" class="back-login">
+            <a href="<?= assetUrl('login.php') ?>" class="back-login">
 
                 <i class="fa-solid fa-arrow-left"></i>
 
@@ -301,7 +303,10 @@ $error = $_GET['error'] ?? '';
 
 
 <!-- JS -->
-<script src="assets/js/admin-login.js"></script>
+<script>window.PASSBALL_API = <?= apiUrlJs() ?>;</script>
+
+<script src="<?= assetUrl('admin/assets/js/api.js') ?>"></script>
+<script src="<?= assetUrl('admin/assets/js/admin-login.js') ?>"></script>
 
 </body>
 </html>

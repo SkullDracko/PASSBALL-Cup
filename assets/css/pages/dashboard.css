@@ -2404,6 +2404,20 @@ a {
     color: #2b9650;
 }
 
+.registered.pendiente {
+
+    background: #fff6e5;
+
+    color: #a05b00;
+}
+
+.registered.inactivo {
+
+    background: #fdeeee;
+
+    color: #b3261e;
+}
+
 .registered i {
 
     margin-right: 5px;
@@ -2416,6 +2430,26 @@ a {
     color: var(--text-light);
 
     font-size: 13px;
+}
+
+.team-rejection-reason {
+
+    margin-top: 10px;
+
+    padding-left: 10px;
+
+    border-left: 3px solid #b3261e;
+
+    color: #7f1d1d;
+
+    font-size: 13px;
+}
+
+.team-rejection-reason p {
+
+    margin: 3px 0 0;
+
+    white-space: pre-wrap;
 }
 
 .team-role i {
@@ -3838,6 +3872,22 @@ a {
     background: #fdeeee;
 
     color: #b3261e;
+
+}
+
+.postulacion-badge.retirado {
+
+    background: #f1f2f4;
+
+    color: #525866;
+
+}
+
+.postulacion-badge.sin-postulacion {
+
+    background: #f1f2f4;
+
+    color: #525866;
 
 }
 

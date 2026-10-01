@@ -22,9 +22,20 @@ class PartidosController
                 $where[] = $campo === 'ronda_id'
                     ? 'p.ronda_id = ?'
                     : '(p.equipo_local_id = ? OR p.equipo_visitante_id = ?)';
-                $id = $this->obtenerId(['id' => $filtros[$campo]], $campo);
+                // obtenerId() busca la clave $campo, no 'id': se le pasa el
+                // nombre del campo o siempre devolvía null y acababa en 400.
+                $id = $this->obtenerId([$campo => $filtros[$campo]], $campo);
                 $values = $campo === 'ronda_id' ? [...$values, $id] : [...$values, $id, $id];
             }
+        }
+
+        // Filtra por torneo a traves de la ronda. Sin esto no habria forma de
+        // acotar el listado a un torneo, porque no hay columna torneo_id en
+        // partidos (ver 1.2: el torneo vive en torneo_rondas).
+        if (isset($filtros['torneo_id']) && $filtros['torneo_id'] !== '') {
+            $torneoId = $this->obtenerId(['torneo_id' => $filtros['torneo_id']], 'torneo_id');
+            $where[] = 'r.torneo_id = ?';
+            $values[] = $torneoId;
         }
 
         if (!empty($filtros['estado'])) {
@@ -54,8 +65,15 @@ class PartidosController
         requireAdminAPI();
         $body = jsonBody();
         $rondaId = $this->obtenerId($body, 'ronda_id');
-        $posicion = $this->obtenerPositivo($body['posicion'] ?? null, 'posicion');
         $this->verificarRonda($rondaId);
+
+        // posicion es NOT NULL y el formulario la rotula "(auto)". Antes se
+        // exigia un entero positivo, asi que dejar el campo vacio (que es lo
+        // que el rotulo invita a hacer) rebotaba con 422. Se calcula la
+        // siguiente posicion libre dentro de la ronda.
+        $posicion = ($body['posicion'] === null || $body['posicion'] === '')
+            ? $this->siguientePosicion($rondaId)
+            : $this->obtenerPositivo($body['posicion'], 'posicion');
 
         $equipoLocal = $this->idOpcional($body['equipo_local_id'] ?? null, 'equipo_local_id');
         $equipoVisitante = $this->idOpcional($body['equipo_visitante_id'] ?? null, 'equipo_visitante_id');
@@ -147,9 +165,15 @@ class PartidosController
         $body = jsonBody();
         $golesLocal = $this->obtenerNoNegativo($body['goles_local'] ?? null, 'goles_local');
         $golesVisitante = $this->obtenerNoNegativo($body['goles_visitante'] ?? null, 'goles_visitante');
-        $penalesLocal = $this->obtenerNoNegativo($body['penales_local'] ?? 0, 'penales_local');
-        $penalesVisitante = $this->obtenerNoNegativo($body['penales_visitante'] ?? 0, 'penales_visitante');
+        $penalesLocal = $this->obtenerEnteroONull($body['penales_local'] ?? null, 'penales_local');
+        $penalesVisitante = $this->obtenerEnteroONull($body['penales_visitante'] ?? null, 'penales_visitante');
         $ganadorId = $this->idOpcional($body['ganador_id'] ?? null, 'ganador_id');
+
+        $estado = null;
+        if (array_key_exists('estado', $body)) {
+            $estado = (string) $body['estado'];
+            requerirEnum($estado, ['programado', 'en_curso', 'finalizado', 'cancelado'], 'estado');
+        }
 
         $stmt = $this->pdo->prepare('SELECT equipo_local_id, equipo_visitante_id FROM partidos WHERE id = ?');
         $stmt->execute([$id]);
@@ -163,6 +187,12 @@ class PartidosController
             WHERE id = ?
         ');
         $stmt->execute([$golesLocal, $golesVisitante, $penalesLocal, $penalesVisitante, $ganadorId, $id]);
+
+        if ($estado !== null) {
+            $stmt = $this->pdo->prepare('UPDATE partidos SET estado = ? WHERE id = ?');
+            $stmt->execute([$estado, $id]);
+        }
+
         jsonResponse(true, ['mensaje' => 'Resultado registrado correctamente']);
     }
 
@@ -214,11 +244,35 @@ class PartidosController
     }
     private function obtenerNoNegativo($valor, string $campo, bool $estricto = false): int
     {
-        if (!filter_var($valor, FILTER_VALIDATE_INT) || (int) $valor < ($estricto ? 1 : 0)) {
+        // filter_var devuelve int(0) para el cero, y !int(0) es true: con el
+        // operador ! un 0 caia siempre en el error. Se compara contra false,
+        // que es lo que devuelve filter_var cuando SI hay error.
+        if (filter_var($valor, FILTER_VALIDATE_INT) === false
+            || (int) $valor < ($estricto ? 1 : 0)
+            || (int) $valor > 9999) {
             jsonResponse(false, [], ['error' => "{$campo} debe ser un entero válido"], 422);
         }
         return (int) $valor;
     }
+
+    private function obtenerEnteroONull($valor, string $campo): ?int
+    {
+        // Para los penales: sin tanda el valor es NULL, como en la siembra.
+        // Antes el "?? 0" convertia un null en 0 y el 0 rebotaba, con lo que
+        // el formulario de resultados no se podia guardar nunca.
+        if ($valor === null || $valor === '') return null;
+        if (filter_var($valor, FILTER_VALIDATE_INT) === false || (int) $valor < 0 || (int) $valor > 9999) {
+            jsonResponse(false, [], ['error' => "{$campo} debe ser un entero válido o null"], 422);
+        }
+        return (int) $valor;
+    }
+    private function siguientePosicion(int $rondaId): int
+    {
+        $stmt = $this->pdo->prepare('SELECT COALESCE(MAX(posicion), 0) + 1 FROM partidos WHERE ronda_id = ?');
+        $stmt->execute([$rondaId]);
+        return (int) $stmt->fetchColumn();
+    }
+
     private function verificarRonda(int $rondaId): void
     {
         $stmt = $this->pdo->prepare('SELECT id FROM torneo_rondas WHERE id = ? LIMIT 1');

@@ -1,3 +1,10 @@
+-- Las tablas de migracion_admin.sql van primero y en orden de dependencia.
+-- Si no, DROP TABLE usuarios falla con ERROR 1451 porque posts y
+-- post_reacciones la referencian, el script aborta en la linea 14 y deja
+-- la base a medias: 13 tablas borradas, usuarios intacta, datos perdidos.
+DROP TABLE IF EXISTS post_reacciones;
+DROP TABLE IF EXISTS posts;
+
 DROP TABLE IF EXISTS torneo_votos;
 DROP TABLE IF EXISTS torneo_categoria_candidatos;
 DROP TABLE IF EXISTS torneo_categorias_voto;
@@ -12,7 +19,13 @@ DROP TABLE IF EXISTS equipo_miembros;
 DROP TABLE IF EXISTS equipos;
 DROP TABLE IF EXISTS administradores;
 DROP TABLE IF EXISTS usuarios;
+-- Comentario para subir cambios */
 
+-- Desactivar la comprobacion evita que el orden de los DROP importe y hace
+-- que este script se pueda reejecutar las veces que haga falta.
+SET FOREIGN_KEY_CHECKS = 0;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE usuarios (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -22,7 +35,10 @@ CREATE TABLE usuarios (
   apellidop VARCHAR(100) DEFAULT '',
   apellidom VARCHAR(100) DEFAULT '',
   semestre INT DEFAULT NULL,
-  rol ENUM('usuario','jugador') NOT NULL DEFAULT 'usuario',
+  -- 'administrador' identifica las filas de usuarios que corresponden al
+  -- equipo organizador al publicar en Comunidad. En instalaciones viejas,
+  -- migracion_admin.sql punto 5 amplia este enum.
+  rol ENUM('usuario','jugador','administrador') NOT NULL DEFAULT 'usuario',
   avatar VARCHAR(255),
   jugador_activo BOOLEAN NOT NULL DEFAULT TRUE, -- Indica si el jugador puede participar en los partidos (al terminar el afiliado, debería de ponerse como 0)
   estado ENUM('activo','inactivo') NOT NULL DEFAULT 'activo', -- Sirve para habilitar o deshabilitar al usuario en el sistema
@@ -43,8 +59,11 @@ CREATE TABLE equipos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   logo VARCHAR(255),
+  descripcion VARCHAR(255),
   capitan_id INT NOT NULL,
-  estado ENUM('activo','inactivo', 'pendiente') NOT NULL DEFAULT 'pendiente',
+  estado ENUM('activo','inactivo', 'pendiente', 'rechazado') NOT NULL DEFAULT 'pendiente',
+  motivo_solicitud TEXT NULL,
+  motivo_rechazo TEXT NULL,
   fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   CONSTRAINT fk_equipos_capitan
@@ -132,6 +151,7 @@ CREATE TABLE torneo_equipos (
   fecha_aprobacion TIMESTAMP NULL,
 
   aprobado_por INT NULL,
+  motivo_rechazo TEXT NULL,
 
   CONSTRAINT fk_te_torneo
     FOREIGN KEY (torneo_id)

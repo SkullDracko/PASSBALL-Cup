@@ -10,6 +10,13 @@
  * Requiere: Apache/XAMPP corriendo en http://localhost y BD `passballcup` cargada.
  */
 
+// Solo CLI. Este script crea y borra filas reales en la BD: servirlo por HTTP
+// permitiría a un anónimo escribir en la base y además discloses fixtures.
+if (php_sapi_name() !== 'cli') {
+    http_response_code(403);
+    exit;
+}
+
 require __DIR__ . '/../config/app.php';
 require __DIR__ . '/../core/db.php';
 

@@ -20,7 +20,27 @@ $_ENV['DB_USER'] = $_ENV['DB_USER'] ?? 'root';
 $_ENV['DB_PASS'] = $_ENV['DB_PASS'] ?? '';
 
 $_ENV['APP_ENV'] = $_ENV['APP_ENV'] ?? 'local'; // local | production
-$_ENV['APP_DEBUG'] = $_ENV['APP_DEBUG'] ?? '1';  // '1' muestra errores detallados
+// APP_DEBUG=1 imprime la traza PDO completa (con DSN y nombre de la base) a
+// cualquier llamador anónimo en un 500. Por defecto apagado, también en local:
+// quien lo necesite lo enciende en .env (S3).
+$_ENV['APP_DEBUG'] = $_ENV['APP_DEBUG'] ?? '0';
+
+// Integración con AFIHub (verificación de inscripción de jugadores).
+// AFI_API_KEY debe coincidir con el secreto configurado en el endpoint de
+// AFIHub; sin él, cualquiera puede llamar ese endpoint falsificando el
+// header Origin y obtener datos de estudiantes (Origin no es un mecanismo
+// de autenticación real para llamadas servidor-a-servidor).
+$_ENV['AFI_API_KEY'] = $_ENV['AFI_API_KEY'] ?? 'CAMBIA-ESTA-LLAVE-EN-.env';
+$_ENV['AFI_BASE_URL'] = $_ENV['AFI_BASE_URL'] ?? (
+    $_ENV['APP_ENV'] === 'production'
+        ? 'https://passballcup.encuestapassword2026.com/api/publico_verificar_inscripcion.php'
+        : 'http://localhost/AFIhub/controllers/publico_verificar_inscripcion.php'
+);
+$_ENV['AFI_ORIGIN'] = $_ENV['AFI_ORIGIN'] ?? (
+    $_ENV['APP_ENV'] === 'production'
+        ? 'https://passballcup.encuestapassword2026.com'
+        : 'http://localhost'
+);
 
 error_reporting($_ENV['APP_DEBUG'] === '1' ? E_ALL : 0);
 ini_set('display_errors', $_ENV['APP_DEBUG'] === '1' ? '1' : '0');
