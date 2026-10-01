@@ -1,0 +1,202 @@
+<section class="partidos-view" aria-labelledby="partidos-title">
+    <header class="partidos-header">
+        <div class="partidos-header__copy">
+            <p class="partidos-kicker" id="partidos-kicker">Simulación de demostración</p>
+            <h1 id="partidos-title">PASSBALLCUP</h1>
+            <p class="partidos-subtitle">Cuadro de eliminación directa</p>
+        </div>
+
+        <div class="bracket-tournament-picker" id="bracket-tournament-picker" hidden>
+            <label for="bracket-tournament">Torneo</label>
+            <select id="bracket-tournament" aria-describedby="bracket-feedback" disabled>
+                <option value="">Cargando torneos...</option>
+            </select>
+        </div>
+    </header>
+
+    <div class="bracket-feedback" id="bracket-feedback" role="status" aria-live="polite">
+        Fixture de demostración. Los resultados reales se consultan al abrir esta sección.
+    </div>
+
+    <button class="bracket-retry" id="bracket-retry" type="button" hidden>
+        Reintentar
+    </button>
+
+    <p class="bracket-empty" id="bracket-empty" hidden></p>
+
+    <div
+        class="bracket-scroll"
+        id="bracket-scroll"
+        role="region"
+        aria-label="Cuadro de eliminación directa de PASSBALLCUP: cuartos de final, semifinales y final"
+        tabindex="0"
+    >
+        <div class="bracket-board" id="bracket-board">
+            <svg
+                class="bracket-connectors"
+                id="bracket-connectors"
+                viewBox="0 0 944 580"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+                focusable="false"
+            >
+                <path d="M272 116H304V182H336M272 248H304V182H336" />
+                <path d="M272 380H304V446H336M272 512H304V446H336" />
+                <path d="M608 182H640V314H672M608 446H640V314H672" />
+            </svg>
+
+            <section class="bracket-round bracket-round--quarterfinal" aria-labelledby="bracket-round-quarterfinal">
+                <header class="bracket-round__header">
+                    <h2 id="bracket-round-quarterfinal">Cuartos de final</h2>
+                    <span class="bracket-round__count">4 partidos</span>
+                </header>
+
+                <ol class="bracket-round__matches">
+                    <li>
+                        <article class="bracket-match" data-match-id="demo-qf-1" data-position="1" aria-labelledby="demo-match-qf-1">
+                            <h3 class="bracket-match__title" id="demo-match-qf-1">Partido 1</h3>
+                            <ol class="bracket-match__teams" aria-label="Equipos y resultado">
+                                <li class="bracket-team is-winner">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">Real Madrid</span></span>
+                                    <span class="bracket-team__score" aria-label="5 goles">5</span>
+                                    <span class="bracket-team__outcome">Avanza</span>
+                                </li>
+                                <li class="bracket-team">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">PSG</span></span>
+                                    <span class="bracket-team__score" aria-label="2 goles">2</span>
+                                    <span class="bracket-team__outcome" aria-hidden="true"></span>
+                                </li>
+                            </ol>
+                        </article>
+                    </li>
+
+                    <li>
+                        <article class="bracket-match" data-match-id="demo-qf-2" data-position="2" aria-labelledby="demo-match-qf-2">
+                            <h3 class="bracket-match__title" id="demo-match-qf-2">Partido 2</h3>
+                            <ol class="bracket-match__teams" aria-label="Equipos y resultado">
+                                <li class="bracket-team is-winner">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">Barcelona</span></span>
+                                    <span class="bracket-team__score" aria-label="3 goles">3</span>
+                                    <span class="bracket-team__outcome">Avanza</span>
+                                </li>
+                                <li class="bracket-team">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">Borussia Dortmund</span></span>
+                                    <span class="bracket-team__score" aria-label="1 gol">1</span>
+                                    <span class="bracket-team__outcome" aria-hidden="true"></span>
+                                </li>
+                            </ol>
+                        </article>
+                    </li>
+
+                    <li>
+                        <article class="bracket-match" data-match-id="demo-qf-3" data-position="3" aria-labelledby="demo-match-qf-3">
+                            <h3 class="bracket-match__title" id="demo-match-qf-3">Partido 3</h3>
+                            <ol class="bracket-match__teams" aria-label="Equipos y resultado">
+                                <li class="bracket-team">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">Bayern Munich</span></span>
+                                    <span class="bracket-team__score" aria-label="1 gol">1</span>
+                                    <span class="bracket-team__outcome" aria-hidden="true"></span>
+                                </li>
+                                <li class="bracket-team is-winner">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">Everton</span></span>
+                                    <span class="bracket-team__score" aria-label="2 goles">2</span>
+                                    <span class="bracket-team__outcome">Avanza</span>
+                                </li>
+                            </ol>
+                        </article>
+                    </li>
+
+                    <li>
+                        <article class="bracket-match" data-match-id="demo-qf-4" data-position="4" aria-labelledby="demo-match-qf-4">
+                            <h3 class="bracket-match__title" id="demo-match-qf-4">Partido 4</h3>
+                            <ol class="bracket-match__teams" aria-label="Equipos y resultado">
+                                <li class="bracket-team">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">Monterrey</span></span>
+                                    <span class="bracket-team__score" aria-label="2 goles">2</span>
+                                    <span class="bracket-team__outcome" aria-hidden="true"></span>
+                                </li>
+                                <li class="bracket-team is-winner">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">Tigres</span></span>
+                                    <span class="bracket-team__score" aria-label="3 goles">3</span>
+                                    <span class="bracket-team__outcome">Avanza</span>
+                                </li>
+                            </ol>
+                        </article>
+                    </li>
+                </ol>
+            </section>
+
+            <section class="bracket-round bracket-round--semifinal" aria-labelledby="bracket-round-semifinal">
+                <header class="bracket-round__header">
+                    <h2 id="bracket-round-semifinal">Semifinales</h2>
+                    <span class="bracket-round__count">2 partidos</span>
+                </header>
+
+                <ol class="bracket-round__matches">
+                    <li>
+                        <article class="bracket-match" data-match-id="demo-sf-1" data-position="1" data-origin-local="demo-qf-1" data-origin-visitor="demo-qf-2" aria-labelledby="demo-match-sf-1">
+                            <h3 class="bracket-match__title" id="demo-match-sf-1">Partido 5</h3>
+                            <ol class="bracket-match__teams" aria-label="Equipos y resultado">
+                                <li class="bracket-team is-winner">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">Real Madrid</span></span>
+                                    <span class="bracket-team__score" aria-label="4 goles">4</span>
+                                    <span class="bracket-team__outcome">Avanza</span>
+                                </li>
+                                <li class="bracket-team">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">Barcelona</span></span>
+                                    <span class="bracket-team__score" aria-label="2 goles">2</span>
+                                    <span class="bracket-team__outcome" aria-hidden="true"></span>
+                                </li>
+                            </ol>
+                        </article>
+                    </li>
+
+                    <li>
+                        <article class="bracket-match" data-match-id="demo-sf-2" data-position="2" data-origin-local="demo-qf-4" data-origin-visitor="demo-qf-3" aria-labelledby="demo-match-sf-2">
+                            <h3 class="bracket-match__title" id="demo-match-sf-2">Partido 6</h3>
+                            <ol class="bracket-match__teams" aria-label="Equipos y resultado">
+                                <li class="bracket-team is-winner">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">Tigres</span></span>
+                                    <span class="bracket-team__score" aria-label="2 goles">2</span>
+                                    <span class="bracket-team__outcome">Avanza</span>
+                                </li>
+                                <li class="bracket-team">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">Everton</span></span>
+                                    <span class="bracket-team__score" aria-label="1 gol">1</span>
+                                    <span class="bracket-team__outcome" aria-hidden="true"></span>
+                                </li>
+                            </ol>
+                        </article>
+                    </li>
+                </ol>
+            </section>
+
+            <section class="bracket-round bracket-round--final" aria-labelledby="bracket-round-final">
+                <header class="bracket-round__header">
+                    <h2 id="bracket-round-final">Final</h2>
+                    <span class="bracket-round__count">1 partido</span>
+                </header>
+
+                <ol class="bracket-round__matches">
+                    <li>
+                        <article class="bracket-match bracket-match--final" data-match-id="demo-final" data-position="1" data-origin-local="demo-sf-1" data-origin-visitor="demo-sf-2" aria-labelledby="demo-match-final">
+                            <h3 class="bracket-match__title" id="demo-match-final">Partido 7</h3>
+                            <ol class="bracket-match__teams" aria-label="Equipos y resultado">
+                                <li class="bracket-team">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">Real Madrid</span></span>
+                                    <span class="bracket-team__score" aria-label="2 goles">2</span>
+                                    <span class="bracket-team__outcome" aria-hidden="true"></span>
+                                </li>
+                                <li class="bracket-team is-winner is-champion">
+                                    <span class="bracket-team__identity"><span class="bracket-team__name">Tigres</span></span>
+                                    <span class="bracket-team__score" aria-label="3 goles">3</span>
+                                    <span class="bracket-team__outcome">Campeón</span>
+                                </li>
+                            </ol>
+                        </article>
+                    </li>
+                </ol>
+            </section>
+        </div>
+    </div>
+</section>

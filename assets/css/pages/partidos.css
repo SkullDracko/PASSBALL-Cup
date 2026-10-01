@@ -964,3 +964,450 @@
         padding: 0 10px 10px;
     }
 }
+
+#view-partidos {
+    width: 100%;
+    min-width: 0;
+}
+
+#view-partidos .partidos-view {
+    --bracket-card-width: 17rem;
+    --bracket-column-gap: 4rem;
+    --bracket-row-height: 7rem;
+    --bracket-row-gap: 1.25rem;
+    --bracket-line: #c9c0d4;
+
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    min-width: 0;
+}
+
+#view-partidos .partidos-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    align-items: center;
+    padding: 1.25rem;
+    color: #fff;
+    background: linear-gradient(112deg, #241044 0%, #32135f 76%, #4b2780 100%);
+    border-left: 4px solid var(--orange);
+    border-radius: 8px;
+}
+
+#view-partidos .partidos-kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+    color: #ffc18b;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+#view-partidos .partidos-kicker::before {
+    width: 0.45rem;
+    height: 0.45rem;
+    flex: 0 0 auto;
+    content: "";
+    background: var(--orange);
+    border-radius: 50%;
+}
+
+#view-partidos .partidos-header h1 {
+    margin: 0;
+    color: #fff;
+    font-size: 1.75rem;
+    font-weight: 900;
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+}
+
+#view-partidos .partidos-subtitle {
+    margin-top: 0.4rem;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+#view-partidos .bracket-tournament-picker {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+#view-partidos .bracket-tournament-picker[hidden],
+#view-partidos .bracket-retry[hidden],
+#view-partidos .bracket-empty[hidden],
+#view-partidos .bracket-scroll[hidden] {
+    display: none !important;
+}
+
+#view-partidos .bracket-tournament-picker label {
+    color: #ffe4ce;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+#view-partidos .bracket-tournament-picker select {
+    width: 100%;
+    min-width: 0;
+    min-height: 2.875rem;
+    padding: 0.55rem 2.25rem 0.55rem 0.75rem;
+    color: #24164a;
+    background: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.85rem;
+}
+
+#view-partidos .bracket-tournament-picker select:disabled {
+    color: #6e6680;
+    background: #f1eff4;
+}
+
+#view-partidos .bracket-feedback {
+    min-height: 1.25rem;
+    color: #61586d;
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+#view-partidos .bracket-feedback[data-state="loading"] {
+    color: #4b2780;
+}
+
+#view-partidos .bracket-feedback[data-state="error"] {
+    color: #a43125;
+    font-weight: 700;
+}
+
+#view-partidos .bracket-retry {
+    align-self: flex-start;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.9rem;
+    color: #fff;
+    background: #4b2780;
+    border: 0;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#view-partidos .bracket-retry:hover {
+    background: #32135f;
+}
+
+#view-partidos .bracket-empty {
+    padding: 1rem 0;
+    color: #61586d;
+    border-top: 1px solid #ded9e6;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+#view-partidos .bracket-scroll {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scrollbar-color: #897a9c #e8e3ef;
+    scrollbar-width: thin;
+}
+
+#view-partidos .bracket-scroll:focus-visible {
+    outline: 3px solid var(--orange);
+    outline-offset: 3px;
+}
+
+#view-partidos .bracket-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+
+#view-partidos .bracket-scroll::-webkit-scrollbar-track {
+    background: #e8e3ef;
+    border-radius: 8px;
+}
+
+#view-partidos .bracket-scroll::-webkit-scrollbar-thumb {
+    background: #897a9c;
+    border: 2px solid #e8e3ef;
+    border-radius: 8px;
+}
+
+#view-partidos .bracket-board {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: repeat(var(--bracket-round-count, 3), var(--bracket-card-width));
+    column-gap: var(--bracket-column-gap);
+    align-items: start;
+    width: max-content;
+    min-width: 0;
+    margin-inline: auto;
+    padding: 0 0 0.75rem;
+}
+
+#view-partidos .bracket-connectors {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+}
+
+#view-partidos .bracket-connectors path {
+    fill: none;
+    stroke: var(--bracket-line);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+#view-partidos .bracket-round {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+    scroll-snap-align: start;
+}
+
+#view-partidos .bracket-round__header {
+    display: flex;
+    height: 3rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0;
+    border-bottom: 1px solid #dcd5e5;
+}
+
+#view-partidos .bracket-round__header h2 {
+    min-width: 0;
+    color: #30213f;
+    font-size: 0.92rem;
+    font-weight: 800;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+#view-partidos .bracket-round__count {
+    flex: 0 0 auto;
+    color: #746b83;
+    font-size: 0.68rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+#view-partidos .bracket-round__matches {
+    display: grid;
+    grid-auto-rows: minmax(var(--bracket-row-height), auto);
+    gap: 1rem;
+    margin: 0;
+    padding: 0.75rem 0 0;
+    list-style: none;
+}
+
+#view-partidos .bracket-round--quarterfinal .bracket-round__matches,
+#view-partidos .bracket-round--semifinal .bracket-round__matches,
+#view-partidos .bracket-round--final .bracket-round__matches {
+    grid-template-rows: repeat(4, minmax(var(--bracket-row-height), auto));
+    grid-auto-rows: auto;
+    row-gap: var(--bracket-row-gap);
+}
+
+#view-partidos .bracket-round--semifinal .bracket-round__matches > li:first-child {
+    grid-row: 1 / span 2;
+    align-self: center;
+}
+
+#view-partidos .bracket-round--semifinal .bracket-round__matches > li:last-child {
+    grid-row: 3 / span 2;
+    align-self: center;
+}
+
+#view-partidos .bracket-round--final .bracket-round__matches > li:first-child {
+    grid-row: 2 / span 2;
+    align-self: center;
+}
+
+#view-partidos .bracket-round__matches > li {
+    min-width: 0;
+}
+
+#view-partidos .bracket-match {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 0.2rem;
+    width: 100%;
+    min-height: var(--bracket-row-height);
+    padding: 0.45rem 0.65rem 0.4rem;
+    background: #fff;
+    border: 1px solid #ded9e6;
+    border-radius: 7px;
+    box-shadow: 0 4px 12px rgba(36, 22, 74, 0.06);
+}
+
+#view-partidos .bracket-match--final {
+    border-color: #d9b18e;
+    box-shadow: 0 7px 18px rgba(36, 22, 74, 0.1);
+}
+
+#view-partidos .bracket-match__header {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+#view-partidos .bracket-match__title {
+    min-width: 0;
+    color: #777080;
+    font-size: 0.62rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+#view-partidos .bracket-match__penalties {
+    flex: 0 0 auto;
+    color: #a34d08;
+    font-size: 0.58rem;
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+#view-partidos .bracket-match__teams {
+    display: grid;
+    grid-template-rows: repeat(2, minmax(2rem, auto));
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#view-partidos .bracket-team {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 1.35rem 3rem;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+    padding: 0.15rem 0;
+    border-top: 1px solid #eeeaf2;
+}
+
+#view-partidos .bracket-team__identity {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+#view-partidos .bracket-team__name {
+    min-width: 0;
+    color: #51495d;
+    font-size: 0.77rem;
+    font-weight: 600;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+
+#view-partidos .bracket-team__source {
+    color: #746b83;
+    font-size: 0.58rem;
+    font-weight: 500;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+
+#view-partidos .bracket-team__score {
+    color: #51495d;
+    font-size: 0.9rem;
+    font-weight: 800;
+    line-height: 1;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+#view-partidos .bracket-team__outcome {
+    color: #6b5c78;
+    font-size: 0.55rem;
+    font-weight: 800;
+    line-height: 1.15;
+    text-align: right;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+#view-partidos .bracket-team.is-winner {
+    margin-inline: -0.65rem;
+    padding-inline: calc(0.65rem - 3px);
+    background: #fff6ed;
+    border-left: 3px solid var(--orange);
+}
+
+#view-partidos .bracket-team.is-winner .bracket-team__name,
+#view-partidos .bracket-team.is-winner .bracket-team__score {
+    color: #2d1c47;
+    font-weight: 800;
+}
+
+#view-partidos .bracket-team.is-winner .bracket-team__outcome {
+    color: #a34d08;
+}
+
+#view-partidos .bracket-team.is-champion {
+    background: #fff0e2;
+}
+
+#view-partidos .bracket-team.is-champion .bracket-team__outcome {
+    color: #7b3100;
+}
+
+#view-partidos .bracket-empty-round {
+    grid-column: 1 / -1;
+    padding: 0.75rem 0;
+    color: #746b83;
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+@media (min-width: 900px) {
+    #view-partidos .partidos-header {
+        grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem);
+        gap: 1.5rem;
+        padding: 1.35rem 1.5rem;
+    }
+}
+
+@media (max-width: 420px) {
+    #view-partidos .partidos-header {
+        padding: 1rem;
+    }
+
+    #view-partidos .partidos-header h1 {
+        font-size: 1.55rem;
+    }
+
+    #view-partidos .bracket-team {
+        grid-template-columns: minmax(0, 1fr) 1.25rem 2.8rem;
+        gap: 0.25rem;
+    }
+}

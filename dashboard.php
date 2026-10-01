@@ -517,9 +517,10 @@ try {
             <div
                 class="dashboard-view"
                 id="view-partidos"
+                data-api-base="backend/api"
             >
 
-                <?php include __DIR__ . '/partials/partidos.php'; ?>
+                <?php include __DIR__ . '/partials/partidos.html'; ?>
 
             </div>
 
@@ -835,7 +836,7 @@ try {
 
 <script src="assets/js/equipos.js"></script>
 
-<script src="assets/js/partidos.js"></script>
+<script src="assets/js/partidos-bracket.js"></script>
 
 <script src="assets/js/votos.js"></script>
 
